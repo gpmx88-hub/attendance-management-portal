@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Company Attendance Portal</title>
+        <style>
+        :root {
+            --primary: #1F4E79;
+            --accent: #2c6cb0;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            color: #64748b;
+            margin-top: 0;
+            font-size: 14px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .upload-section {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 20px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            background: #f1f5f9;
+        }
+
+        .calendar-config {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .config-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .calendar-config label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .calendar-config input[type="date"],
+        .calendar-config select {
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .special-day-builder {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: #f8fafc;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .holiday-tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+            min-height: 28px;
+        }
+
+        .holiday-tag {
+            background: #dcfce7;
+            color: #166534;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .holiday-tag.tag-leave {
+            background: #e0e7ff;
+            color: #3730a3;
+            border-color: #c7d2fe;
+        }
+
+        .holiday-tag.tag-teama {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-color: #bae6fd;
+        }
+
+        .holiday-tag.tag-teamb {
+            background: #f3e8ff;
+            color: #6b21a8;
+            border-color: #e9d5ff;
+        }
+
+        .holiday-tag .remove-btn {
+            cursor: pointer;
+            color: #dc2626;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .badge-mc {
+            background: #e11d48;
+            color: white;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .holiday-tag.tag-mc {
+            background: #ffe4e6;
+            color: #9f1239;
+            border-color: #fecdd3;
+        }
+
+        button.btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button.btn:hover {
+            background: var(--accent);
+        }
+
+        .btn-success {
+            background: #107c41 !important;
+            padding: 10px 22px;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .stat-item {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            width: 250px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 6px 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .row-absent {
+            background-color: #fff7ed !important;
+        }
+
+        .row-holiday {
+            background-color: #f0fdf4 !important;
+        }
+
+        .badge-absent {
+            background: #ea580c;
+            color: white;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .badge-holiday {
+            background: #16a34a;
+            color: white;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .badge-leave {
+            background: #4f46e5;
+            color: white;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .badge-teama {
+            background: #0284c7;
+            color: white;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .badge-teamb {
+            background: #7c3aed;
+            color: white;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .badge-alert {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .badge-sat {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .badge-late {
+            background: #fef3c7;
+            color: #b45309;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .badge-totallate {
+            background: #fee2e2;
+            color: #dc2626;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .badge-early {
+            background: #fce7f3;
+            color: #9d174d;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+
+        .badge-ok {
+            color: #15803d;
+            font-weight: 600;
+        }
+
+        /* Large Drop Zone Table Cells */
+        td.droppable-cell {
+            padding: 4px;
+            cursor: pointer;
+            transition: background-color 0.15s ease, border-color 0.15s ease;
+            position: relative;
+        }
+
+        td.droppable-cell:hover {
+            background-color: #f1f5f9;
+        }
+
+        td.droppable-cell.drag-over {
+            background-color: #dbeafe !important;
+            outline: 2px dashed #2563eb !important;
+            outline-offset: -2px;
+        }
+
+        .time-pill {
+            display: block;
+            width: calc(100% - 12px);
+            margin: 0 auto;
+            padding: 8px 4px;
+            border-radius: 6px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            cursor: grab;
+            font-weight: 600;
+            font-size: 13px;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            user-select: none;
+            transition: all 0.15s;
+        }
+
+        .time-pill:active {
+            cursor: grabbing;
+        }
+
+        .time-pill.empty-slot {
+            color: #94a3b8;
+            background: #f8fafc;
+            border-style: dashed;
+            font-weight: normal;
+        }
+
+        .time-pill.selected-swap {
+            border-color: #ea580c !important;
+            background: #ffedd5 !important;
+            color: #c2410c !important;
+            box-shadow: 0 0 0 2px #f97316;
+        }
+
+        .tip-banner {
+            font-size: 12px;
+            color: #475569;
+            background: #f1f5f9;
+            border-left: 4px solid #1F4E79;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Attendance Punch Card Portal</h1>
+                <p>Work Start: <strong>09:00</strong> &nbsp;|&nbsp; Weekday End: <strong>18:00</strong> &nbsp;|&nbsp; Saturday End: <strong>13:30</strong> &nbsp;|&nbsp; Lunch: <strong>1h 10m</strong></p>
+            </div>
+            <!-- Step 1: Upload File & Calendar Settings -->
+            <div class="card">
+                <div class="upload-section">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <label><strong>Select Punch File:</strong></label>
+                        <input type="file"
+                               id="fileInput"
+                               accept=".xlsx, .xls"
+                               onchange="autoProcess()">
+                    </div>
+                    <div class="calendar-config">
+                        <div class="config-row">
+                            <div>
+                                <label>Month Start Date:</label>
+                                <input type="date" id="startDateInput" onchange="onDateRangeChange()">
+                            </div>
+                            <div>
+                                <label>Month End Date:</label>
+                                <input type="date" id="endDateInput" onchange="onDateRangeChange()">
+                            </div>
+                        </div>
+                        <!-- 3-Step Special Day Selector Bar -->
+                        <div>
+                            <label style="display: block;
+                                          margin-bottom: 6px">Add Special Day (Holiday / Leave / Team Off):</label>
+                            <div class="special-day-builder">
+                                <label>1. Date:</label>
+                                <input type="date" id="specialDatePicker">
+                                <label>2. Type:</label>
+                                <select id="specialTypeSelect">
+                                    <option value="Holiday">Holiday</option>
+                                    <option value="Annual Leave">Annual Leave</option>
+                                    <option value="MC">MC</option>
+                                    <option value="Team A off day">Team A off day</option>
+                                    <option value="Team B off day">Team B off day</option>
+                                </select>
+                                <label>3. Apply To:</label>
+                                <select id="specialTargetSelect">
+                                    <option value="current">Current Selected Person Only</option>
+                                    <option value="all">All Employees (Company-Wide)</option>
+                                </select>
+                                <button type="button" class="btn" onclick="confirmSpecialDay()">Confirm</button>
+                            </div>
+                            <div id="holidayTags" class="holiday-tags-container">
+                                <span style="font-size: 12px;
+                                             color: #94a3b8;
+                                             font-style: italic"
+                                      id="noHolidaysText">No special dates added yet.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Step 2: Dashboard & Preview -->
+            <div id="resultsCard" class="card hidden">
+                <div style="display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 18px">
+                    <h2 style="margin: 0; color: var(--primary); font-size: 20px;">Monthly Overview</h2>
+                    <button class="btn btn-success"
+                            onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-val" id="statEmployees">0</div>
+                        <div class="stat-label">Total Employees</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="statWorkingDays">0</div>
+                        <div class="stat-label">Total Calendar Days</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
+                        <div class="stat-label">Total Absences</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="statAlerts" style="color: #b91c1c;">0</div>
+                        <div class="stat-label">Punch Irregularities</div>
+                    </div>
+                </div>
+                <hr style="border: 0;
+                           border-top: 1px solid var(--border);
+                           margin: 20px 0">
+                <!-- Interactive Move Tip -->
+                <div class="tip-banner">
+                    💡 <strong>Moveable Time Slots:</strong> Drag and drop any punch timestamp into another column box, or click on a timestamp to select it, then click another slot to exchange them. Hours and late penalties recalculate instantly.
+                </div>
+                <!-- Prefix Search Row -->
+                <div class="filter-row">
+                    <label for="searchInput"><strong>Search Employee:</strong></label>
+                    <input type="text"
+                           id="searchInput"
+                           class="search-input"
+                           placeholder="Type prefix (e.g. 'wi', 'tan', 'tang')..."
+                           oninput="onSearchType()">
+                    <label for="empDropdown"><strong>Select:</strong></label>
+                    <select id="empDropdown" onchange="renderEmployeeTable()"></select>
+                </div>
+                <!-- Table View -->
+                <div style="overflow-x: auto;">
+                    <table id="attendanceTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th style="background-color: #1e3a8a;">Clock In ⇄</th>
+                                <th style="background-color: #1e3a8a;">Break Out ⇄</th>
+                                <th style="background-color: #1e3a8a;">Break In ⇄</th>
+                                <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
+                                <th>Lunch Duration</th>
+                                <th style="background-color: #2e5b88;">Late to Work</th>
+                                <th>Late Time (Lunch)</th>
+                                <th style="background-color: #b91c1c;">Total Late Time</th>
+                                <th style="background-color: #7a2048;">Early Leave</th>
+                                <th>Work Hours</th>
+                                <th>Status / Alert</th>
+                                <th style="background-color: #475569;">Multiple (Earlier) ⇄</th>
+                                <th style="background-color: #475569;">Multiple (Later) ⇄</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <script>
+    let globalData = [];
+    let employeeNames = [];
+    let specialEntries = [];
+    let swapSource = null;
+
+    function autoProcess() {
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput.files.length > 0) {
+            executeAnalysis();
+        }
+    }
+
+    function onDateRangeChange() {
+        const startDate = document.getElementById('startDateInput').value;
+        if (startDate) {
+            document.getElementById('specialDatePicker').value = startDate;
+        }
+        autoProcess();
+    }
+
+    function confirmSpecialDay() {
+        const picker = document.getElementById('specialDatePicker');
+        const chosenDate = picker.value;
+        const chosenType = document.getElementById('specialTypeSelect').value;
+        const targetScope = document.getElementById('specialTargetSelect').value;
+        const activePerson = document.getElementById('empDropdown').value;
+
+        if (!chosenDate) {
+            alert('Please select a date first.');
+            return;
+        }
+
+        const targetName = (targetScope === 'current') ? activePerson : 'ALL';
+
+        if (targetScope === 'current' && (!targetName || targetName === 'No matching employees')) {
+            alert('Please select an employee first.');
+            return;
+        }
+
+        specialEntries = specialEntries.filter(e => !(e.date === chosenDate && e.target === targetName));
+        specialEntries.push({ date: chosenDate, type: chosenType, target: targetName });
+
+        renderSpecialTags();
+        autoProcess();
+    }
+
+    function removeSpecialDay(index) {
+        specialEntries.splice(index, 1);
+        renderSpecialTags();
+        autoProcess();
+    }
+
+    function renderSpecialTags() {
+        const container = document.getElementById('holidayTags');
+        container.innerHTML = '';
+
+        if (specialEntries.length === 0) {
+            container.innerHTML = '<span style="font-size: 12px; color: #94a3b8; font-style: italic;" id="noHolidaysText">No special dates added yet.</span>';
+            return;
+        }
+
+        specialEntries.forEach((entry, idx) => {
+            let tagClass = "holiday-tag";
+            let icon = "🏖️";
+            if (entry.type === "Annual Leave") {
+                tagClass += " tag-leave";
+                icon = "🌴";
+            } else if (entry.type === "MC") {
+                tagClass += " tag-mc";
+                icon = "🏥";
+            } else if (entry.type === "Team A off day") {
+                tagClass += " tag-teama";
+                icon = "🅰️";
+            } else if (entry.type === "Team B off day") {
+                tagClass += " tag-teamb";
+                icon = "🅱️";
+            }
+
+            const targetLabel = (entry.target === 'ALL') ? 'All' : entry.target.split(' ')[0];
+            const tag = document.createElement('span');
+            tag.className = tagClass;
+            tag.innerHTML = `${icon} ${entry.date} [${entry.type}] (${targetLabel}) <span class="remove-btn" onclick="removeSpecialDay(${idx})">&times;</span>`;
+            container.appendChild(tag);
+        });
+    }
+
+    async function executeAnalysis() {
+        const fileInput = document.getElementById('fileInput');
+        if (!fileInput.files.length) return;
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        formData.append('start_date', document.getElementById('startDateInput').value);
+        formData.append('end_date', document.getElementById('endDateInput').value);
+        formData.append('special_entries', JSON.stringify(specialEntries));
+
+        try {
+            const res = await fetch('/api/process', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!res.ok) {
+                const err = await res.json();
+                alert('Error: ' + (err.error || 'Server error'));
+                return;
+            }
+
+            const data = await res.json();
+            globalData = data.records;
+            employeeNames = [...new Set(globalData.map(r => r.Name))].sort();
+
+            if (!document.getElementById('startDateInput').value) {
+                document.getElementById('startDateInput').value = data.detected_start;
+            }
+            if (!document.getElementById('endDateInput').value) {
+                document.getElementById('endDateInput').value = data.detected_end;
+            }
+
+            const curPicker = document.getElementById('specialDatePicker');
+            if (!curPicker.value && data.detected_start) {
+                curPicker.value = data.detected_start;
+            }
+            curPicker.removeAttribute('min');
+            curPicker.removeAttribute('max');
+
+            refreshStats();
+
+            document.getElementById('resultsCard').classList.remove('hidden');
+
+            populateDropdown(employeeNames);
+            renderEmployeeTable();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function refreshStats() {
+        const uniqueDates = [...new Set(globalData.map(r => r.Date))].length;
+        const totalAbsences = globalData.filter(r => r["Status / Alert"] === "Absent").length;
+        
+        const specialTypes = ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"];
+        const alertsCount = globalData.filter(r => 
+            !r["Status / Alert"].startsWith("Normal") && 
+            !r["Status / Alert"].startsWith("Saturday (Half Day)") && 
+            r["Status / Alert"] !== "Absent" &&
+            !specialTypes.some(t => r["Status / Alert"].includes(t))
+        ).length;
+
+        document.getElementById('statEmployees').innerText = employeeNames.length;
+        document.getElementById('statWorkingDays').innerText = uniqueDates;
+        document.getElementById('statAbsences').innerText = totalAbsences;
+        document.getElementById('statAlerts').innerText = alertsCount;
+    }
+
+    function onSearchType() {
+        const query = document.getElementById('searchInput').value.trim().toLowerCase();
+        let filtered = employeeNames;
+        if (query) {
+            filtered = employeeNames.filter(name => {
+                const words = name.toLowerCase().split(/\s+/);
+                return name.toLowerCase().startsWith(query) || words.some(w => w.startsWith(query));
+            });
+        }
+        populateDropdown(filtered);
+        renderEmployeeTable();
+    }
+
+    function populateDropdown(list) {
+        const dropdown = document.getElementById('empDropdown');
+        const prevSelected = dropdown.value;
+        dropdown.innerHTML = '';
+
+        if (!list.length) {
+            const opt = document.createElement('option');
+            opt.text = 'No matching employees';
+            dropdown.appendChild(opt);
+            return;
+        }
+
+        list.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.text = name;
+            dropdown.appendChild(opt);
+        });
+
+        if (list.includes(prevSelected)) {
+            dropdown.value = prevSelected;
+        }
+    }
+
+    function parseTimeSeconds(tStr) {
+        if (!tStr || tStr === "--") return null;
+        const parts = tStr.split(":").map(Number);
+        if (parts.length === 3) {
+            return parts[0] * 3600 + parts[1] * 60 + parts[2];
+        }
+        return null;
+    }
+
+    function formatMinutesToTime(mins) {
+        if (!mins || mins <= 0) return "0:00";
+        const h = Math.floor(mins / 60);
+        const m = Math.round(mins % 60);
+        return `${h}:${m < 10 ? '0' : ''}${m}`;
+    }
+
+    function recalculateRow(record) {
+        const isSat = record.Date.includes("(Sat)");
+        const isOffday = ["Holiday", "Annual Leave", "Team A off day", "Team B off day"].some(s => record["Status / Alert"].includes(s));
+
+        if (record["Status / Alert"] === "Absent" && record["Clock In"] === "--" && record["Clock Out"] === "--") {
+            return;
+        }
+
+        if (record["Status / Alert"] === "Absent" && (record["Clock In"] !== "--" || record["Clock Out"] !== "--")) {
+            record._is_absent = 0;
+            record["Status / Alert"] = "Normal";
+        }
+
+        const secCin = parseTimeSeconds(record["Clock In"]);
+        const secBout = parseTimeSeconds(record["Break Out (Lunch)"]);
+        const secBin = parseTimeSeconds(record["Break In (Back)"]);
+        const secCout = parseTimeSeconds(record["Clock Out"]);
+
+        // 1. Late to Work (Start: 09:00:00)
+        let lateWorkMins = 0;
+        if (secCin !== null) {
+            if (secCin > 32400) {
+                lateWorkMins = Math.round((secCin - 32400) / 60);
+            }
+        }
+        record["Late to Work"] = lateWorkMins > 0 ? formatMinutesToTime(lateWorkMins) : "--";
+        record._late_work_mins = lateWorkMins;
+
+        // 2. Lunch Duration & Lunch Late (> 70 mins)
+        let lunchMins = 0;
+        let lateLunchMins = 0;
+        if (!isSat && secBout !== null && secBin !== null && secBin > secBout) {
+            lunchMins = Math.round((secBin - secBout) / 60);
+            if (lunchMins > 70) {
+                lateLunchMins = lunchMins - 70;
+            }
+        }
+        record["Lunch Duration"] = lunchMins > 0 ? formatMinutesToTime(lunchMins) : "--";
+        record["Late Time (Lunch)"] = lateLunchMins > 0 ? formatMinutesToTime(lateLunchMins) : "--";
+        record._lunch_mins = lunchMins;
+        record._late_lunch_mins = lateLunchMins;
+
+        // 3. Early Leave (Sat: 13:30, Weekday: 18:00)
+        let earlyLeaveMins = 0;
+        let earlyRemark = "";
+        const targetEndSec = isSat ? 48600 : 64800;
+        if (secCout !== null) {
+            if (secCout < targetEndSec) {
+                earlyLeaveMins = Math.round((targetEndSec - secCout) / 60);
+                if (earlyLeaveMins > 0) {
+                    const tier = Math.ceil(earlyLeaveMins / 60);
+                    earlyRemark = `Early up ${tier} ${tier === 1 ? 'hour' : 'hours'}`;
+                }
+            }
+        }
+        record["Early Leave"] = earlyLeaveMins > 0 ? formatMinutesToTime(earlyLeaveMins) : "--";
+        record._early_leave_mins = earlyLeaveMins;
+
+        // 4. Total Late Time
+        const totLate = lateWorkMins + lateLunchMins;
+        record["Total Late Time"] = totLate > 0 ? formatMinutesToTime(totLate) : "--";
+        record._total_late_mins = totLate;
+
+        // 5. Work Hours: (Clock Out - Clock In) - Lunch
+        let workMins = 0;
+        if (secCin !== null && secCout !== null && secCout > secCin) {
+            const gross = Math.round((secCout - secCin) / 60);
+            workMins = Math.max(0, gross - lunchMins);
+        }
+        record["Work Hours"] = workMins > 0 ? formatMinutesToTime(workMins) : "--";
+        record._work_mins = workMins;
+
+        // 6. Refresh Status Alert Remarks
+        let issues = [];
+        if (isSat) {
+            if (record["Clock In"] === "--") issues.push("Missing Clock In");
+            if (record["Clock Out"] === "--") issues.push("Missing Clock Out");
+            let base = issues.length ? `Saturday (${issues.join(', ')})` : "Saturday (Half Day)";
+            record["Status / Alert"] = earlyRemark ? `${base} (${earlyRemark})` : base;
+        } else if (!isOffday) {
+            if (record["Clock In"] === "--") issues.push("Missing Clock In");
+            if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] !== "--") issues.push("Missing Break Out");
+            if (record["Break Out (Lunch)"] !== "--" && record["Break In (Back)"] === "--") issues.push("Missing Break In");
+            if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] === "--") issues.push("No Lunch Punched");
+            if (record["Clock Out"] === "--") issues.push("Missing Clock Out");
+
+            let baseStatus = issues.length ? issues.join(', ') : "Normal";
+            if (earlyRemark) {
+                record["Status / Alert"] = (baseStatus === "Normal") ? `Normal (${earlyRemark})` : `${baseStatus}, ${earlyRemark}`;
+            } else {
+                record["Status / Alert"] = baseStatus;
+            }
+        }
+    }
+
+    function makeCell(timeVal, rowIdx, colKey) {
+        const isEmpty = (!timeVal || timeVal === "--");
+        const displayVal = isEmpty ? "--" : timeVal;
+        const pillClass = isEmpty ? "time-pill empty-slot" : "time-pill";
+
+        return `<td class="droppable-cell"
+                    data-row="${rowIdx}" 
+                    data-col="${colKey}"
+                    ondragover="handleCellDragOver(event)" 
+                    ondragleave="handleCellDragLeave(event)" 
+                    ondrop="handleCellDrop(event)"
+                    onclick="handleCellClick(this)">
+                    <span 
+                        class="${pillClass}" 
+                        draggable="true" 
+                        data-row="${rowIdx}" 
+                        data-col="${colKey}"
+                        ondragstart="handleDragStart(event)">${displayVal}</span>
+                </td>`;
+    }
+
+    function handleDragStart(e) {
+        const row = e.target.getAttribute('data-row');
+        const col = e.target.getAttribute('data-col');
+        e.dataTransfer.setData('text/plain', JSON.stringify({ row, col }));
+        e.target.classList.add('selected-swap');
+    }
+
+    function handleCellDragOver(e) {
+        e.preventDefault();
+        const cell = e.currentTarget;
+        cell.classList.add('drag-over');
+    }
+
+    function handleCellDragLeave(e) {
+        const cell = e.currentTarget;
+        cell.classList.remove('drag-over');
+    }
+
+    function handleCellDrop(e) {
+        e.preventDefault();
+        const cell = e.currentTarget;
+        cell.classList.remove('drag-over');
+
+        const sourceData = JSON.parse(e.dataTransfer.getData('text/plain'));
+        const targetRow = cell.getAttribute('data-row');
+        const targetCol = cell.getAttribute('data-col');
+
+        if (sourceData && targetRow !== null && targetCol !== null) {
+            executeSwap(Number(sourceData.row), sourceData.col, Number(targetRow), targetCol);
+        }
+    }
+
+    function handleCellClick(cell) {
+        const row = Number(cell.getAttribute('data-row'));
+        const col = cell.getAttribute('data-col');
+        const pill = cell.querySelector('.time-pill');
+
+        if (!swapSource) {
+            swapSource = { row, col, pill };
+            pill.classList.add('selected-swap');
+        } else {
+            if (swapSource.row === row && swapSource.col === col) {
+                swapSource.pill.classList.remove('selected-swap');
+                swapSource = null;
+                return;
+            }
+
+            executeSwap(swapSource.row, swapSource.col, row, col);
+            swapSource.pill.classList.remove('selected-swap');
+            swapSource = null;
+        }
+    }
+
+    function executeSwap(sourceRow, sourceCol, targetRow, targetCol) {
+        if (sourceRow !== targetRow) {
+            alert("Please exchange time punches within the same date row.");
+            return;
+        }
+
+        const record = globalData[sourceRow];
+        const valSource = record[sourceCol];
+        const valTarget = record[targetCol];
+
+        record[sourceCol] = valTarget;
+        record[targetCol] = valSource;
+
+        recalculateRow(record);
+        syncChangeToBackend(globalData);
+        refreshStats();
+        renderEmployeeTable();
+    }
+
+    async function syncChangeToBackend(updatedRecords) {
+        try {
+            await fetch('/api/update_records', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ records: updatedRecords })
+            });
+        } catch (e) {
+            console.error("Failed to sync manual punch update:", e);
+        }
+    }
+
+    function renderEmployeeTable() {
+        const dropdown = document.getElementById('empDropdown');
+        const selectedName = dropdown.value;
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        if (!selectedName || selectedName === 'No matching employees') {
+            return;
+        }
+
+        globalData.forEach((r, idx) => {
+            if (r.Name !== selectedName) return;
+
+            const tr = document.createElement('tr');
+            const status = r["Status / Alert"];
+            let badge = `<span class="badge-ok">Normal</span>`;
+
+            if (status === "Absent") {
+                tr.classList.add("row-absent");
+                badge = `<span class="badge-absent">Absent</span>`;
+            } else if (status.includes("Holiday")) {
+                tr.classList.add("row-holiday");
+                badge = `<span class="badge-holiday">${status}</span>`;
+            } else if (status.includes("Annual Leave")) {
+                badge = `<span class="badge-leave">${status}</span>`;
+            } else if (status.includes("MC")) {
+                badge = `<span class="badge-mc">${status}</span>`;
+            } else if (status.includes("Team A off day")) {
+                badge = `<span class="badge-teama">${status}</span>`;
+            } else if (status.includes("Team B off day")) {
+                badge = `<span class="badge-teamb">${status}</span>`;
+            } else if (status.startsWith("Saturday (Half Day)")) {
+                badge = `<span class="badge-sat">${status}</span>`;
+            } else if (!status.startsWith("Normal")) {
+                badge = `<span class="badge-alert">${status}</span>`;
+            }
+
+            const lateWorkCell = r["Late to Work"] !== "--" 
+                ? `<span class="badge-late">${r["Late to Work"]}</span>` 
+                : "--";
+
+            const lateLunchCell = r["Late Time (Lunch)"] !== "--" 
+                ? `<span class="badge-late">${r["Late Time (Lunch)"]}</span>` 
+                : "--";
+
+            const totalLateCell = r["Total Late Time"] !== "--" 
+                ? `<span class="badge-totallate">${r["Total Late Time"]}</span>` 
+                : "--";
+
+            const earlyLeaveCell = r["Early Leave"] !== "--" 
+                ? `<span class="badge-early">${r["Early Leave"]}</span>` 
+                : "--";
+
+            tr.innerHTML = `
+                <td><strong>${r.Date}</strong></td>
+                ${makeCell(r["Clock In"], idx, "Clock In")}
+                ${makeCell(r["Break Out (Lunch)"], idx, "Break Out (Lunch)")}
+                ${makeCell(r["Break In (Back)"], idx, "Break In (Back)")}
+                ${makeCell(r["Clock Out"], idx, "Clock Out")}
+                <td>${r["Lunch Duration"]}</td>
+                <td>${lateWorkCell}</td>
+                <td>${lateLunchCell}</td>
+                <td>${totalLateCell}</td>
+                <td>${earlyLeaveCell}</td>
+                <td><strong>${r["Work Hours"]}</strong></td>
+                <td>${badge}</td>
+                ${makeCell(r["Multiple Punch (Earlier)"], idx, "Multiple Punch (Earlier)")}
+                ${makeCell(r["Multiple Punch (Later)"], idx, "Multiple Punch (Later)")}
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function downloadExcel() {
+        window.location.href = '/api/download';
+    }
+        </script>
+    </body>
+</html>
