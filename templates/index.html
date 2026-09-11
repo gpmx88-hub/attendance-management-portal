@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Company Attendance Portal</title>
-        <style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Attendance Portal</title>
+    <style>
         :root {
             --primary: #1F4E79;
             --accent: #2c6cb0;
@@ -12,6 +12,7 @@
             --card-bg: #ffffff;
             --border: #e2e8f0;
             --text: #1e293b;
+            --danger: #ef4444;
         }
 
         body {
@@ -200,35 +201,6 @@
             font-size: 14px;
         }
 
-        /* Peer Time Sync Dropdown inside Empty Slots */
-        .empty-slot-select {
-            width: 100%;
-            padding: 6px 4px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #475569;
-            border: 1px dashed #94a3b8;
-            background-color: #f8fafc;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-            outline: none;
-            transition: all 0.15s ease;
-        }
-
-        .empty-slot-select:hover,
-        .empty-slot-select:focus {
-            border-color: #2563eb;
-            background-color: #eff6ff;
-            color: #1d4ed8;
-        }
-
-        .empty-slot-select option {
-            background-color: #ffffff;
-            color: #1e293b;
-            font-size: 12px;
-        }
-
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -255,11 +227,19 @@
             color: #64748b;
         }
 
-        .filter-row {
+        .action-bar {
             display: flex;
             gap: 15px;
             align-items: center;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
             flex-wrap: wrap;
         }
 
@@ -268,7 +248,36 @@
             border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 14px;
-            width: 250px;
+            width: 240px;
+        }
+
+        /* Trash Dustbin Zone */
+        .trash-dropzone {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 2px dashed #f87171;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .trash-dropzone:hover {
+            background: #fecaca;
+            border-color: #dc2626;
+        }
+
+        .trash-dropzone.drag-hover {
+            background: #ef4444 !important;
+            color: #ffffff !important;
+            border-color: #991b1b !important;
+            transform: scale(1.05);
         }
 
         table {
@@ -409,6 +418,7 @@
             cursor: pointer;
             transition: background-color 0.15s ease, border-color 0.15s ease;
             position: relative;
+            min-width: 95px;
         }
 
         td.droppable-cell:hover {
@@ -421,17 +431,23 @@
             outline-offset: -2px;
         }
 
+        .cell-content-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+        }
+
         .time-pill {
-            display: block;
-            width: calc(100% - 12px);
-            margin: 0 auto;
-            padding: 8px 4px;
+            flex: 1;
+            padding: 6px 4px;
             border-radius: 6px;
             background: #ffffff;
             border: 1px solid #cbd5e1;
             cursor: grab;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             text-align: center;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
             user-select: none;
@@ -442,18 +458,73 @@
             cursor: grabbing;
         }
 
-        .time-pill.empty-slot {
-            color: #94a3b8;
-            background: #f8fafc;
-            border-style: dashed;
-            font-weight: normal;
-        }
-
         .time-pill.selected-swap {
             border-color: #ea580c !important;
             background: #ffedd5 !important;
             color: #c2410c !important;
             box-shadow: 0 0 0 2px #f97316;
+        }
+
+        .btn-trash-inline {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 4px;
+            transition: color 0.15s;
+        }
+
+        .btn-trash-inline:hover {
+            color: #dc2626;
+            background: #fee2e2;
+        }
+
+        /* Input and Dropdown for Empty Slots */
+        .slot-inputs-row {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            width: 100%;
+        }
+
+        .empty-slot-select {
+            width: 100%;
+            padding: 4px 2px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: #475569;
+            border: 1px dashed #94a3b8;
+            background-color: #f8fafc;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            outline: none;
+        }
+
+        .empty-slot-select:hover, .empty-slot-select:focus {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .manual-time-input {
+            width: calc(100% - 10px);
+            padding: 3px 4px;
+            font-size: 11px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+            outline: none;
+            font-weight: 600;
+            color: #334155;
+            background: #ffffff;
+        }
+
+        .manual-time-input:focus {
+            border-color: #2563eb;
+            background: #f0fdf4;
         }
 
         .tip-banner {
@@ -536,178 +607,178 @@
         .hidden {
             display: none;
         }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <div class="header-top">
-                    <div style="flex: 1;"></div>
-                    <h1 style="text-align: center; flex: 2;">Attendance Punch Card Portal</h1>
-                    <div style="flex: 1; text-align: right;">
-                        <button type="button"
-                                class="btn btn-guide"
-                                onclick="openTutorialModal()">📖 User Guide / Tutorial</button>
-                    </div>
-                </div>
-                <p>Work Start: <strong>09:00</strong> &nbsp;|&nbsp; Weekday End: <strong>18:00</strong> &nbsp;|&nbsp; Saturday End: <strong>13:30</strong> &nbsp;|&nbsp; Lunch: <strong>1h 10m</strong></p>
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="header-top">
+            <div style="flex: 1;"></div>
+            <h1 style="text-align: center; flex: 2;">Attendance Punch Card Portal</h1>
+            <div style="flex: 1; text-align: right;">
+                <button type="button" class="btn btn-guide" onclick="openTutorialModal()">📖 User Guide / Tutorial</button>
             </div>
-            <!-- Step 1: Upload File & Calendar Settings -->
-            <div class="card">
-                <div class="upload-section">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <label><strong>Select Punch File:</strong></label>
-                        <input type="file"
-                               id="fileInput"
-                               accept=".xlsx, .xls"
-                               onchange="autoProcess()">
-                    </div>
-                    <div class="calendar-config">
-                        <div class="config-row">
-                            <div>
-                                <label>Month Start Date:</label>
-                                <input type="date" id="startDateInput" onchange="onDateRangeChange()">
-                            </div>
-                            <div>
-                                <label>Month End Date:</label>
-                                <input type="date" id="endDateInput" onchange="onDateRangeChange()">
-                            </div>
-                        </div>
-                        <!-- 3-Step Special Day Selector Bar -->
-                        <div>
-                            <label style="display: block;
-                                          margin-bottom: 6px">Add Special Day (Holiday / Leave / MC / Team Off):</label>
-                            <div class="special-day-builder">
-                                <label>1. Date:</label>
-                                <input type="date" id="specialDatePicker">
-                                <label>2. Type:</label>
-                                <select id="specialTypeSelect">
-                                    <option value="Holiday">Holiday</option>
-                                    <option value="Annual Leave">Annual Leave</option>
-                                    <option value="MC">MC</option>
-                                    <option value="Team A off day">Team A off day</option>
-                                    <option value="Team B off day">Team B off day</option>
-                                </select>
-                                <label>3. Apply To:</label>
-                                <select id="specialTargetSelect">
-                                    <option value="current">Current Selected Person Only</option>
-                                    <option value="all">All Employees (Company-Wide)</option>
-                                </select>
-                                <button type="button" class="btn" onclick="confirmSpecialDay()">Confirm</button>
-                            </div>
-                            <div id="holidayTags" class="holiday-tags-container">
-                                <span style="font-size: 12px;
-                                             color: #94a3b8;
-                                             font-style: italic"
-                                      id="noHolidaysText">No special dates added yet.</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        </div>
+        <p>Work Start: <strong>09:00</strong> &nbsp;|&nbsp; Weekday End: <strong>18:00</strong> &nbsp;|&nbsp; Saturday End: <strong>13:30</strong> &nbsp;|&nbsp; Lunch: <strong>1h 10m</strong></p>
+    </div>
+
+    <!-- Step 1: Upload File & Calendar Settings -->
+    <div class="card">
+        <div class="upload-section">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <label><strong>Select Punch File:</strong></label>
+                <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="autoProcess()">
             </div>
-            <!-- Step 2: Dashboard & Preview -->
-            <div id="resultsCard" class="card hidden">
-                <div style="display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            margin-bottom: 18px">
-                    <h2 style="margin: 0; color: var(--primary); font-size: 20px;">Monthly Overview</h2>
-                    <button class="btn btn-success"
-                            onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-val" id="statEmployees">0</div>
-                        <div class="stat-label">Total Employees</div>
+
+            <div class="calendar-config">
+                <div class="config-row">
+                    <div>
+                        <label>Month Start Date:</label>
+                        <input type="date" id="startDateInput" onchange="onDateRangeChange()">
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-val" id="statWorkingDays">0</div>
-                        <div class="stat-label">Total Calendar Days</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
-                        <div class="stat-label">Total Absences</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-val" id="statAlerts" style="color: #b91c1c;">0</div>
-                        <div class="stat-label">Punch Irregularities</div>
+                    <div>
+                        <label>Month End Date:</label>
+                        <input type="date" id="endDateInput" onchange="onDateRangeChange()">
                     </div>
                 </div>
-                <hr style="border: 0;
-                           border-top: 1px solid var(--border);
-                           margin: 20px 0">
-                <!-- Interactive Move Tip -->
-                <div class="tip-banner">
-                    💡 <strong>Moveable Time Slots:</strong> Drag and drop any punch timestamp into another column box, or click on a timestamp to select it, then click another slot to exchange them. Hours and late penalties recalculate instantly.
-                </div>
-                <!-- Prefix Search Row -->
-                <div class="filter-row">
-                    <label for="searchInput"><strong>Search Employee:</strong></label>
-                    <input type="text"
-                           id="searchInput"
-                           class="search-input"
-                           placeholder="Type prefix (e.g. 'wi', 'tan', 'tang')..."
-                           oninput="onSearchType()">
-                    <label for="empDropdown"><strong>Select:</strong></label>
-                    <select id="empDropdown" onchange="renderEmployeeTable()"></select>
-                </div>
-                <!-- Table View -->
-                <div style="overflow-x: auto;">
-                    <table id="attendanceTable">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th style="background-color: #1e3a8a;">Clock In ⇄</th>
-                                <th style="background-color: #1e3a8a;">Break Out ⇄</th>
-                                <th style="background-color: #1e3a8a;">Break In ⇄</th>
-                                <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
-                                <th>Lunch Duration</th>
-                                <th style="background-color: #2e5b88;">Late to Work</th>
-                                <th>Late Time (Lunch)</th>
-                                <th style="background-color: #b91c1c;">Total Late Time</th>
-                                <th style="background-color: #7a2048;">Early Leave</th>
-                                <th>Work Hours</th>
-                                <th>Status / Alert</th>
-                                <th style="background-color: #475569;">Multiple (Earlier) ⇄</th>
-                                <th style="background-color: #475569;">Multiple (Later) ⇄</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                        </tbody>
-                    </table>
+
+                <!-- 3-Step Special Day Selector Bar -->
+                <div>
+                    <label style="display: block; margin-bottom: 6px;">Add Special Day (Holiday / Leave / MC / Team Off):</label>
+                    <div class="special-day-builder">
+                        <label>1. Date:</label>
+                        <input type="date" id="specialDatePicker">
+
+                        <label>2. Type:</label>
+                        <select id="specialTypeSelect">
+                            <option value="Holiday">Holiday</option>
+                            <option value="Annual Leave">Annual Leave</option>
+                            <option value="MC">MC</option>
+                            <option value="Team A off day">Team A off day</option>
+                            <option value="Team B off day">Team B off day</option>
+                        </select>
+
+                        <label>3. Apply To:</label>
+                        <select id="specialTargetSelect">
+                            <option value="current">Current Selected Person Only</option>
+                            <option value="all">All Employees (Company-Wide)</option>
+                        </select>
+
+                        <button type="button" class="btn" onclick="confirmSpecialDay()">Confirm</button>
+                    </div>
+                    
+                    <div id="holidayTags" class="holiday-tags-container">
+                        <span style="font-size: 12px; color: #94a3b8; font-style: italic;" id="noHolidaysText">No special dates added yet.</span>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- Tutorial Modal Popup -->
-        <div id="tutorialModal"
-             class="modal-backdrop"
-             onclick="handleBackdropClick(event)">
-            <div class="modal-window">
-                <div class="modal-header">
-                    <h3>📖 Attendance Portal Instructions & Tutorial</h3>
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
-                           target="_blank"
-                           style="color: #cbd5e1;
-                                  font-size: 13px;
-                                  text-decoration: underline">Open in New Tab ↗</a>
-                        <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">×</button>
-                    </div>
-                </div>
-                <div class="modal-body">
-                    <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
-                        <p style="padding: 20px; text-align: center;">
-                            Your browser does not support inline PDFs.
-                            <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
-                               target="_blank"
-                               style="color: #2563eb;
-                                      font-weight: bold">Click here to download and view the tutorial PDF</a>.
-                        </p>
-                    </iframe>
-                </div>
+    </div>
+
+    <!-- Step 2: Dashboard & Preview -->
+    <div id="resultsCard" class="card hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+            <h2 style="margin: 0; color: var(--primary); font-size: 20px;">Monthly Overview</h2>
+            <button class="btn btn-success" onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-val" id="statEmployees">0</div>
+                <div class="stat-label">Total Employees</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val" id="statWorkingDays">0</div>
+                <div class="stat-label">Total Calendar Days</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
+                <div class="stat-label">Total Absences</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-val" id="statAlerts" style="color: #b91c1c;">0</div>
+                <div class="stat-label">Punch Irregularities</div>
             </div>
         </div>
-        <script>
+
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+
+        <!-- Interactive Move Tip -->
+        <div class="tip-banner">
+            💡 <strong>Interactive Adjustments:</strong> Drag any punch to exchange positions, drop it onto the <strong>🗑️ Trash Bin</strong> to delete it, or type directly into empty input boxes. On Saturdays, break and multiple columns offer direct manual entry without peer dropdowns.
+        </div>
+
+        <!-- Action & Search Row with Trash Bin Zone -->
+        <div class="action-bar">
+            <div class="search-row">
+                <label for="searchInput"><strong>Search:</strong></label>
+                <input type="text" id="searchInput" class="search-input" placeholder="Type name prefix..." oninput="onSearchType()">
+
+                <label for="empDropdown"><strong>Select:</strong></label>
+                <select id="empDropdown" onchange="renderEmployeeTable()"></select>
+            </div>
+
+            <!-- Trash Dustbin Zone -->
+            <div id="trashZone" class="trash-dropzone" 
+                 ondragover="handleTrashDragOver(event)" 
+                 ondragleave="handleTrashDragLeave(event)" 
+                 ondrop="handleTrashDrop(event)"
+                 onclick="handleTrashClick()"
+                 title="Drag any time block here to throw it away, or select a time block and click here">
+                🗑️ Throw Time Block (Dustbin)
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div style="overflow-x: auto;">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th style="background-color: #1e3a8a;">Clock In ⇄</th>
+                        <th style="background-color: #1e3a8a;">Break Out ⇄</th>
+                        <th style="background-color: #1e3a8a;">Break In ⇄</th>
+                        <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
+                        <th>Lunch Duration</th>
+                        <th style="background-color: #2e5b88;">Late to Work</th>
+                        <th>Late Time (Lunch)</th>
+                        <th style="background-color: #b91c1c;">Total Late Time</th>
+                        <th style="background-color: #7a2048;">Early Leave</th>
+                        <th>Work Hours</th>
+                        <th>Status / Alert</th>
+                        <th style="background-color: #475569;">Multiple (Earlier) ⇄</th>
+                        <th style="background-color: #475569;">Multiple (Later) ⇄</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Tutorial Modal Popup -->
+<div id="tutorialModal" class="modal-backdrop" onclick="handleBackdropClick(event)">
+    <div class="modal-window">
+        <div class="modal-header">
+            <h3>📖 Attendance Portal Instructions & Tutorial</h3>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf" target="_blank" style="color: #cbd5e1; font-size: 13px; text-decoration: underline;">Open in New Tab ↗</a>
+                <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">&times;</button>
+            </div>
+        </div>
+        <div class="modal-body">
+            <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
+                <p style="padding: 20px; text-align: center;">
+                    Your browser does not support inline PDFs. 
+                    <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf" target="_blank" style="color: #2563eb; font-weight: bold;">Click here to download and view the tutorial PDF</a>.
+                </p>
+            </iframe>
+        </div>
+    </div>
+</div>
+
+<script>
     let globalData = [];
     let employeeNames = [];
     let specialEntries = [];
@@ -849,7 +920,6 @@
             curPicker.removeAttribute('max');
 
             refreshStats();
-
             document.getElementById('resultsCard').classList.remove('hidden');
 
             populateDropdown(employeeNames);
@@ -919,6 +989,8 @@
         const parts = tStr.split(":").map(Number);
         if (parts.length === 3) {
             return parts[0] * 3600 + parts[1] * 60 + parts[2];
+        } else if (parts.length === 2) {
+            return parts[0] * 3600 + parts[1] * 60;
         }
         return null;
     }
@@ -928,6 +1000,19 @@
         const h = Math.floor(mins / 60);
         const m = Math.round(mins % 60);
         return `${h}:${m < 10 ? '0' : ''}${m}`;
+    }
+
+    function normalizeTimeInput(val) {
+        if (!val) return "--";
+        const cleaned = val.trim();
+        if (cleaned === "" || cleaned === "--") return "--";
+        const parts = cleaned.split(":");
+        if (parts.length === 2) {
+            return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:00`;
+        } else if (parts.length === 3) {
+            return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:${parts[2].padStart(2, '0')}`;
+        }
+        return cleaned;
     }
 
     function recalculateRow(record) {
@@ -948,7 +1033,7 @@
         const secBin = parseTimeSeconds(record["Break In (Back)"]);
         const secCout = parseTimeSeconds(record["Clock Out"]);
 
-        // 1. Late to Work (Start: 09:00:00)
+        // 1. Late to Work (Start: 09:00:00 -> 32400)
         let lateWorkMins = 0;
         if (secCin !== null) {
             if (secCin > 32400) {
@@ -1025,63 +1110,173 @@
         }
     }
 
+    // -----------------------------------------------------------------
+    // CELL BUILDER (Peer Dropdown + Manual Input + Saturday Rules)
+    // -----------------------------------------------------------------
     function makeCell(timeVal, rowIdx, colKey) {
-    const isEmpty = (!timeVal || timeVal === "--");
-
-    if (isEmpty) {
+        const isEmpty = (!timeVal || timeVal === "--");
         const record = globalData[rowIdx];
-        const currentDate = record.Date;
-        const activeEmp = record.Name;
+        const isSaturday = record.Date.includes("(Sat)");
 
-        // Find peer options that have a non-empty punch for the same date & column
-        let peerOptions = '';
-        globalData.forEach(peer => {
-            if (peer.Date === currentDate && peer.Name !== activeEmp) {
-                const peerTime = peer[colKey];
-                if (peerTime && peerTime !== "--") {
-                    peerOptions += `<option value="${peerTime}">${peer.Name}: ${peerTime}</option>`;
-                }
+        // 1. EMPTY SLOT LOGIC
+        if (isEmpty) {
+            // SPECIAL RULE: Saturday for break time and multiple punch -> Manual Input ONLY (No Dropdown)
+            const isSaturdaySpecialCol = isSaturday && (colKey.includes("Break") || colKey.includes("Multiple"));
+
+            if (isSaturdaySpecialCol) {
+                return `<td class="droppable-cell"
+                            data-row="${rowIdx}" 
+                            data-col="${colKey}"
+                            ondragover="handleCellDragOver(event)" 
+                            ondragleave="handleCellDragLeave(event)" 
+                            ondrop="handleCellDrop(event)">
+                            <input type="text" class="manual-time-input" 
+                                   placeholder="HH:MM:SS" 
+                                   title="Enter manual time and press Enter"
+                                   onkeydown="handleManualKey(event, ${rowIdx}, '${colKey}')"
+                                   onblur="handleManualBlur(this, ${rowIdx}, '${colKey}')">
+                        </td>`;
             }
-        });
 
-        // If other employees punched at this time, show the selector; otherwise show normal dashed slot
-        if (peerOptions) {
+            // Standard Day or Saturday Clock In/Out: Peer Dropdown + Manual Input Option
+            const currentDate = record.Date;
+            const activeEmp = record.Name;
+            let peerOptions = '';
+            globalData.forEach(peer => {
+                if (peer.Date === currentDate && peer.Name !== activeEmp) {
+                    const peerTime = peer[colKey];
+                    if (peerTime && peerTime !== "--") {
+                        peerOptions += `<option value="${peerTime}">${peer.Name}: ${peerTime}</option>`;
+                    }
+                }
+            });
+
             return `<td class="droppable-cell"
                         data-row="${rowIdx}" 
                         data-col="${colKey}"
                         ondragover="handleCellDragOver(event)" 
                         ondragleave="handleCellDragLeave(event)" 
                         ondrop="handleCellDrop(event)">
-                        <select class="empty-slot-select" 
-                                onchange="copyPeerTime(this, ${rowIdx}, '${colKey}')"
-                                title="Select a colleague to copy their ${colKey} timestamp">
-                            <option value="" selected>-- (Copy from...)</option>
-                            ${peerOptions}
-                        </select>
+                        <div class="slot-inputs-row">
+                            <input type="text" class="manual-time-input" 
+                                   placeholder="Type HH:MM" 
+                                   title="Enter time and press Enter"
+                                   onkeydown="handleManualKey(event, ${rowIdx}, '${colKey}')"
+                                   onblur="handleManualBlur(this, ${rowIdx}, '${colKey}')">
+                            ${peerOptions ? `
+                            <select class="empty-slot-select" 
+                                    onchange="copyPeerTime(this, ${rowIdx}, '${colKey}')"
+                                    title="Or select colleague to copy">
+                                <option value="" selected>-- Peer Sync</option>
+                                ${peerOptions}
+                            </select>` : ''}
+                        </div>
                     </td>`;
+        }
+
+        // 2. FILLED SLOT WITH VALUE (Draggable + Inline Throw Away Button)
+        return `<td class="droppable-cell"
+                    data-row="${rowIdx}" 
+                    data-col="${colKey}"
+                    ondragover="handleCellDragOver(event)" 
+                    ondragleave="handleCellDragLeave(event)" 
+                    ondrop="handleCellDrop(event)"
+                    onclick="handleCellClick(this)">
+                    <div class="cell-content-wrapper">
+                        <span 
+                            class="time-pill" 
+                            draggable="true" 
+                            data-row="${rowIdx}" 
+                            data-col="${colKey}"
+                            ondragstart="handleDragStart(event)">${timeVal}</span>
+                        <button type="button" class="btn-trash-inline" 
+                                onclick="throwAwaySpecific(event, ${rowIdx}, '${colKey}')"
+                                title="Throw this time block away">🗑️</button>
+                    </div>
+                </td>`;
+    }
+
+    // -----------------------------------------------------------------
+    // DUSTBIN / TRASH CAN HANDLERS
+    // -----------------------------------------------------------------
+    function handleTrashDragOver(e) {
+        e.preventDefault();
+        document.getElementById('trashZone').classList.add('drag-hover');
+    }
+
+    function handleTrashDragLeave(e) {
+        document.getElementById('trashZone').classList.remove('drag-hover');
+    }
+
+    function handleTrashDrop(e) {
+        e.preventDefault();
+        document.getElementById('trashZone').classList.remove('drag-hover');
+        const sourceData = JSON.parse(e.dataTransfer.getData('text/plain'));
+        if (sourceData && sourceData.row !== undefined && sourceData.col) {
+            clearTimeSlot(Number(sourceData.row), sourceData.col);
         }
     }
 
-    // Normal filled time pill or slot with no available peer stamps
-    const displayVal = isEmpty ? "--" : timeVal;
-    const pillClass = isEmpty ? "time-pill empty-slot" : "time-pill";
-
-    return `<td class="droppable-cell"
-                data-row="${rowIdx}" 
-                data-col="${colKey}"
-                ondragover="handleCellDragOver(event)" 
-                ondragleave="handleCellDragLeave(event)" 
-                ondrop="handleCellDrop(event)"
-                onclick="handleCellClick(this)">
-                <span 
-                    class="${pillClass}" 
-                    draggable="true" 
-                    data-row="${rowIdx}" 
-                    data-col="${colKey}"
-                    ondragstart="handleDragStart(event)">${displayVal}</span>
-            </td>`;
+    function handleTrashClick() {
+        if (swapSource) {
+            clearTimeSlot(swapSource.row, swapSource.col);
+            swapSource.pill.classList.remove('selected-swap');
+            swapSource = null;
+        } else {
+            alert("Click on any time block to select it first, then click this dustbin to throw it away (or drag it here directly).");
+        }
     }
 
+    function throwAwaySpecific(event, rowIdx, colKey) {
+        event.stopPropagation();
+        clearTimeSlot(rowIdx, colKey);
+    }
+
+    function clearTimeSlot(rowIdx, colKey) {
+        const record = globalData[rowIdx];
+        record[colKey] = "--";
+        recalculateRow(record);
+        syncChangeToBackend(globalData);
+        refreshStats();
+        renderEmployeeTable();
+    }
+
+    // -----------------------------------------------------------------
+    // MANUAL INPUT HANDLERS
+    // -----------------------------------------------------------------
+    function handleManualKey(event, rowIdx, colKey) {
+        if (event.key === "Enter") {
+            event.target.blur();
+        }
+    }
+
+    function handleManualBlur(inputEl, rowIdx, colKey) {
+        const val = inputEl.value.trim();
+        if (!val) return;
+        const normalized = normalizeTimeInput(val);
+        const record = globalData[rowIdx];
+        record[colKey] = normalized;
+
+        recalculateRow(record);
+        syncChangeToBackend(globalData);
+        refreshStats();
+        renderEmployeeTable();
+    }
+
+    function copyPeerTime(selectEl, rowIdx, colKey) {
+        const chosenTime = selectEl.value;
+        if (!chosenTime) return;
+        const record = globalData[rowIdx];
+        record[colKey] = chosenTime;
+        recalculateRow(record);
+        syncChangeToBackend(globalData);
+        refreshStats();
+        renderEmployeeTable();
+    }
+
+    // -----------------------------------------------------------------
+    // DRAG & DROP AND CLICK-TO-SWAP ENGINE
+    // -----------------------------------------------------------------
     function handleDragStart(e) {
         const row = e.target.getAttribute('data-row');
         const col = e.target.getAttribute('data-col');
@@ -1119,6 +1314,8 @@
         const col = cell.getAttribute('data-col');
         const pill = cell.querySelector('.time-pill');
 
+        if (!pill) return; // Ignore clicks on input boxes
+
         if (!swapSource) {
             swapSource = { row, col, pill };
             pill.classList.add('selected-swap');
@@ -1154,26 +1351,6 @@
         renderEmployeeTable();
     }
 
-    function copyPeerTime(selectEl, rowIdx, colKey) {
-        const chosenTime = selectEl.value;
-        if (!chosenTime) return;
-
-        const record = globalData[rowIdx];
-    
-        // 1. Assign the peer's time to this slot
-        record[colKey] = chosenTime;
-
-        // 2. Recalculate working hours, lunch durations, and late penalties immediately
-        recalculateRow(record);
-
-        // 3. Persist the updated records to backend
-        syncChangeToBackend(globalData);
-
-        // 4. Update UI & summary counters
-        refreshStats();
-        renderEmployeeTable();
-    }
-
     async function syncChangeToBackend(updatedRecords) {
         try {
             await fetch('/api/update_records', {
@@ -1186,6 +1363,9 @@
         }
     }
 
+    // -----------------------------------------------------------------
+    // TABLE RENDERING
+    // -----------------------------------------------------------------
     function renderEmployeeTable() {
         const dropdown = document.getElementById('empDropdown');
         const selectedName = dropdown.value;
@@ -1262,6 +1442,7 @@
     function downloadExcel() {
         window.location.href = '/api/download';
     }
-        </script>
-    </body>
+</script>
+
+</body>
 </html>
