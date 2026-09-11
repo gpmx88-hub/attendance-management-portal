@@ -1179,11 +1179,36 @@ function hideToast() {
         const isSat = record.Date.includes("(Sat)");
         const isOffday = isRowOffDay(record["Status / Alert"]);
 
-        if (record["Status / Alert"] === "Absent" && record["Clock In"] === "--" && record["Clock Out"] === "--") {
+        // Check if every punch column in this row is currently empty
+        const allPunchesEmpty = 
+            record["Clock In"] === "--" &&
+            record["Break Out (Lunch)"] === "--" &&
+            record["Break In (Back)"] === "--" &&
+            record["Clock Out"] === "--" &&
+            record["Multiple Punch (Earlier)"] === "--" &&
+            record["Multiple Punch (Later)"] === "--";
+
+        // Case 1: All blocks were thrown away on a normal working day -> Revert to Absent
+        if (allPunchesEmpty && !isOffday) {
+            record._is_absent = 1;
+            record["Status / Alert"] = "Absent";
+            record["Lunch Duration"] = "--";
+            record["Late to Work"] = "--";
+            record["Late Time (Lunch)"] = "--";
+            record["Total Late Time"] = "--";
+            record["Early Leave"] = "--";
+            record["Work Hours"] = "0:00";
+            record._work_mins = 0;
+            record._lunch_mins = 0;
+            record._late_work_mins = 0;
+            record._late_lunch_mins = 0;
+            record._total_late_mins = 0;
+            record._early_leave_mins = 0;
             return;
         }
 
-        if (record["Status / Alert"] === "Absent" && (record["Clock In"] !== "--" || record["Clock Out"] !== "--")) {
+        // Case 2: Punches exist -> Ensure it is marked not absent
+        if (!allPunchesEmpty && record["Status / Alert"] === "Absent") {
             record._is_absent = 0;
             record["Status / Alert"] = "Normal";
         }
@@ -1217,7 +1242,7 @@ function hideToast() {
         record._lunch_mins = lunchMins;
         record._late_lunch_mins = lateLunchMins;
 
-        // 3. Early Leave (Sat: 13:30, Weekday: 18:00)
+        // 3. Early Leave (Sat: 13:30 -> 48600, Weekday: 18:00 -> 64800)
         let earlyLeaveMins = 0;
         let earlyRemark = "";
         const targetEndSec = isSat ? 48600 : 64800;
