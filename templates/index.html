@@ -370,6 +370,21 @@
             background-color: #f8fafc;
         }
 
+        /* Merged Sunday / Off-Day Banner Row */
+        tr.row-merged-banner {
+            background-color: #ffffff !important;
+        }
+
+        td.merged-banner-cell {
+            color: #ef4444 !important;
+            font-weight: bold !important;
+            font-size: 13px !important;
+            letter-spacing: 0.5px;
+            text-align: center !important;
+            padding: 10px 8px !important;
+            background: #fdf2f2;
+        }
+
         .row-absent {
             background-color: #fff7ed !important;
         }
@@ -1688,8 +1703,23 @@ function hideToast() {
 
             const tr = document.createElement('tr');
             const status = r["Status / Alert"];
-            let badge = `<span class="badge-ok">Normal</span>`;
+            const isSunday = (status === "Sunday");
+            const isOffday = isRowOffDay(status) && (r["Clock In"] === "--" && r["Clock Out"] === "--");
 
+            // MERGED ROW DISPLAY: Sunday or Off-Day
+            if (isSunday || isOffday) {
+                tr.classList.add("row-merged-banner");
+                const bannerTitle = isSunday ? "Sunday" : status.toUpperCase();
+                tr.innerHTML = `
+                    <td><strong>${r.Date}</strong></td>
+                    <td colspan="13" class="merged-banner-cell">${bannerTitle}</td>
+                `;
+                tbody.appendChild(tr);
+                return;
+            }
+
+            // REGULAR WORKING DAY DISPLAY
+            let badge = `<span class="badge-ok">Normal</span>`;
             if (status === "Absent") {
                 tr.classList.add("row-absent");
                 badge = `<span class="badge-absent">Absent</span>`;

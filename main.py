@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file
 import pandas as pd
 from datetime import datetime, date, timedelta, time
+import calendar
 import io
 import re
 import math
@@ -26,7 +27,6 @@ def parse_time_str(t_str):
         return None
 
 def format_mins_to_time(minutes):
-    """Converts total integer minutes into H:MM format (e.g. 509 mins -> 8:29)."""
     if pd.isna(minutes) or minutes <= 0:
         return "0:00"
     hrs = int(minutes // 60)
@@ -37,10 +37,6 @@ def format_mins_to_time(minutes):
     return f"{hrs}:{mins:02d}"
 
 def deduplicate_close_punches(punch_list, threshold_minutes=3):
-    """
-    Checks if consecutive punches happen within threshold_minutes (3 mins).
-    Keeps the first punch as valid and isolates the accidental double-tap.
-    """
     valid_punches = []
     close_duplicates = []
 
@@ -64,13 +60,6 @@ def deduplicate_close_punches(punch_list, threshold_minutes=3):
     return [p for _, p in valid_punches], close_duplicates
 
 def categorize_punches(raw_punch_list, is_saturday):
-    """
-    Directional window categorization:
-      - Clock In: Earliest morning punch (< 11:15)
-      - Break Out: Latest punch in early lunch window (11:15 - 13:15)
-      - Break In: Earliest punch returning from lunch (13:15 - 15:30)
-      - Clock Out: Latest evening punch (> 15:30)
-    """
     punch_list, close_duplicates = deduplicate_close_punches(raw_punch_list, threshold_minutes=3)
 
     p_tuples = []
@@ -99,12 +88,10 @@ def categorize_punches(raw_punch_list, is_saturday):
         morning = [p for p in p_tuples if p[0].hour < 11 or (p[0].hour == 11 and p[0].minute < 15)]
         evening = [p for p in p_tuples if p[0].hour > 15 or (p[0].hour == 15 and p[0].minute > 30)]
 
-        # 1. Clock In -> Earliest
         if morning:
             c_in = morning[0][1]
             assigned_punches.append(c_in)
 
-        # 2. Lunch Split (Break Out < 13:15, Break In >= 13:15)
         lunch_out_candidates = [p for p in p_tuples if (p[0].hour == 11 and p[0].minute >= 15) or (p[0].hour == 12) or (p[0].hour == 13 and p[0].minute < 15)]
         lunch_in_candidates = [p for p in p_tuples if (p[0].hour == 13 and p[0].minute >= 15) or (p[0].hour == 14) or (p[0].hour == 15 and p[0].minute <= 30)]
 
@@ -129,7 +116,6 @@ def categorize_punches(raw_punch_list, is_saturday):
                     b_in = all_lunch[0][1]
                 assigned_punches.append(all_lunch[0][1])
 
-        # 3. Clock Out -> Latest
         if evening:
             c_out = evening[-1][1]
             assigned_punches.append(c_out)
@@ -205,12 +191,19 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
         except Exception:
             pass
 
+    # FULL MONTH AUTO-DETECTION: Detect month & calculate 1st to last day
     if dates_in_file:
-        min_d = min(dates_in_file)
-        max_d = max(dates_in_file)
+        detected_month_date = dates_in_file[0]
+        year = detected_month_date.year
+        month = detected_month_date.month
+        last_day = calendar.monthrange(year, month)[1]
+        min_d = date(year, month, 1)
+        max_d = date(year, month, last_day)
     else:
-        min_d = date.today()
-        max_d = date.today()
+        today = date.today()
+        last_day = calendar.monthrange(today.year, today.month)[1]
+        min_d = date(today.year, today.month, 1)
+        max_d = date(today.year, today.month, last_day)
 
     if start_date_str:
         try: min_d = datetime.strptime(start_date_str, "%Y-%m-%d").date()
@@ -219,11 +212,11 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
         try: max_d = datetime.strptime(end_date_str, "%Y-%m-%d").date()
         except Exception: pass
 
+    # Include all calendar days including Sundays
     calendar_dates = []
     curr = min_d
     while curr <= max_d:
-        if curr.weekday() != 6:
-            calendar_dates.append(curr)
+        calendar_dates.append(curr)
         curr += timedelta(days=1)
 
     records = []
@@ -233,19 +226,55 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
 
         for w_date in calendar_dates:
             date_str = w_date.strftime("%Y-%m-%d")
+            is_sunday = (w_date.weekday() == 6)
             is_saturday = (w_date.weekday() == 5)
             day_name = w_date.strftime("%a")
             
             special_type = special_lookup.get((date_str, name)) or special_lookup.get((date_str, "ALL"))
             raw_times_str = raw_punches.get((emp_id, date_str))
 
+            # Case A: Sunday
+            if is_sunday:
+                records.append({
+                    "Employee ID": emp_id,
+                    "Name": name,
+                    "Department": dept,
+                    "Date": f"{date_str} ({day_name})",
+                    "Clock In": "--",
+                    "Break Out (Lunch)": "--",
+                    "Break In (Back)": "--",
+                    "Clock Out": "--",
+                    "Lunch Duration": "--",
+                    "Late to Work": "--",
+                    "Late Time (Lunch)": "--",
+                    "Total Late Time": "--",
+                    "Early Leave": "--",
+                    "Work Hours": "--",
+                    "Status / Alert": "Sunday",
+                    "Multiple Punch (Earlier)": "--",
+                    "Multiple Punch (Later)": "--",
+                    "_work_mins": 0,
+                    "_lunch_mins": 0,
+                    "_late_work_mins": 0,
+                    "_late_lunch_mins": 0,
+                    "_total_late_mins": 0,
+                    "_early_leave_mins": 0,
+                    "_is_absent": 0,
+                    "_is_sunday": 1,
+                    "_is_offday": 1
+                })
+                continue
+
+            # Case B: No punches logged on this date
             if not raw_times_str:
                 if special_type:
                     status_text = special_type
                     is_absent_flag = 0
+                    is_off = 1
                 else:
                     status_text = "Absent"
                     is_absent_flag = 1
+                    is_off = 0
 
                 records.append({
                     "Employee ID": emp_id,
@@ -261,7 +290,7 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     "Late Time (Lunch)": "--",
                     "Total Late Time": "--",
                     "Early Leave": "--",
-                    "Work Hours": "0:00",
+                    "Work Hours": "0:00" if is_absent_flag else "--",
                     "Status / Alert": status_text,
                     "Multiple Punch (Earlier)": "--",
                     "Multiple Punch (Later)": "--",
@@ -271,10 +300,13 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     "_late_lunch_mins": 0,
                     "_total_late_mins": 0,
                     "_early_leave_mins": 0,
-                    "_is_absent": is_absent_flag
+                    "_is_absent": is_absent_flag,
+                    "_is_sunday": 0,
+                    "_is_offday": is_off
                 })
                 continue
 
+            # Case C: Has punches
             punch_list = [t.strip() for t in raw_times_str.split(",") if t.strip()]
             c_in, b_out, b_in, c_out, status, multi_earlier, multi_later = categorize_punches(punch_list, is_saturday)
 
@@ -287,7 +319,6 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
             late_lunch_mins = 0
             early_leave_mins = 0
 
-            # Late to Work
             if c_in != "--":
                 dt_cin = parse_time_str(c_in)
                 if dt_cin:
@@ -295,7 +326,6 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     if dt_cin > start_dt:
                         late_work_mins = round((dt_cin - start_dt).total_seconds() / 60)
 
-            # Lunch Late
             if not is_saturday and b_out != "--" and b_in != "--":
                 dt_bout = parse_time_str(b_out)
                 dt_bin = parse_time_str(b_in)
@@ -304,7 +334,6 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     if lunch_mins > LUNCH_LIMIT_MINS:
                         late_lunch_mins = lunch_mins - LUNCH_LIMIT_MINS
 
-            # Early Leave
             early_remark = ""
             if c_out != "--":
                 dt_cout = parse_time_str(c_out)
@@ -326,7 +355,6 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
 
             total_late_mins = late_work_mins + late_lunch_mins
 
-            # Work Hours
             if c_in != "--" and c_out != "--":
                 dt_cin = parse_time_str(c_in)
                 dt_cout = parse_time_str(c_out)
@@ -358,7 +386,9 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                 "_late_lunch_mins": late_lunch_mins,
                 "_total_late_mins": total_late_mins,
                 "_early_leave_mins": early_leave_mins,
-                "_is_absent": 0
+                "_is_absent": 0,
+                "_is_sunday": 0,
+                "_is_offday": 1 if special_type else 0
             })
 
     return pd.DataFrame(records), min_d.strftime("%Y-%m-%d"), max_d.strftime("%Y-%m-%d")
@@ -369,7 +399,7 @@ def build_excel_workbook(df):
 
     header_fill = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
     total_fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
-    offday_fill = PatternFill(start_color="E2E8F0", end_color="E2E8F0", fill_type="solid")
+    offday_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
     absent_fill = PatternFill(start_color="FCA5A5", end_color="FCA5A5", fill_type="solid")
     late_fill = PatternFill(start_color="FEF08A", end_color="FEF08A", fill_type="solid")
     alert_fill = PatternFill(start_color="FED7AA", end_color="FED7AA", fill_type="solid")
@@ -378,6 +408,7 @@ def build_excel_workbook(df):
     font_header = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
     font_bold = Font(name="Calibri", size=11, bold=True)
     font_regular = Font(name="Calibri", size=11)
+    font_merged_banner = Font(name="Calibri", size=11, bold=True, color="FF0000")
 
     thin_border = Border(
         left=Side(style="thin", color="CBD5E1"),
@@ -405,7 +436,7 @@ def build_excel_workbook(df):
         cell.font = font_header
         cell.alignment = align_center
 
-    non_work_categories = ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"]
+    non_work_categories = ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day", "Sunday"]
 
     overview_data = []
     for (emp_id, emp_name), emp_group in df.groupby(["Employee ID", "Name"], sort=False):
@@ -495,6 +526,34 @@ def build_excel_workbook(df):
         start_row = 4
         for r_offset, (_, row_data) in enumerate(emp_group.iterrows()):
             curr_row = start_row + r_offset
+            status_val = str(row_data["Status / Alert"])
+            is_sunday = (status_val == "Sunday")
+            is_offday = any(cat in status_val for cat in ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"]) and (row_data["Clock In"] == "--" and row_data["Clock Out"] == "--")
+            
+            # MERGED ROW FOR SUNDAY OR OFF-DAYS
+            if is_sunday or is_offday:
+                banner_text = "Sunday" if is_sunday else status_val.upper()
+                
+                # Date Cell
+                date_cell = ws_emp.cell(row=curr_row, column=1, value=row_data["Date"])
+                date_cell.font = font_bold
+                date_cell.border = thin_border
+                date_cell.alignment = align_center
+
+                # Fill all remaining cells in row with borders
+                for c_idx in range(2, len(employee_cols) + 1):
+                    c = ws_emp.cell(row=curr_row, column=c_idx)
+                    c.border = thin_border
+                    c.fill = offday_fill
+
+                # Merge columns 2 to 14
+                ws_emp.merge_cells(start_row=curr_row, start_column=2, end_row=curr_row, end_column=len(employee_cols))
+                merged_cell = ws_emp.cell(row=curr_row, column=2, value=banner_text)
+                merged_cell.alignment = align_center
+                merged_cell.font = font_merged_banner
+                continue
+
+            # NORMAL WORK DAY
             row_vals = [
                 row_data["Date"],
                 row_data["Clock In"],
@@ -512,9 +571,7 @@ def build_excel_workbook(df):
                 row_data["Multiple Punch (Later)"]
             ]
             
-            status_val = str(row_data["Status / Alert"])
             is_absent = (status_val == "Absent")
-            is_offday = any(cat in status_val for cat in non_work_categories)
 
             for col_idx, val in enumerate(row_vals, 1):
                 cell = ws_emp.cell(row=curr_row, column=col_idx, value=val)
@@ -524,9 +581,6 @@ def build_excel_workbook(df):
 
                 if is_absent:
                     cell.fill = absent_fill
-                    if col_idx == 12: cell.font = font_bold
-                elif is_offday:
-                    cell.fill = offday_fill
                     if col_idx == 12: cell.font = font_bold
                 else:
                     if col_idx in [7, 8, 9, 10] and val != "--":
