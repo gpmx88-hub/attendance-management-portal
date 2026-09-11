@@ -227,9 +227,7 @@
             color: #64748b;
         }
 
-        /* ------------------------------------------------------------- */
-        /* Dedicated Workshop: Block Creator & Dustbin Space              */
-        /* ------------------------------------------------------------- */
+        /* Workshop Panel */
         .workshop-panel {
             display: flex;
             gap: 20px;
@@ -489,14 +487,20 @@
             min-width: 95px;
         }
 
-        td.droppable-cell:hover {
+        td.droppable-cell:hover:not(.cell-locked) {
             background-color: #f1f5f9;
         }
 
-        td.droppable-cell.drag-over {
+        td.droppable-cell.drag-over:not(.cell-locked) {
             background-color: #dbeafe !important;
             outline: 2px dashed #2563eb !important;
             outline-offset: -2px;
+        }
+
+        /* Locked cells on off days */
+        td.cell-locked {
+            cursor: not-allowed !important;
+            background-color: rgba(226, 232, 240, 0.4) !important;
         }
 
         .time-pill {
@@ -556,24 +560,6 @@
             color: #1d4ed8;
         }
 
-        .manual-sat-input {
-            width: calc(100% - 12px);
-            padding: 4px;
-            font-size: 11px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            text-align: center;
-            outline: none;
-            font-weight: 600;
-            color: #334155;
-            background: #ffffff;
-        }
-
-        .manual-sat-input:focus {
-            border-color: #2563eb;
-            background: #f0fdf4;
-        }
-
         .tip-banner {
             font-size: 12px;
             color: #475569;
@@ -600,7 +586,6 @@
             display: flex;
         }
 
-        /* Modal Container */
         .modal-window {
             background: #ffffff;
             border-radius: 12px;
@@ -752,12 +737,11 @@
 
         <!-- Interactive Move Tip -->
         <div class="tip-banner">
-            💡 <strong>Time Workshop:</strong> Type a timestamp (or pick one) and click <strong>Create Block</strong>, then drag it directly into any table cell. Drag any unwanted block—from the table or tray—into the <strong>🗑️ Dustbin</strong> to remove it.
+            💡 <strong>Time Workshop:</strong> Pick/type a timestamp and click <strong>+ Create Block</strong>, then drag it directly into any table slot. Drag any unwanted block to the <strong>🗑️ Dustbin</strong>. Note: Off-days (Holiday, Leave, MC, Team Off) are locked.
         </div>
 
         <!-- WORKSHOP: CREATE SPACE & DUSTBIN -->
         <div class="workshop-panel">
-            <!-- 1. Create Space -->
             <div class="workshop-create-section">
                 <div class="workshop-input-row">
                     <label style="font-size: 13px; font-weight: bold; color: #334155;">✨ Time Block Creator:</label>
@@ -765,11 +749,10 @@
                     <button type="button" class="btn" onclick="createNewTimeBlock()">+ Create Block</button>
                 </div>
                 <div id="createdBlocksTray" class="created-blocks-tray">
-                    <span class="tray-placeholder" id="trayPlaceholder">Created blocks appear here. Drag them anywhere into the table!</span>
+                    <span class="tray-placeholder" id="trayPlaceholder">Created blocks appear here. Drag them into any work day!</span>
                 </div>
             </div>
 
-            <!-- 2. Dustbin Space -->
             <div class="workshop-trash-section">
                 <div id="trashZone" class="trash-dropzone" 
                      ondragover="handleTrashDragOver(event)" 
@@ -846,6 +829,13 @@
     let specialEntries = [];
     let swapSource = null;
     let createdBlockCounter = 0;
+
+    const OFF_DAY_TYPES = ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"];
+
+    function isRowOffDay(status) {
+        if (!status) return false;
+        return OFF_DAY_TYPES.some(t => status.includes(t));
+    }
 
     function openTutorialModal() {
         document.getElementById('tutorialModal').classList.add('active');
@@ -996,12 +986,11 @@
         const uniqueDates = [...new Set(globalData.map(r => r.Date))].length;
         const totalAbsences = globalData.filter(r => r["Status / Alert"] === "Absent").length;
         
-        const specialTypes = ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"];
         const alertsCount = globalData.filter(r => 
             !r["Status / Alert"].startsWith("Normal") && 
             !r["Status / Alert"].startsWith("Saturday (Half Day)") && 
             r["Status / Alert"] !== "Absent" &&
-            !specialTypes.some(t => r["Status / Alert"].includes(t))
+            !isRowOffDay(r["Status / Alert"])
         ).length;
 
         document.getElementById('statEmployees').innerText = employeeNames.length;
@@ -1065,22 +1054,9 @@
         return `${h}:${m < 10 ? '0' : ''}${m}`;
     }
 
-    function normalizeTimeInput(val) {
-        if (!val) return "--";
-        const cleaned = val.trim();
-        if (cleaned === "" || cleaned === "--") return "--";
-        const parts = cleaned.split(":");
-        if (parts.length === 2) {
-            return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:00`;
-        } else if (parts.length === 3) {
-            return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:${parts[2].padStart(2, '0')}`;
-        }
-        return cleaned;
-    }
-
     function recalculateRow(record) {
         const isSat = record.Date.includes("(Sat)");
-        const isOffday = ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"].some(s => record["Status / Alert"].includes(s));
+        const isOffday = isRowOffDay(record["Status / Alert"]);
 
         if (record["Status / Alert"] === "Absent" && record["Clock In"] === "--" && record["Clock Out"] === "--") {
             return;
@@ -1181,7 +1157,6 @@
         let timeVal = picker.value.trim();
         if (!timeVal) return;
 
-        // Ensure HH:MM:SS format
         if (timeVal.split(":").length === 2) {
             timeVal += ":00";
         }
@@ -1225,63 +1200,58 @@
     }
 
     // -----------------------------------------------------------------
-    // TABLE CELL BUILDER (Peer Dropdown + Saturday Input Box)
+    // TABLE CELL BUILDER
     // -----------------------------------------------------------------
     function makeCell(timeVal, rowIdx, colKey) {
         const isEmpty = (!timeVal || timeVal === "--");
         const record = globalData[rowIdx];
+        const isOffday = isRowOffDay(record["Status / Alert"]);
         const isSaturday = record.Date.includes("(Sat)");
 
-        // 1. EMPTY SLOT LOGIC
+        // RULE 1: If it is an Off-Day, lock the cell completely
+        if (isOffday) {
+            return `<td class="droppable-cell cell-locked" title="Off-day: cannot place punches here">
+                        <span class="time-pill" style="color: #94a3b8; border-style: dotted; background: #f1f5f9; cursor: not-allowed;">--</span>
+                    </td>`;
+        }
+
+        // RULE 2: If empty slot
         if (isEmpty) {
-            // SATURDAY SPECIAL CASE: Break time & multiple time use input box only
+            // Saturday Break / Multiple Columns: clean empty slot supporting drag-and-drop
             const isSaturdaySpecialCol = isSaturday && (colKey.includes("Break") || colKey.includes("Multiple"));
 
-            if (isSaturdaySpecialCol) {
-                return `<td class="droppable-cell"
-                            data-row="${rowIdx}" 
-                            data-col="${colKey}"
-                            ondragover="handleCellDragOver(event)" 
-                            ondragleave="handleCellDragLeave(event)" 
-                            ondrop="handleCellDrop(event)">
-                            <input type="text" class="manual-sat-input" 
-                                   placeholder="HH:MM:SS" 
-                                   title="Enter Saturday punch and press Enter"
-                                   onkeydown="handleSatInputKey(event, ${rowIdx}, '${colKey}')"
-                                   onblur="handleSatInputBlur(this, ${rowIdx}, '${colKey}')">
-                        </td>`;
-            }
-
-            // Standard Day or Saturday Clock In/Out: Peer Dropdown
-            const currentDate = record.Date;
-            const activeEmp = record.Name;
-            let peerOptions = '';
-            globalData.forEach(peer => {
-                if (peer.Date === currentDate && peer.Name !== activeEmp) {
-                    const peerTime = peer[colKey];
-                    if (peerTime && peerTime !== "--") {
-                        peerOptions += `<option value="${peerTime}">${peer.Name}: ${peerTime}</option>`;
+            if (!isSaturdaySpecialCol) {
+                // Peer options dropdown for standard slots
+                const currentDate = record.Date;
+                const activeEmp = record.Name;
+                let peerOptions = '';
+                globalData.forEach(peer => {
+                    if (peer.Date === currentDate && peer.Name !== activeEmp) {
+                        const peerTime = peer[colKey];
+                        if (peerTime && peerTime !== "--") {
+                            peerOptions += `<option value="${peerTime}">${peer.Name}: ${peerTime}</option>`;
+                        }
                     }
-                }
-            });
+                });
 
-            if (peerOptions) {
-                return `<td class="droppable-cell"
-                            data-row="${rowIdx}" 
-                            data-col="${colKey}"
-                            ondragover="handleCellDragOver(event)" 
-                            ondragleave="handleCellDragLeave(event)" 
-                            ondrop="handleCellDrop(event)">
-                            <select class="empty-slot-select" 
-                                    onchange="copyPeerTime(this, ${rowIdx}, '${colKey}')"
-                                    title="Choose colleague to sync ${colKey}">
-                                <option value="" selected>-- (Copy from...)</option>
-                                ${peerOptions}
-                            </select>
-                        </td>`;
+                if (peerOptions) {
+                    return `<td class="droppable-cell"
+                                data-row="${rowIdx}" 
+                                data-col="${colKey}"
+                                ondragover="handleCellDragOver(event)" 
+                                ondragleave="handleCellDragLeave(event)" 
+                                ondrop="handleCellDrop(event)">
+                                <select class="empty-slot-select" 
+                                        onchange="copyPeerTime(this, ${rowIdx}, '${colKey}')"
+                                        title="Choose colleague to sync ${colKey}">
+                                    <option value="" selected>-- (Copy from...)</option>
+                                    ${peerOptions}
+                                </select>
+                            </td>`;
+                }
             }
 
-            // If no peer option exists, standard empty dashed box
+            // Normal empty slot (accepts drops and click-placements)
             return `<td class="droppable-cell"
                         data-row="${rowIdx}" 
                         data-col="${colKey}"
@@ -1293,7 +1263,7 @@
                     </td>`;
         }
 
-        // 2. FILLED SLOT WITH VALUE (Draggable block)
+        // RULE 3: Filled slot with value
         return `<td class="droppable-cell"
                     data-row="${rowIdx}" 
                     data-col="${colKey}"
@@ -1311,7 +1281,7 @@
     }
 
     // -----------------------------------------------------------------
-    // DUSTBIN / TRASH CAN (Handles both Table Blocks & Created Tray Blocks)
+    // DUSTBIN HANDLERS
     // -----------------------------------------------------------------
     function handleTrashDragOver(e) {
         e.preventDefault();
@@ -1329,12 +1299,10 @@
 
         if (sourceData) {
             if (sourceData.type === 'new-created') {
-                // Remove from tray
                 const el = document.getElementById(sourceData.elementId);
                 if (el) el.remove();
                 checkTrayEmpty();
             } else if (sourceData.row !== undefined && sourceData.col) {
-                // Clear table block
                 clearTimeSlot(Number(sourceData.row), sourceData.col);
             }
         }
@@ -1376,28 +1344,6 @@
         }
     }
 
-    // -----------------------------------------------------------------
-    // SATURDAY INPUT HANDLERS
-    // -----------------------------------------------------------------
-    function handleSatInputKey(e, rowIdx, colKey) {
-        if (e.key === "Enter") {
-            e.target.blur();
-        }
-    }
-
-    function handleSatInputBlur(inputEl, rowIdx, colKey) {
-        const val = inputEl.value.trim();
-        if (!val) return;
-        const normalized = normalizeTimeInput(val);
-        const record = globalData[rowIdx];
-        record[colKey] = normalized;
-
-        recalculateRow(record);
-        syncChangeToBackend(globalData);
-        refreshStats();
-        renderEmployeeTable();
-    }
-
     function copyPeerTime(selectEl, rowIdx, colKey) {
         const chosenTime = selectEl.value;
         if (!chosenTime) return;
@@ -1420,8 +1366,9 @@
     }
 
     function handleCellDragOver(e) {
-        e.preventDefault();
         const cell = e.currentTarget;
+        if (cell.classList.contains('cell-locked')) return;
+        e.preventDefault();
         cell.classList.add('drag-over');
     }
 
@@ -1435,18 +1382,22 @@
         const cell = e.currentTarget;
         cell.classList.remove('drag-over');
 
+        if (cell.classList.contains('cell-locked')) {
+            alert("This day is marked as an off-day. You cannot add punches to it.");
+            return;
+        }
+
         const sourceData = JSON.parse(e.dataTransfer.getData('text/plain'));
         const targetRow = Number(cell.getAttribute('data-row'));
         const targetCol = cell.getAttribute('data-col');
 
         if (!sourceData || targetRow === null || !targetCol) return;
 
-        // If dragging from New Created Tray
+        // Dropping from New Created Tray
         if (sourceData.type === 'new-created') {
             const targetRecord = globalData[targetRow];
             targetRecord[targetCol] = sourceData.timeVal;
 
-            // Remove block from tray
             const el = document.getElementById(sourceData.elementId);
             if (el) el.remove();
             checkTrayEmpty();
@@ -1465,6 +1416,8 @@
     }
 
     function handleCellClick(cell) {
+        if (cell.classList.contains('cell-locked')) return;
+
         const row = Number(cell.getAttribute('data-row'));
         const col = cell.getAttribute('data-col');
         const pill = cell.querySelector('.time-pill');
