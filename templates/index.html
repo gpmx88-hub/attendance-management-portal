@@ -586,6 +586,7 @@
             display: flex;
         }
 
+        /* Modal Container */
         .modal-window {
             background: #ffffff;
             border-radius: 12px;
@@ -737,7 +738,7 @@
 
         <!-- Interactive Move Tip -->
         <div class="tip-banner">
-            💡 <strong>Time Workshop:</strong> Pick/type a timestamp and click <strong>+ Create Block</strong>, then drag it directly into any table slot. Drag any unwanted block to the <strong>🗑️ Dustbin</strong>. Note: Off-days (Holiday, Leave, MC, Team Off) are locked.
+            💡 <strong>Time Workshop:</strong> Pick/type a timestamp and click <strong>+ Create Block</strong>, then drag it directly into any table slot. Drag any unwanted block to the <strong>🗑️ Dustbin</strong>. Note: Off-days are locked, and timestamps must maintain chronological order.
         </div>
 
         <!-- WORKSHOP: CREATE SPACE & DUSTBIN -->
@@ -1054,6 +1055,32 @@
         return `${h}:${m < 10 ? '0' : ''}${m}`;
     }
 
+    // Chronological order sequence check across core progression columns
+    const COLUMN_TIME_ORDER = ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out"];
+
+    function isValidChronology(record) {
+        let lastSec = -1;
+        let lastCol = "";
+
+        for (const col of COLUMN_TIME_ORDER) {
+            const timeStr = record[col];
+            if (timeStr && timeStr !== "--") {
+                const curSec = parseTimeSeconds(timeStr);
+                if (curSec !== null) {
+                    if (curSec < lastSec) {
+                        return {
+                            valid: false,
+                            message: `Invalid order: ${col} (${timeStr}) cannot be earlier than ${lastCol}!`
+                        };
+                    }
+                    lastSec = curSec;
+                    lastCol = col;
+                }
+            }
+        }
+        return { valid: true };
+    }
+
     function recalculateRow(record) {
         const isSat = record.Date.includes("(Sat)");
         const isOffday = isRowOffDay(record["Status / Alert"]);
@@ -1217,11 +1244,9 @@
 
         // RULE 2: If empty slot
         if (isEmpty) {
-            // Saturday Break / Multiple Columns: clean empty slot supporting drag-and-drop
             const isSaturdaySpecialCol = isSaturday && (colKey.includes("Break") || colKey.includes("Multiple"));
 
             if (!isSaturdaySpecialCol) {
-                // Peer options dropdown for standard slots
                 const currentDate = record.Date;
                 const activeEmp = record.Name;
                 let peerOptions = '';
@@ -1348,7 +1373,18 @@
         const chosenTime = selectEl.value;
         if (!chosenTime) return;
         const record = globalData[rowIdx];
+        const oldVal = record[colKey];
         record[colKey] = chosenTime;
+
+        // Chronology Validation Check
+        const check = isValidChronology(record);
+        if (!check.valid) {
+            record[colKey] = oldVal;
+            selectEl.value = "";
+            alert(check.message);
+            return;
+        }
+
         recalculateRow(record);
         syncChangeToBackend(globalData);
         refreshStats();
@@ -1396,7 +1432,16 @@
         // Dropping from New Created Tray
         if (sourceData.type === 'new-created') {
             const targetRecord = globalData[targetRow];
+            const oldVal = targetRecord[targetCol];
             targetRecord[targetCol] = sourceData.timeVal;
+
+            // Chronology Validation Check
+            const check = isValidChronology(targetRecord);
+            if (!check.valid) {
+                targetRecord[targetCol] = oldVal;
+                alert(check.message);
+                return;
+            }
 
             const el = document.getElementById(sourceData.elementId);
             if (el) el.remove();
@@ -1425,7 +1470,16 @@
         // Case A: Placing a newly created block into a cell by clicking
         if (swapSource && swapSource.type === 'new-created') {
             const targetRecord = globalData[row];
+            const oldVal = targetRecord[col];
             targetRecord[col] = swapSource.timeVal;
+
+            // Chronology Validation Check
+            const check = isValidChronology(targetRecord);
+            if (!check.valid) {
+                targetRecord[col] = oldVal;
+                alert(check.message);
+                return;
+            }
 
             const el = document.getElementById(swapSource.elementId);
             if (el) el.remove();
@@ -1469,6 +1523,15 @@
 
         record[sourceCol] = valTarget;
         record[targetCol] = valSource;
+
+        // Chronology Validation Check
+        const check = isValidChronology(record);
+        if (!check.valid) {
+            record[sourceCol] = valSource;
+            record[targetCol] = valTarget;
+            alert(check.message);
+            return;
+        }
 
         recalculateRow(record);
         syncChangeToBackend(globalData);
