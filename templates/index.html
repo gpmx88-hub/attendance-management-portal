@@ -1,144 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Company Attendance Portal</title>
-        <style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Punch Card Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
         :root {
-            --primary: #1F4E79;
-            --accent: #2c6cb0;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
+            --primary: #0f2d59;
+            --primary-light: #1e427b;
+            --primary-accent: #2563eb;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
             --border: #e2e8f0;
-            --text: #1e293b;
-            --danger: #ef4444;
+            --border-strong: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --danger: #dc2626;
+            --danger-bg: #fef2f2;
+            --danger-border: #fecaca;
+            --success: #15803d;
+            --success-bg: #f0fdf4;
+            --warning: #b45309;
+            --warning-bg: #fef3c7;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--bg);
-            color: var(--text);
+            color: var(--text-main);
             margin: 0;
-            padding: 24px 16px;
+            padding: 24px 16px 48px;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
-            max-width: 1440px;
+            max-width: 1480px;
             margin: 0 auto;
         }
 
-        .header {
-            margin-bottom: 24px;
-        }
-
-        .header-top {
+        /* App Header Bar */
+        .app-header {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.04);
         }
 
-        .header h1 {
+        .header-title-group h1 {
+            font-size: 20px;
+            font-weight: 700;
             color: var(--primary);
             margin: 0;
-            font-size: 26px;
+            letter-spacing: -0.02em;
         }
 
-        .header p {
-            color: #64748b;
-            margin: 6px 0 0 0;
-            font-size: 14px;
-            text-align: center;
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .header-meta span strong {
+            color: var(--text-main);
         }
 
         .btn-guide {
-            background: #475569 !important;
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 8px 16px !important;
+            transition: all 0.15s ease;
         }
 
         .btn-guide:hover {
-            background: #334155 !important;
+            background: #1e293b;
         }
 
-        .card {
-            background: var(--card-bg);
+        /* Section Cards */
+        .section-card {
+            background: var(--surface);
             border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.03);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        /* Config Grid Layout */
+        .setup-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .setup-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .file-drop-box {
+            border: 2px dashed var(--border-strong);
+            background: #f8fafc;
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
-        }
-
-        .upload-section {
             display: flex;
             flex-direction: column;
-            gap: 16px;
-            padding: 20px;
-            border: 2px dashed #cbd5e1;
-            border-radius: 8px;
-            background: #f1f5f9;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 10px;
         }
 
-        .calendar-config {
+        .file-drop-box label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .file-drop-box input[type="file"] {
+            font-size: 12px;
+            max-width: 220px;
+        }
+
+        .config-controls {
             display: flex;
             flex-direction: column;
             gap: 14px;
-            background: white;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
         }
 
-        .config-row {
+        .date-range-row {
             display: flex;
             gap: 20px;
-            flex-wrap: wrap;
             align-items: center;
+            flex-wrap: wrap;
         }
 
-        .calendar-config label {
+        .field-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-size: 13px;
-            font-weight: 600;
-            color: #475569;
+            font-weight: 500;
         }
 
-        .calendar-config input[type="date"],
-        .calendar-config select {
+        input[type="date"], select, input[type="time"], input[type="text"] {
+            border: 1px solid var(--border-strong);
+            border-radius: 6px;
             padding: 6px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 5px;
             font-size: 13px;
+            font-family: inherit;
+            color: var(--text-main);
+            background: #ffffff;
+            outline: none;
+            transition: border-color 0.15s;
         }
 
-        .special-day-builder {
+        input:focus, select:focus {
+            border-color: var(--primary-accent);
+        }
+
+        /* Special Day Builder Toolbar */
+        .special-day-toolbar {
             display: flex;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
             background: #f8fafc;
+            border: 1px solid var(--border);
             padding: 10px 14px;
+            border-radius: 8px;
+        }
+
+        .btn-action {
+            background: var(--primary-accent);
+            color: #ffffff;
+            border: none;
+            padding: 7px 16px;
             border-radius: 6px;
-            border: 1px solid #e2e8f0;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .btn-action:hover {
+            opacity: 0.9;
         }
 
         .holiday-tags-container {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            align-items: center;
-            margin-top: 8px;
             min-height: 28px;
+            align-items: center;
         }
 
         .holiday-tag {
             background: #dcfce7;
             color: #166534;
             padding: 4px 10px;
-            border-radius: 16px;
+            border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
             display: inline-flex;
@@ -147,359 +245,203 @@
             border: 1px solid #bbf7d0;
         }
 
-        .holiday-tag.tag-leave {
-            background: #e0e7ff;
-            color: #3730a3;
-            border-color: #c7d2fe;
-        }
-
-        .holiday-tag.tag-mc {
-            background: #ffe4e6;
-            color: #9f1239;
-            border-color: #fecdd3;
-        }
-
-        .holiday-tag.tag-teama {
-            background: #e0f2fe;
-            color: #0369a1;
-            border-color: #bae6fd;
-        }
-
-        .holiday-tag.tag-teamb {
-            background: #f3e8ff;
-            color: #6b21a8;
-            border-color: #e9d5ff;
-        }
+        .holiday-tag.tag-leave { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; }
+        .holiday-tag.tag-mc { background: #ffe4e6; color: #9f1239; border-color: #fecdd3; }
+        .holiday-tag.tag-teama { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+        .holiday-tag.tag-teamb { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
 
         .holiday-tag .remove-btn {
             cursor: pointer;
-            color: #dc2626;
+            color: #ef4444;
             font-weight: bold;
             font-size: 14px;
-            line-height: 1;
         }
 
-        button.btn {
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        button.btn:hover {
-            background: var(--accent);
-        }
-
-        .btn-success {
-            background: #107c41 !important;
-            padding: 10px 22px;
-            font-size: 14px;
-        }
-
+        /* Stats Counter Bar */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 14px;
-            margin-bottom: 18px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
         }
 
-        .stat-item {
+        @media (max-width: 800px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-box {
             background: #f8fafc;
             border: 1px solid var(--border);
-            padding: 14px;
-            border-radius: 8px;
-            text-align: center;
+            border-radius: 10px;
+            padding: 16px 20px;
         }
 
         .stat-val {
-            font-size: 22px;
-            font-weight: bold;
+            font-size: 26px;
+            font-weight: 700;
             color: var(--primary);
+            line-height: 1.1;
         }
 
         .stat-label {
             font-size: 12px;
-            color: #64748b;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-top: 4px;
         }
 
-        /* Workshop Panel */
+        /* Workshop & Dustbin Panel */
         .workshop-panel {
-            display: flex;
-            gap: 20px;
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 14px 18px;
-            margin-bottom: 18px;
-            align-items: stretch;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: 1fr 260px;
+            gap: 16px;
+            background: #f8fafc;
+            border: 1px solid var(--border-strong);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
         }
 
-        .workshop-create-section {
-            flex: 2;
-            min-width: 320px;
+        @media (max-width: 900px) {
+            .workshop-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .workshop-create {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-        }
-
-        .workshop-input-row {
-            display: flex;
-            align-items: center;
             gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .time-builder-input {
-            padding: 6px 12px;
-            font-size: 13px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-weight: 600;
-            outline: none;
-            width: 140px;
-            text-align: center;
-        }
-
-        .time-builder-input:focus {
-            border-color: var(--primary);
-            background: #ffffff;
         }
 
         .created-blocks-tray {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            min-height: 42px;
-            padding: 6px 10px;
+            min-height: 48px;
+            padding: 8px 12px;
             background: #ffffff;
-            border: 1px dashed #94a3b8;
-            border-radius: 6px;
+            border: 1px dashed var(--border-strong);
+            border-radius: 8px;
             align-items: center;
-        }
-
-        .tray-placeholder {
-            font-size: 12px;
-            color: #94a3b8;
-            font-style: italic;
-        }
-
-        .workshop-trash-section {
-            flex: 1;
-            min-width: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .trash-dropzone {
-            width: 100%;
-            height: 100%;
-            min-height: 75px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 4px;
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 2px dashed #f87171;
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 2px dashed var(--danger-border);
             border-radius: 8px;
-            font-size: 13px;
-            font-weight: bold;
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            user-select: none;
+            transition: all 0.15s ease;
             text-align: center;
-            padding: 8px;
+            padding: 12px;
+            user-select: none;
         }
 
         .trash-dropzone:hover {
-            background: #fecaca;
-            border-color: #dc2626;
+            background: #fee2e2;
+            border-color: var(--danger);
         }
 
         .trash-dropzone.drag-hover {
-            background: #ef4444 !important;
+            background: var(--danger) !important;
             color: #ffffff !important;
-            border-color: #991b1b !important;
             transform: scale(1.02);
         }
 
-        .action-bar {
+        /* Employee Filter & Action Toolbar */
+        .employee-toolbar {
             display: flex;
-            gap: 15px;
+            justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
             margin-bottom: 12px;
+        }
+
+        .filter-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
-        .search-input {
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-            width: 240px;
+        .btn-download {
+            background: #059669;
+            color: #ffffff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-download:hover {
+            background: #047857;
+        }
+
+        /* Table Architecture with Sticky Headers */
+        .table-viewport {
+            max-height: 680px;
+            overflow: auto;
+            border: 1px solid var(--border-strong);
+            border-radius: 10px;
+            background: #ffffff;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.04);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
-            margin-top: 10px;
-        }
-
-        th, td {
-            border: 1px solid var(--border);
-            padding: 6px 8px;
             text-align: center;
         }
 
-        th {
+        thead th {
+            position: sticky;
+            top: 0;
             background-color: var(--primary);
-            color: white;
+            color: #ffffff;
             font-weight: 600;
+            padding: 10px 8px;
+            border-bottom: 1px solid #1e3a8a;
+            z-index: 10;
+            white-space: nowrap;
         }
 
-        tr:nth-child(even) {
+        tbody td {
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            padding: 6px 8px;
+        }
+
+        tbody td:last-child {
+            border-right: none;
+        }
+
+        tbody tr:nth-child(even) {
             background-color: #f8fafc;
         }
 
-        /* Merged Sunday / Off-Day Banner Row */
-        tr.row-merged-banner {
-            background-color: #ffffff !important;
-        }
-
-        td.merged-banner-cell {
-            color: #ef4444 !important;
-            font-weight: bold !important;
-            font-size: 13px !important;
-            letter-spacing: 0.5px;
-            text-align: center !important;
-            padding: 10px 8px !important;
-            background: #fdf2f2;
-        }
-
-        .row-absent {
-            background-color: #fff7ed !important;
-        }
-
-        .row-holiday {
-            background-color: #f0fdf4 !important;
-        }
-
-        .badge-absent {
-            background: #ea580c;
-            color: white;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .badge-holiday {
-            background: #16a34a;
-            color: white;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .badge-leave {
-            background: #4f46e5;
-            color: white;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .badge-mc {
-            background: #e11d48;
-            color: white;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .badge-teama {
-            background: #0284c7;
-            color: white;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .badge-teamb {
-            background: #7c3aed;
-            color: white;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-
-        .badge-alert {
-            background: #fee2e2;
-            color: #b91c1c;
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 11px;
-        }
-
-        .badge-sat {
-            background: #e0f2fe;
-            color: #0369a1;
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 11px;
-        }
-
-        .badge-late {
-            background: #fef3c7;
-            color: #b45309;
-            font-weight: bold;
-            padding: 2px 5px;
-            border-radius: 4px;
-        }
-
-        .badge-totallate {
-            background: #fee2e2;
-            color: #dc2626;
-            font-weight: bold;
-            padding: 2px 5px;
-            border-radius: 4px;
-        }
-
-        .badge-early {
-            background: #fce7f3;
-            color: #9d174d;
-            font-weight: bold;
-            padding: 2px 5px;
-            border-radius: 4px;
-        }
-
-        .badge-ok {
-            color: #15803d;
-            font-weight: 600;
-        }
-
+        /* Interactive Time Pills */
         td.droppable-cell {
             padding: 4px;
+            min-width: 90px;
             cursor: pointer;
-            transition: background-color 0.15s ease, border-color 0.15s ease;
-            position: relative;
-            min-width: 95px;
+            transition: background 0.15s;
         }
 
         td.droppable-cell:hover:not(.cell-locked) {
@@ -508,31 +450,28 @@
 
         td.droppable-cell.drag-over:not(.cell-locked) {
             background-color: #dbeafe !important;
-            outline: 2px dashed #2563eb !important;
+            outline: 2px dashed var(--primary-accent) !important;
             outline-offset: -2px;
         }
 
-        /* Locked cells on off days */
         td.cell-locked {
             cursor: not-allowed !important;
-            background-color: rgba(226, 232, 240, 0.4) !important;
+            background-color: #f8fafc !important;
         }
 
         .time-pill {
             display: block;
-            width: calc(100% - 12px);
             margin: 0 auto;
-            padding: 6px 4px;
+            padding: 5px 6px;
             border-radius: 6px;
             background: #ffffff;
-            border: 1px solid #cbd5e1;
+            border: 1px solid var(--border-strong);
             cursor: grab;
             font-weight: 600;
             font-size: 12px;
             text-align: center;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
             user-select: none;
-            transition: all 0.15s;
+            transition: all 0.15s ease;
         }
 
         .time-pill:active {
@@ -540,11 +479,9 @@
         }
 
         .time-pill.time-pill-new {
-            width: auto;
-            min-width: 70px;
             background: #eff6ff;
-            border: 1px solid #93c5fd;
-            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            color: var(--primary-accent);
             padding: 4px 10px;
         }
 
@@ -552,16 +489,16 @@
             border-color: #ea580c !important;
             background: #ffedd5 !important;
             color: #c2410c !important;
-            box-shadow: 0 0 0 2px #f97316;
+            box-shadow: 0 0 0 2px #ea580c;
         }
 
         .empty-slot-select {
             width: 100%;
-            padding: 5px 2px;
+            padding: 4px 2px;
             font-size: 11px;
-            font-weight: 600;
-            color: #475569;
-            border: 1px dashed #94a3b8;
+            font-weight: 500;
+            color: var(--text-muted);
+            border: 1px dashed var(--border-strong);
             background-color: #f8fafc;
             border-radius: 5px;
             cursor: pointer;
@@ -569,20 +506,82 @@
             outline: none;
         }
 
-        .empty-slot-select:hover, .empty-slot-select:focus {
-            border-color: #2563eb;
-            background-color: #eff6ff;
-            color: #1d4ed8;
+        .empty-slot-select:hover {
+            border-color: var(--primary-accent);
+            color: var(--primary-accent);
+            background: #eff6ff;
         }
 
-        .tip-banner {
-            font-size: 12px;
-            color: #475569;
-            background: #f1f5f9;
-            border-left: 4px solid #1F4E79;
-            padding: 8px 12px;
-            margin-bottom: 12px;
-            border-radius: 0 4px 4px 0;
+        /* Merged Sunday & Off-Day Banner Row */
+        tr.row-merged-banner td.merged-banner-cell {
+            color: var(--danger) !important;
+            font-weight: 700 !important;
+            font-size: 12px !important;
+            letter-spacing: 0.05em;
+            text-align: center !important;
+            padding: 8px 12px !important;
+            background: #fff5f5 !important;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .badge-ok { color: var(--success); font-weight: 600; }
+        .badge-absent { background: #ea580c; color: #ffffff; }
+        .badge-holiday { background: var(--success); color: #ffffff; }
+        .badge-leave { background: #4f46e5; color: #ffffff; }
+        .badge-mc { background: #e11d48; color: #ffffff; }
+        .badge-teama { background: #0284c7; color: #ffffff; }
+        .badge-teamb { background: #7c3aed; color: #ffffff; }
+        .badge-sat { background: #e0f2fe; color: #0369a1; }
+        .badge-alert { background: #fee2e2; color: #b91c1c; }
+        .badge-late { background: var(--warning-bg); color: var(--warning); font-weight: 700; }
+        .badge-totallate { background: #fee2e2; color: var(--danger); font-weight: 700; }
+        .badge-early { background: #fce7f3; color: #9d174d; font-weight: 700; }
+
+        /* Toast Notifications */
+        .app-toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: #ffffff;
+            color: var(--text-main);
+            border-left: 4px solid var(--danger);
+            padding: 14px 18px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            font-size: 13px;
+            font-weight: 500;
+            max-width: 400px;
+            opacity: 0;
+            transform: translateY(-16px);
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+
+        .app-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .app-toast .toast-close {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--text-muted);
+            margin-left: auto;
         }
 
         /* Modal Overlay */
@@ -590,45 +589,43 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.65);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 24px;
         }
 
         .modal-backdrop.active {
             display: flex;
         }
 
-        /* Modal Container */
         .modal-window {
             background: #ffffff;
             border-radius: 12px;
             width: 100%;
-            max-width: 950px;
+            max-width: 1000px;
             height: 85vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
             overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 20px;
+            padding: 16px 20px;
             background: var(--primary);
             color: #ffffff;
         }
 
         .modal-header h3 {
             margin: 0;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 15px;
+            font-weight: 600;
         }
 
         .modal-close-btn {
@@ -643,7 +640,6 @@
         .modal-body {
             flex: 1;
             background: #f8fafc;
-            position: relative;
         }
 
         .modal-body iframe {
@@ -652,299 +648,226 @@
             border: none;
         }
 
-/* Custom UI Toast Notification */
-.app-toast {
-    position: fixed;
-    top: 24px;
-    right: 24px;
-    background: #ffffff;
-    color: #1e293b;
-    border-left: 5px solid #ef4444;
-    padding: 14px 18px;
-    border-radius: 8px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    z-index: 2000;
-    font-size: 13px;
-    font-weight: 500;
-    max-width: 420px;
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    pointer-events: none;
-}
-
-.app-toast.show {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-
-.app-toast .toast-icon {
-    font-size: 20px;
-    line-height: 1;
-}
-
-.app-toast .toast-close {
-    background: transparent;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color: #94a3b8;
-    margin-left: auto;
-    padding: 0 4px;
-    line-height: 1;
-}
-.app-toast .toast-close:hover {
-    color: #334155;
-}
-
         .hidden {
             display: none;
         }
-        </style>
-    </head>
-    <body>
-        <!-- Toast Notification Element -->
-        <div id="appToast" class="app-toast">
-            <span class="toast-icon">⚠️</span>
-            <span id="appToastMessage">Notification message</span>
-            <button type="button" class="toast-close" onclick="hideToast()">×</button>
+    </style>
+</head>
+<body>
+
+<!-- Global Toast Notification -->
+<div id="appToast" class="app-toast">
+    <span class="toast-icon">⚠️</span>
+    <span id="appToastMessage">Notification message</span>
+    <button type="button" class="toast-close" onclick="hideToast()">&times;</button>
+</div>
+
+<div class="container">
+    <!-- Main Header -->
+    <header class="app-header">
+        <div class="header-title-group">
+            <h1>Attendance Punch Card Portal</h1>
+            <div class="header-meta">
+                <span>Start: <strong>09:00</strong></span>
+                <span>•</span>
+                <span>Weekday End: <strong>18:00</strong></span>
+                <span>•</span>
+                <span>Saturday End: <strong>13:30</strong></span>
+                <span>•</span>
+                <span>Lunch Limit: <strong>1h 10m</strong></span>
+            </div>
         </div>
-        <div class="container">
-            <div class="header">
-                <div class="header-top">
-                    <div style="flex: 1;"></div>
-                    <h1 style="text-align: center; flex: 2;">Attendance Punch Card Portal</h1>
-                    <div style="flex: 1; text-align: right;">
-                        <button type="button"
-                                class="btn btn-guide"
-                                onclick="openTutorialModal()">📖 User Guide / Tutorial</button>
-                    </div>
-                </div>
-                <p>Work Start: <strong>09:00</strong> &nbsp;|&nbsp; Weekday End: <strong>18:00</strong> &nbsp;|&nbsp; Saturday End: <strong>13:30</strong> &nbsp;|&nbsp; Lunch: <strong>1h 10m</strong></p>
+        <button type="button" class="btn-guide" onclick="openTutorialModal()">📖 User Guide / Tutorial</button>
+    </header>
+
+    <!-- Setup Card: File & Calendar -->
+    <section class="section-card">
+        <div class="setup-grid">
+            <div class="file-drop-box">
+                <label for="fileInput">📁 Upload Biometric Punch File</label>
+                <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="autoProcess()">
             </div>
-            <!-- Step 1: Upload File & Calendar Settings -->
-            <div class="card">
-                <div class="upload-section">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <label><strong>Select Punch File:</strong></label>
-                        <input type="file"
-                               id="fileInput"
-                               accept=".xlsx, .xls"
-                               onchange="autoProcess()">
+
+            <div class="config-controls">
+                <div class="date-range-row">
+                    <div class="field-group">
+                        <label>Start Date:</label>
+                        <input type="date" id="startDateInput" onchange="onDateRangeChange()">
                     </div>
-                    <div class="calendar-config">
-                        <div class="config-row">
-                            <div>
-                                <label>Month Start Date:</label>
-                                <input type="date" id="startDateInput" onchange="onDateRangeChange()">
-                            </div>
-                            <div>
-                                <label>Month End Date:</label>
-                                <input type="date" id="endDateInput" onchange="onDateRangeChange()">
-                            </div>
-                        </div>
-                        <div>
-                            <label style="display: block;
-                                          margin-bottom: 6px">Add Special Day (Holiday / Leave / MC / Team Off):</label>
-                            <div class="special-day-builder">
-                                <label>1. Date:</label>
-                                <input type="date" id="specialDatePicker">
-                                <label>2. Type:</label>
-                                <select id="specialTypeSelect">
-                                    <option value="Holiday">Holiday</option>
-                                    <option value="Annual Leave">Annual Leave</option>
-                                    <option value="MC">MC</option>
-                                    <option value="Team A off day">Team A off day</option>
-                                    <option value="Team B off day">Team B off day</option>
-                                </select>
-                                <label>3. Apply To:</label>
-                                <select id="specialTargetSelect">
-                                    <option value="current">Current Selected Person Only</option>
-                                    <option value="all">All Employees (Company-Wide)</option>
-                                </select>
-                                <button type="button" class="btn" onclick="confirmSpecialDay()">Confirm</button>
-                            </div>
-                            <div id="holidayTags" class="holiday-tags-container">
-                                <span style="font-size: 12px;
-                                             color: #94a3b8;
-                                             font-style: italic"
-                                      id="noHolidaysText">No special dates added yet.</span>
-                            </div>
-                        </div>
+                    <div class="field-group">
+                        <label>End Date:</label>
+                        <input type="date" id="endDateInput" onchange="onDateRangeChange()">
                     </div>
                 </div>
-            </div>
-            <!-- Step 2: Dashboard & Preview -->
-            <div id="resultsCard" class="card hidden">
-                <div style="display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            margin-bottom: 18px">
-                    <h2 style="margin: 0; color: var(--primary); font-size: 20px;">Monthly Overview</h2>
-                    <button class="btn btn-success"
-                            onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
+
+                <!-- Special Day Builder -->
+                <div class="special-day-toolbar">
+                    <div class="field-group">
+                        <label>Date:</label>
+                        <input type="date" id="specialDatePicker">
+                    </div>
+                    <div class="field-group">
+                        <label>Type:</label>
+                        <select id="specialTypeSelect">
+                            <option value="Holiday">Holiday</option>
+                            <option value="Annual Leave">Annual Leave</option>
+                            <option value="MC">MC</option>
+                            <option value="Team A off day">Team A off day</option>
+                            <option value="Team B off day">Team B off day</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label>Target:</label>
+                        <select id="specialTargetSelect">
+                            <option value="current">Current Employee</option>
+                            <option value="all">Company-Wide (All)</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn-action" onclick="confirmSpecialDay()">+ Add Special Day</button>
                 </div>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-val" id="statEmployees">0</div>
-                        <div class="stat-label">Total Employees</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-val" id="statWorkingDays">0</div>
-                        <div class="stat-label">Total Calendar Days</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
-                        <div class="stat-label">Total Absences</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-val" id="statAlerts" style="color: #b91c1c;">0</div>
-                        <div class="stat-label">Punch Irregularities</div>
-                    </div>
-                </div>
-                <hr style="border: 0;
-                           border-top: 1px solid var(--border);
-                           margin: 20px 0">
-                <!-- Interactive Move Tip -->
-                <div class="tip-banner">
-                    💡 <strong>Time Workshop:</strong> Pick/type a timestamp and click <strong>+ Create Block</strong>, then drag it directly into any table slot. Drag any unwanted block to the <strong>🗑️ Dustbin</strong>. Note: Off-days are locked, and timestamps must maintain chronological order.
-                </div>
-                <!-- WORKSHOP: CREATE SPACE & DUSTBIN -->
-                <div class="workshop-panel">
-                    <div class="workshop-create-section">
-                        <div class="workshop-input-row">
-                            <label style="font-size: 13px;
-                                          font-weight: bold;
-                                          color: #334155">✨ Time Block Creator:</label>
-                            <input type="time"
-                                   id="newTimePicker"
-                                   step="1"
-                                   class="time-builder-input"
-                                   value="09:00:00">
-                            <button type="button" class="btn" onclick="createNewTimeBlock()">+ Create Block</button>
-                        </div>
-                        <div id="createdBlocksTray" class="created-blocks-tray">
-                            <span class="tray-placeholder"
-                                  id="trayPlaceholder">Created blocks appear here. Drag them into any work day!</span>
-                        </div>
-                    </div>
-                    <div class="workshop-trash-section">
-                        <div id="trashZone"
-                             class="trash-dropzone"
-                             ondragover="handleTrashDragOver(event)"
-                             ondragleave="handleTrashDragLeave(event)"
-                             ondrop="handleTrashDrop(event)"
-                             onclick="handleTrashClick()"
-                             title="Drag any time block here to throw it away, or select a time block and click here">
-                            <span style="font-size: 22px;">🗑️</span>
-                            <span>Dustbin (Throw Away)</span>
-                        </div>
-                    </div>
-                </div>
-                <!-- Filter Row -->
-                <div class="action-bar">
-                    <label for="searchInput"><strong>Search:</strong></label>
-                    <input type="text"
-                           id="searchInput"
-                           class="search-input"
-                           placeholder="Type name prefix..."
-                           oninput="onSearchType()">
-                    <label for="empDropdown"><strong>Select:</strong></label>
-                    <select id="empDropdown" onchange="renderEmployeeTable()"></select>
-                </div>
-                <!-- Table View -->
-                <div style="overflow-x: auto;">
-                    <table id="attendanceTable">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th style="background-color: #1e3a8a;">Clock In ⇄</th>
-                                <th style="background-color: #1e3a8a;">Break Out ⇄</th>
-                                <th style="background-color: #1e3a8a;">Break In ⇄</th>
-                                <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
-                                <th>Lunch Duration</th>
-                                <th style="background-color: #2e5b88;">Late to Work</th>
-                                <th>Late Time (Lunch)</th>
-                                <th style="background-color: #b91c1c;">Total Late Time</th>
-                                <th style="background-color: #7a2048;">Early Leave</th>
-                                <th>Work Hours</th>
-                                <th>Status / Alert</th>
-                                <th style="background-color: #475569;">Multiple (Earlier) ⇄</th>
-                                <th style="background-color: #475569;">Multiple (Later) ⇄</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                        </tbody>
-                    </table>
+
+                <div id="holidayTags" class="holiday-tags-container">
+                    <span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="noHolidaysText">No custom holidays or leave days added.</span>
                 </div>
             </div>
         </div>
-        <!-- Tutorial Modal Popup -->
-        <div id="tutorialModal"
-             class="modal-backdrop"
-             onclick="handleBackdropClick(event)">
-            <div class="modal-window">
-                <div class="modal-header">
-                    <h3>📖 Attendance Portal Instructions & Tutorial</h3>
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
-                           target="_blank"
-                           style="color: #cbd5e1;
-                                  font-size: 13px;
-                                  text-decoration: underline">Open in New Tab ↗</a>
-                        <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">×</button>
-                    </div>
-                </div>
-                <div class="modal-body">
-                    <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
-                        <p style="padding: 20px; text-align: center;">
-                            Your browser does not support inline PDFs.
-                            <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
-                               target="_blank"
-                               style="color: #2563eb;
-                                      font-weight: bold">Click here to download and view the tutorial PDF</a>.
-                        </p>
-                    </iframe>
-                </div>
+    </section>
+
+    <!-- Interactive Dashboard Card -->
+    <section id="resultsCard" class="section-card hidden">
+        <!-- KPI Metrics -->
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-val" id="statEmployees">0</div>
+                <div class="stat-label">Total Employees</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="statWorkingDays">0</div>
+                <div class="stat-label">Total Month Days</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
+                <div class="stat-label">Total Absences</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="statAlerts" style="color: var(--danger);">0</div>
+                <div class="stat-label">Punch Irregularities</div>
             </div>
         </div>
-        <script>
+
+        <!-- Time Block Workshop & Dustbin Panel -->
+        <div class="workshop-panel">
+            <div class="workshop-create">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="font-size: 13px; font-weight: 600;">✨ Custom Time Creator:</span>
+                    <input type="time" id="newTimePicker" step="1" value="09:00:00">
+                    <button type="button" class="btn-action" onclick="createNewTimeBlock()">+ Create Block</button>
+                </div>
+                <div id="createdBlocksTray" class="created-blocks-tray">
+                    <span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="trayPlaceholder">Newly created time blocks appear here. Drag them anywhere into the table.</span>
+                </div>
+            </div>
+
+            <div id="trashZone" class="trash-dropzone" 
+                 ondragover="handleTrashDragOver(event)" 
+                 ondragleave="handleTrashDragLeave(event)" 
+                 ondrop="handleTrashDrop(event)"
+                 onclick="handleTrashClick()"
+                 title="Drag any time block here to throw it away">
+                <span style="font-size: 20px;">🗑️</span>
+                <span>Dustbin (Throw Away)</span>
+            </div>
+        </div>
+
+        <!-- Filter & Export Toolbar -->
+        <div class="employee-toolbar">
+            <div class="filter-actions">
+                <label for="searchInput" style="font-size: 13px; font-weight: 600;">Employee:</label>
+                <input type="text" id="searchInput" placeholder="Search prefix (e.g. 'tan')..." oninput="onSearchType()" style="width: 200px;">
+                <select id="empDropdown" onchange="renderEmployeeTable()" style="min-width: 200px;"></select>
+            </div>
+            <button type="button" class="btn-download" onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
+        </div>
+
+        <!-- Sticky Header Scroll Table -->
+        <div class="table-viewport">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th style="min-width: 120px;">Date</th>
+                        <th style="background-color: #1e3a8a;">Clock In ⇄</th>
+                        <th style="background-color: #1e3a8a;">Break Out ⇄</th>
+                        <th style="background-color: #1e3a8a;">Break In ⇄</th>
+                        <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
+                        <th>Lunch Duration</th>
+                        <th style="background-color: #274c77;">Late (Work)</th>
+                        <th>Late (Lunch)</th>
+                        <th style="background-color: #b91c1c;">Total Late</th>
+                        <th style="background-color: #831843;">Early Leave</th>
+                        <th>Work Hours</th>
+                        <th style="min-width: 130px;">Status / Alert</th>
+                        <th style="background-color: #475569;">Multiple (Earlier)</th>
+                        <th style="background-color: #475569;">Multiple (Later)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<!-- Tutorial Modal Popup -->
+<div id="tutorialModal" class="modal-backdrop" onclick="handleBackdropClick(event)">
+    <div class="modal-window">
+        <div class="modal-header">
+            <h3>📖 Attendance Portal Instructions & Tutorial</h3>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf" target="_blank" style="color: #cbd5e1; font-size: 13px; text-decoration: underline;">Open in New Tab ↗</a>
+                <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">&times;</button>
+            </div>
+        </div>
+        <div class="modal-body">
+            <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
+                <p style="padding: 20px; text-align: center;">
+                    Your browser does not support inline PDFs. 
+                    <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf" target="_blank" style="color: #2563eb; font-weight: bold;">Click here to download and view the tutorial PDF</a>.
+                </p>
+            </iframe>
+        </div>
+    </div>
+</div>
+
+<script>
     let globalData = [];
     let employeeNames = [];
     let specialEntries = [];
     let swapSource = null;
     let createdBlockCounter = 0;
     let toastTimer = null;
-    function showToast(message, isError = true) {
-    const toast = document.getElementById('appToast');
-    const msgEl = document.getElementById('appToastMessage');
-    
-    msgEl.innerText = message;
-    toast.style.borderLeftColor = isError ? '#ef4444' : '#10b981';
-    toast.querySelector('.toast-icon').innerText = isError ? '⚠️' : '✅';
-    
-    toast.classList.add('show');
-    
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-        hideToast();
-    }, 4000); // Disappears automatically after 4 seconds
-}
-
-function hideToast() {
-    const toast = document.getElementById('appToast');
-    if (toast) toast.classList.remove('show');
-}
 
     const OFF_DAY_TYPES = ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"];
+    const COLUMN_TIME_ORDER = ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out"];
 
     function isRowOffDay(status) {
         if (!status) return false;
         return OFF_DAY_TYPES.some(t => status.includes(t));
+    }
+
+    function showToast(message, isError = true) {
+        const toast = document.getElementById('appToast');
+        const msgEl = document.getElementById('appToastMessage');
+        msgEl.innerText = message;
+        toast.style.borderLeftColor = isError ? '#dc2626' : '#15803d';
+        toast.querySelector('.toast-icon').innerText = isError ? '⚠️' : '✅';
+        toast.classList.add('show');
+
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => hideToast(), 4000);
+    }
+
+    function hideToast() {
+        const toast = document.getElementById('appToast');
+        if (toast) toast.classList.remove('show');
     }
 
     function openTutorialModal() {
@@ -956,23 +879,17 @@ function hideToast() {
     }
 
     function handleBackdropClick(e) {
-        if (e.target.id === 'tutorialModal') {
-            closeTutorialModal();
-        }
+        if (e.target.id === 'tutorialModal') closeTutorialModal();
     }
 
     function autoProcess() {
         const fileInput = document.getElementById('fileInput');
-        if (fileInput.files.length > 0) {
-            executeAnalysis();
-        }
+        if (fileInput.files.length > 0) executeAnalysis();
     }
 
     function onDateRangeChange() {
         const startDate = document.getElementById('startDateInput').value;
-        if (startDate) {
-            document.getElementById('specialDatePicker').value = startDate;
-        }
+        if (startDate) document.getElementById('specialDatePicker').value = startDate;
         autoProcess();
     }
 
@@ -984,14 +901,13 @@ function hideToast() {
         const activePerson = document.getElementById('empDropdown').value;
 
         if (!chosenDate) {
-            alert('Please select a date first.');
+            showToast('Please select a date first.');
             return;
         }
 
         const targetName = (targetScope === 'current') ? activePerson : 'ALL';
-
         if (targetScope === 'current' && (!targetName || targetName === 'No matching employees')) {
-            alert('Please select an employee first.');
+            showToast('Please select an employee first.');
             return;
         }
 
@@ -1013,26 +929,17 @@ function hideToast() {
         container.innerHTML = '';
 
         if (specialEntries.length === 0) {
-            container.innerHTML = '<span style="font-size: 12px; color: #94a3b8; font-style: italic;" id="noHolidaysText">No special dates added yet.</span>';
+            container.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="noHolidaysText">No custom holidays or leave days added.</span>';
             return;
         }
 
         specialEntries.forEach((entry, idx) => {
             let tagClass = "holiday-tag";
             let icon = "🏖️";
-            if (entry.type === "Annual Leave") {
-                tagClass += " tag-leave";
-                icon = "🌴";
-            } else if (entry.type === "MC") {
-                tagClass += " tag-mc";
-                icon = "🏥";
-            } else if (entry.type === "Team A off day") {
-                tagClass += " tag-teama";
-                icon = "🅰️";
-            } else if (entry.type === "Team B off day") {
-                tagClass += " tag-teamb";
-                icon = "🅱️";
-            }
+            if (entry.type === "Annual Leave") { tagClass += " tag-leave"; icon = "🌴"; }
+            else if (entry.type === "MC") { tagClass += " tag-mc"; icon = "🏥"; }
+            else if (entry.type === "Team A off day") { tagClass += " tag-teama"; icon = "🅰️"; }
+            else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️"; }
 
             const targetLabel = (entry.target === 'ALL') ? 'All' : entry.target.split(' ')[0];
             const tag = document.createElement('span');
@@ -1053,14 +960,10 @@ function hideToast() {
         formData.append('special_entries', JSON.stringify(specialEntries));
 
         try {
-            const res = await fetch('/api/process', {
-                method: 'POST',
-                body: formData
-            });
-
+            const res = await fetch('/api/process', { method: 'POST', body: formData });
             if (!res.ok) {
                 const err = await res.json();
-                alert('Error: ' + (err.error || 'Server error'));
+                showToast(err.error || 'Failed to process file');
                 return;
             }
 
@@ -1068,38 +971,30 @@ function hideToast() {
             globalData = data.records;
             employeeNames = [...new Set(globalData.map(r => r.Name))].sort();
 
-            if (!document.getElementById('startDateInput').value) {
-                document.getElementById('startDateInput').value = data.detected_start;
-            }
-            if (!document.getElementById('endDateInput').value) {
-                document.getElementById('endDateInput').value = data.detected_end;
-            }
+            if (!document.getElementById('startDateInput').value) document.getElementById('startDateInput').value = data.detected_start;
+            if (!document.getElementById('endDateInput').value) document.getElementById('endDateInput').value = data.detected_end;
 
             const curPicker = document.getElementById('specialDatePicker');
-            if (!curPicker.value && data.detected_start) {
-                curPicker.value = data.detected_start;
-            }
-            curPicker.removeAttribute('min');
-            curPicker.removeAttribute('max');
+            if (!curPicker.value && data.detected_start) curPicker.value = data.detected_start;
 
             refreshStats();
             document.getElementById('resultsCard').classList.remove('hidden');
-
             populateDropdown(employeeNames);
             renderEmployeeTable();
         } catch (e) {
             console.error(e);
+            showToast("Server connection error");
         }
     }
 
     function refreshStats() {
         const uniqueDates = [...new Set(globalData.map(r => r.Date))].length;
         const totalAbsences = globalData.filter(r => r["Status / Alert"] === "Absent").length;
-        
         const alertsCount = globalData.filter(r => 
             !r["Status / Alert"].startsWith("Normal") && 
             !r["Status / Alert"].startsWith("Saturday (Half Day)") && 
             r["Status / Alert"] !== "Absent" &&
+            r["Status / Alert"] !== "Sunday" &&
             !isRowOffDay(r["Status / Alert"])
         ).length;
 
@@ -1141,19 +1036,14 @@ function hideToast() {
             dropdown.appendChild(opt);
         });
 
-        if (list.includes(prevSelected)) {
-            dropdown.value = prevSelected;
-        }
+        if (list.includes(prevSelected)) dropdown.value = prevSelected;
     }
 
     function parseTimeSeconds(tStr) {
         if (!tStr || tStr === "--") return null;
         const parts = tStr.split(":").map(Number);
-        if (parts.length === 3) {
-            return parts[0] * 3600 + parts[1] * 60 + parts[2];
-        } else if (parts.length === 2) {
-            return parts[0] * 3600 + parts[1] * 60;
-        }
+        if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+        if (parts.length === 2) return parts[0] * 3600 + parts[1] * 60;
         return null;
     }
 
@@ -1163,9 +1053,6 @@ function hideToast() {
         const m = Math.round(mins % 60);
         return `${h}:${m < 10 ? '0' : ''}${m}`;
     }
-
-    // Chronological order sequence check across core progression columns
-    const COLUMN_TIME_ORDER = ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out"];
 
     function isValidChronology(record) {
         let lastSec = -1;
@@ -1194,7 +1081,6 @@ function hideToast() {
         const isSat = record.Date.includes("(Sat)");
         const isOffday = isRowOffDay(record["Status / Alert"]);
 
-        // Check if every punch column in this row is currently empty
         const allPunchesEmpty = 
             record["Clock In"] === "--" &&
             record["Break Out (Lunch)"] === "--" &&
@@ -1203,7 +1089,6 @@ function hideToast() {
             record["Multiple Punch (Earlier)"] === "--" &&
             record["Multiple Punch (Later)"] === "--";
 
-        // Case 1: All blocks were thrown away on a normal working day -> Revert to Absent
         if (allPunchesEmpty && !isOffday) {
             record._is_absent = 1;
             record["Status / Alert"] = "Absent";
@@ -1222,7 +1107,6 @@ function hideToast() {
             return;
         }
 
-        // Case 2: Punches exist -> Ensure it is marked not absent
         if (!allPunchesEmpty && record["Status / Alert"] === "Absent") {
             record._is_absent = 0;
             record["Status / Alert"] = "Normal";
@@ -1233,52 +1117,39 @@ function hideToast() {
         const secBin = parseTimeSeconds(record["Break In (Back)"]);
         const secCout = parseTimeSeconds(record["Clock Out"]);
 
-        // 1. Late to Work (Start: 09:00:00 -> 32400 sec)
         let lateWorkMins = 0;
-        if (secCin !== null) {
-            if (secCin > 32400) {
-                lateWorkMins = Math.round((secCin - 32400) / 60);
-            }
-        }
+        if (secCin !== null && secCin > 32400) lateWorkMins = Math.round((secCin - 32400) / 60);
         record["Late to Work"] = lateWorkMins > 0 ? formatMinutesToTime(lateWorkMins) : "--";
         record._late_work_mins = lateWorkMins;
 
-        // 2. Lunch Duration & Lunch Late (> 70 mins)
         let lunchMins = 0;
         let lateLunchMins = 0;
         if (!isSat && secBout !== null && secBin !== null && secBin > secBout) {
             lunchMins = Math.round((secBin - secBout) / 60);
-            if (lunchMins > 70) {
-                lateLunchMins = lunchMins - 70;
-            }
+            if (lunchMins > 70) lateLunchMins = lunchMins - 70;
         }
         record["Lunch Duration"] = lunchMins > 0 ? formatMinutesToTime(lunchMins) : "--";
         record["Late Time (Lunch)"] = lateLunchMins > 0 ? formatMinutesToTime(lateLunchMins) : "--";
         record._lunch_mins = lunchMins;
         record._late_lunch_mins = lateLunchMins;
 
-        // 3. Early Leave (Sat: 13:30 -> 48600, Weekday: 18:00 -> 64800)
         let earlyLeaveMins = 0;
         let earlyRemark = "";
         const targetEndSec = isSat ? 48600 : 64800;
-        if (secCout !== null) {
-            if (secCout < targetEndSec) {
-                earlyLeaveMins = Math.round((targetEndSec - secCout) / 60);
-                if (earlyLeaveMins > 0) {
-                    const tier = Math.ceil(earlyLeaveMins / 60);
-                    earlyRemark = `Early up ${tier} ${tier === 1 ? 'hour' : 'hours'}`;
-                }
+        if (secCout !== null && secCout < targetEndSec) {
+            earlyLeaveMins = Math.round((targetEndSec - secCout) / 60);
+            if (earlyLeaveMins > 0) {
+                const tier = Math.ceil(earlyLeaveMins / 60);
+                earlyRemark = `Early up ${tier} ${tier === 1 ? 'hour' : 'hours'}`;
             }
         }
         record["Early Leave"] = earlyLeaveMins > 0 ? formatMinutesToTime(earlyLeaveMins) : "--";
         record._early_leave_mins = earlyLeaveMins;
 
-        // 4. Total Late Time
         const totLate = lateWorkMins + lateLunchMins;
         record["Total Late Time"] = totLate > 0 ? formatMinutesToTime(totLate) : "--";
         record._total_late_mins = totLate;
 
-        // 5. Work Hours: (Clock Out - Clock In) - Lunch
         let workMins = 0;
         if (secCin !== null && secCout !== null && secCout > secCin) {
             const gross = Math.round((secCout - secCin) / 60);
@@ -1287,7 +1158,6 @@ function hideToast() {
         record["Work Hours"] = workMins > 0 ? formatMinutesToTime(workMins) : "--";
         record._work_mins = workMins;
 
-        // 6. Refresh Status Alert Remarks
         let issues = [];
         if (isSat) {
             if (record["Clock In"] === "--") issues.push("Missing Clock In");
@@ -1302,25 +1172,15 @@ function hideToast() {
             if (record["Clock Out"] === "--") issues.push("Missing Clock Out");
 
             let baseStatus = issues.length ? issues.join(', ') : "Normal";
-            if (earlyRemark) {
-                record["Status / Alert"] = (baseStatus === "Normal") ? `Normal (${earlyRemark})` : `${baseStatus}, ${earlyRemark}`;
-            } else {
-                record["Status / Alert"] = baseStatus;
-            }
+            record["Status / Alert"] = earlyRemark ? ((baseStatus === "Normal") ? `Normal (${earlyRemark})` : `${baseStatus}, ${earlyRemark}`) : baseStatus;
         }
     }
 
-    // -----------------------------------------------------------------
-    // TIME WORKSHOP: CREATING NEW TIME BLOCKS
-    // -----------------------------------------------------------------
     function createNewTimeBlock() {
         const picker = document.getElementById('newTimePicker');
         let timeVal = picker.value.trim();
         if (!timeVal) return;
-
-        if (timeVal.split(":").length === 2) {
-            timeVal += ":00";
-        }
+        if (timeVal.split(":").length === 2) timeVal += ":00";
 
         const tray = document.getElementById('createdBlocksTray');
         const placeholder = document.getElementById('trayPlaceholder');
@@ -1338,11 +1198,7 @@ function hideToast() {
         pill.setAttribute('data-time', timeVal);
 
         pill.ondragstart = function(e) {
-            e.dataTransfer.setData('text/plain', JSON.stringify({
-                type: 'new-created',
-                timeVal: timeVal,
-                elementId: blockId
-            }));
+            e.dataTransfer.setData('text/plain', JSON.stringify({ type: 'new-created', timeVal, elementId: blockId }));
             pill.classList.add('selected-swap');
         };
 
@@ -1360,23 +1216,18 @@ function hideToast() {
         tray.appendChild(pill);
     }
 
-    // -----------------------------------------------------------------
-    // TABLE CELL BUILDER
-    // -----------------------------------------------------------------
     function makeCell(timeVal, rowIdx, colKey) {
         const isEmpty = (!timeVal || timeVal === "--");
         const record = globalData[rowIdx];
         const isOffday = isRowOffDay(record["Status / Alert"]);
         const isSaturday = record.Date.includes("(Sat)");
 
-        // RULE 1: If it is an Off-Day, lock the cell completely
         if (isOffday) {
-            return `<td class="droppable-cell cell-locked" title="Off-day: cannot place punches here">
-                        <span class="time-pill" style="color: #94a3b8; border-style: dotted; background: #f1f5f9; cursor: not-allowed;">--</span>
+            return `<td class="droppable-cell cell-locked" title="Off-day: locked slot">
+                        <span class="time-pill" style="color: #94a3b8; border-style: dotted; background: #f8fafc; cursor: not-allowed;">--</span>
                     </td>`;
         }
 
-        // RULE 2: If empty slot
         if (isEmpty) {
             const isSaturdaySpecialCol = isSaturday && (colKey.includes("Break") || colKey.includes("Multiple"));
 
@@ -1394,54 +1245,25 @@ function hideToast() {
                 });
 
                 if (peerOptions) {
-                    return `<td class="droppable-cell"
-                                data-row="${rowIdx}" 
-                                data-col="${colKey}"
-                                ondragover="handleCellDragOver(event)" 
-                                ondragleave="handleCellDragLeave(event)" 
-                                ondrop="handleCellDrop(event)">
-                                <select class="empty-slot-select" 
-                                        onchange="copyPeerTime(this, ${rowIdx}, '${colKey}')"
-                                        title="Choose colleague to sync ${colKey}">
-                                    <option value="" selected>-- (Copy from...)</option>
+                    return `<td class="droppable-cell" data-row="${rowIdx}" data-col="${colKey}" ondragover="handleCellDragOver(event)" ondragleave="handleCellDragLeave(event)" ondrop="handleCellDrop(event)">
+                                <select class="empty-slot-select" onchange="copyPeerTime(this, ${rowIdx}, '${colKey}')" title="Sync from colleague">
+                                    <option value="" selected>-- (Copy)</option>
                                     ${peerOptions}
                                 </select>
                             </td>`;
                 }
             }
 
-            // Normal empty slot (accepts drops and click-placements)
-            return `<td class="droppable-cell"
-                        data-row="${rowIdx}" 
-                        data-col="${colKey}"
-                        ondragover="handleCellDragOver(event)" 
-                        ondragleave="handleCellDragLeave(event)" 
-                        ondrop="handleCellDrop(event)"
-                        onclick="handleCellClick(this)">
+            return `<td class="droppable-cell" data-row="${rowIdx}" data-col="${colKey}" ondragover="handleCellDragOver(event)" ondragleave="handleCellDragLeave(event)" ondrop="handleCellDrop(event)" onclick="handleCellClick(this)">
                         <span class="time-pill" style="color: #94a3b8; border-style: dashed; background: #f8fafc;">--</span>
                     </td>`;
         }
 
-        // RULE 3: Filled slot with value
-        return `<td class="droppable-cell"
-                    data-row="${rowIdx}" 
-                    data-col="${colKey}"
-                    ondragover="handleCellDragOver(event)" 
-                    ondragleave="handleCellDragLeave(event)" 
-                    ondrop="handleCellDrop(event)"
-                    onclick="handleCellClick(this)">
-                    <span 
-                        class="time-pill" 
-                        draggable="true" 
-                        data-row="${rowIdx}" 
-                        data-col="${colKey}"
-                        ondragstart="handleDragStart(event)">${timeVal}</span>
+        return `<td class="droppable-cell" data-row="${rowIdx}" data-col="${colKey}" ondragover="handleCellDragOver(event)" ondragleave="handleCellDragLeave(event)" ondrop="handleCellDrop(event)" onclick="handleCellClick(this)">
+                    <span class="time-pill" draggable="true" data-row="${rowIdx}" data-col="${colKey}" ondragstart="handleDragStart(event)">${timeVal}</span>
                 </td>`;
     }
 
-    // -----------------------------------------------------------------
-    // DUSTBIN HANDLERS
-    // -----------------------------------------------------------------
     function handleTrashDragOver(e) {
         e.preventDefault();
         document.getElementById('trashZone').classList.add('drag-hover');
@@ -1469,7 +1291,7 @@ function hideToast() {
 
     function handleTrashClick() {
         if (!swapSource) {
-            alert("Click on any time block in the table or tray first, then click this dustbin to throw it away (or drag it here).");
+            showToast("Select any time block first, then click the dustbin to remove it.");
             return;
         }
 
@@ -1510,7 +1332,6 @@ function hideToast() {
         const oldVal = record[colKey];
         record[colKey] = chosenTime;
 
-        // Chronology Validation Check
         const check = isValidChronology(record);
         if (!check.valid) {
             record[colKey] = oldVal;
@@ -1525,9 +1346,6 @@ function hideToast() {
         renderEmployeeTable();
     }
 
-    // -----------------------------------------------------------------
-    // DRAG & DROP AND CLICK-TO-SWAP / CLICK-TO-PLACE
-    // -----------------------------------------------------------------
     function handleDragStart(e) {
         const row = e.target.getAttribute('data-row');
         const col = e.target.getAttribute('data-col');
@@ -1543,8 +1361,7 @@ function hideToast() {
     }
 
     function handleCellDragLeave(e) {
-        const cell = e.currentTarget;
-        cell.classList.remove('drag-over');
+        e.currentTarget.classList.remove('drag-over');
     }
 
     function handleCellDrop(e) {
@@ -1553,7 +1370,7 @@ function hideToast() {
         cell.classList.remove('drag-over');
 
         if (cell.classList.contains('cell-locked')) {
-            showToast("This day is marked as an off-day. You cannot add punches to it.");
+            showToast("This day is an off-day. You cannot assign punches to it.");
             return;
         }
 
@@ -1563,13 +1380,11 @@ function hideToast() {
 
         if (!sourceData || targetRow === null || !targetCol) return;
 
-        // Dropping from New Created Tray
         if (sourceData.type === 'new-created') {
             const targetRecord = globalData[targetRow];
             const oldVal = targetRecord[targetCol];
             targetRecord[targetCol] = sourceData.timeVal;
 
-            // Chronology Validation Check
             const check = isValidChronology(targetRecord);
             if (!check.valid) {
                 targetRecord[targetCol] = oldVal;
@@ -1588,7 +1403,6 @@ function hideToast() {
             return;
         }
 
-        // Dragging within table
         if (sourceData.row !== undefined && sourceData.col) {
             executeSwap(Number(sourceData.row), sourceData.col, targetRow, targetCol);
         }
@@ -1601,13 +1415,11 @@ function hideToast() {
         const col = cell.getAttribute('data-col');
         const pill = cell.querySelector('.time-pill');
 
-        // Case A: Placing a newly created block into a cell by clicking
         if (swapSource && swapSource.type === 'new-created') {
             const targetRecord = globalData[row];
             const oldVal = targetRecord[col];
             targetRecord[col] = swapSource.timeVal;
 
-            // Chronology Validation Check
             const check = isValidChronology(targetRecord);
             if (!check.valid) {
                 targetRecord[col] = oldVal;
@@ -1627,7 +1439,6 @@ function hideToast() {
             return;
         }
 
-        // Case B: Table-to-table click swap
         if (!swapSource) {
             if (!pill || pill.innerText === "--") return;
             swapSource = { row, col, pill };
@@ -1647,7 +1458,7 @@ function hideToast() {
 
     function executeSwap(sourceRow, sourceCol, targetRow, targetCol) {
         if (sourceRow !== targetRow) {
-            showToast("Please exchange time punches within the same date row.");
+            showToast("Please swap punches within the same date row.");
             return;
         }
 
@@ -1658,7 +1469,6 @@ function hideToast() {
         record[sourceCol] = valTarget;
         record[targetCol] = valSource;
 
-        // Chronology Validation Check
         const check = isValidChronology(record);
         if (!check.valid) {
             record[sourceCol] = valSource;
@@ -1681,22 +1491,17 @@ function hideToast() {
                 body: JSON.stringify({ records: updatedRecords })
             });
         } catch (e) {
-            console.error("Failed to sync manual punch update:", e);
+            console.error("Backend sync failed:", e);
         }
     }
 
-    // -----------------------------------------------------------------
-    // TABLE RENDERING
-    // -----------------------------------------------------------------
     function renderEmployeeTable() {
         const dropdown = document.getElementById('empDropdown');
         const selectedName = dropdown.value;
         const tbody = document.getElementById('tableBody');
         tbody.innerHTML = '';
 
-        if (!selectedName || selectedName === 'No matching employees') {
-            return;
-        }
+        if (!selectedName || selectedName === 'No matching employees') return;
 
         globalData.forEach((r, idx) => {
             if (r.Name !== selectedName) return;
@@ -1706,7 +1511,6 @@ function hideToast() {
             const isSunday = (status === "Sunday");
             const isOffday = isRowOffDay(status) && (r["Clock In"] === "--" && r["Clock Out"] === "--");
 
-            // MERGED ROW DISPLAY: Sunday or Off-Day
             if (isSunday || isOffday) {
                 tr.classList.add("row-merged-banner");
                 const bannerTitle = isSunday ? "Sunday" : status.toUpperCase();
@@ -1718,43 +1522,29 @@ function hideToast() {
                 return;
             }
 
-            // REGULAR WORKING DAY DISPLAY
             let badge = `<span class="badge-ok">Normal</span>`;
             if (status === "Absent") {
-                tr.classList.add("row-absent");
-                badge = `<span class="badge-absent">Absent</span>`;
+                badge = `<span class="badge badge-absent">Absent</span>`;
             } else if (status.includes("Holiday")) {
-                tr.classList.add("row-holiday");
-                badge = `<span class="badge-holiday">${status}</span>`;
+                badge = `<span class="badge badge-holiday">${status}</span>`;
             } else if (status.includes("Annual Leave")) {
-                badge = `<span class="badge-leave">${status}</span>`;
+                badge = `<span class="badge badge-leave">${status}</span>`;
             } else if (status.includes("MC")) {
-                badge = `<span class="badge-mc">${status}</span>`;
+                badge = `<span class="badge badge-mc">${status}</span>`;
             } else if (status.includes("Team A off day")) {
-                badge = `<span class="badge-teama">${status}</span>`;
+                badge = `<span class="badge badge-teama">${status}</span>`;
             } else if (status.includes("Team B off day")) {
-                badge = `<span class="badge-teamb">${status}</span>`;
+                badge = `<span class="badge badge-teamb">${status}</span>`;
             } else if (status.startsWith("Saturday (Half Day)")) {
-                badge = `<span class="badge-sat">${status}</span>`;
+                badge = `<span class="badge badge-sat">${status}</span>`;
             } else if (!status.startsWith("Normal")) {
-                badge = `<span class="badge-alert">${status}</span>`;
+                badge = `<span class="badge badge-alert">${status}</span>`;
             }
 
-            const lateWorkCell = r["Late to Work"] !== "--" 
-                ? `<span class="badge-late">${r["Late to Work"]}</span>` 
-                : "--";
-
-            const lateLunchCell = r["Late Time (Lunch)"] !== "--" 
-                ? `<span class="badge-late">${r["Late Time (Lunch)"]}</span>` 
-                : "--";
-
-            const totalLateCell = r["Total Late Time"] !== "--" 
-                ? `<span class="badge-totallate">${r["Total Late Time"]}</span>` 
-                : "--";
-
-            const earlyLeaveCell = r["Early Leave"] !== "--" 
-                ? `<span class="badge-early">${r["Early Leave"]}</span>` 
-                : "--";
+            const lateWorkCell = r["Late to Work"] !== "--" ? `<span class="badge badge-late">${r["Late to Work"]}</span>` : "--";
+            const lateLunchCell = r["Late Time (Lunch)"] !== "--" ? `<span class="badge badge-late">${r["Late Time (Lunch)"]}</span>` : "--";
+            const totalLateCell = r["Total Late Time"] !== "--" ? `<span class="badge badge-totallate">${r["Total Late Time"]}</span>` : "--";
+            const earlyLeaveCell = r["Early Leave"] !== "--" ? `<span class="badge badge-early">${r["Early Leave"]}</span>` : "--";
 
             tr.innerHTML = `
                 <td><strong>${r.Date}</strong></td>
@@ -1779,6 +1569,7 @@ function hideToast() {
     function downloadExcel() {
         window.location.href = '/api/download';
     }
-        </script>
-    </body>
+</script>
+
+</body>
 </html>
