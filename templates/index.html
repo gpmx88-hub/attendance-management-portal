@@ -227,45 +227,98 @@
             color: #64748b;
         }
 
-        .action-bar {
+        /* ------------------------------------------------------------- */
+        /* Dedicated Workshop: Block Creator & Dustbin Space              */
+        /* ------------------------------------------------------------- */
+        .workshop-panel {
             display: flex;
-            gap: 15px;
-            align-items: center;
-            margin-bottom: 15px;
+            gap: 20px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+            align-items: stretch;
             flex-wrap: wrap;
-            justify-content: space-between;
         }
 
-        .search-row {
+        .workshop-create-section {
+            flex: 2;
+            min-width: 320px;
             display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-input {
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-            width: 240px;
-        }
-
-        /* Trash Dustbin Zone */
-        .trash-dropzone {
-            display: inline-flex;
-            align-items: center;
+            flex-direction: column;
             gap: 8px;
+        }
+
+        .workshop-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .time-builder-input {
+            padding: 6px 12px;
+            font-size: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-weight: 600;
+            outline: none;
+            width: 140px;
+            text-align: center;
+        }
+
+        .time-builder-input:focus {
+            border-color: var(--primary);
+            background: #ffffff;
+        }
+
+        .created-blocks-tray {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 42px;
+            padding: 6px 10px;
+            background: #ffffff;
+            border: 1px dashed #94a3b8;
+            border-radius: 6px;
+            align-items: center;
+        }
+
+        .tray-placeholder {
+            font-size: 12px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .workshop-trash-section {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .trash-dropzone {
+            width: 100%;
+            height: 100%;
+            min-height: 75px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
             background: #fee2e2;
             color: #b91c1c;
             border: 2px dashed #f87171;
-            padding: 8px 16px;
             border-radius: 8px;
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
             user-select: none;
+            text-align: center;
+            padding: 8px;
         }
 
         .trash-dropzone:hover {
@@ -277,7 +330,23 @@
             background: #ef4444 !important;
             color: #ffffff !important;
             border-color: #991b1b !important;
-            transform: scale(1.05);
+            transform: scale(1.02);
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            width: 240px;
         }
 
         table {
@@ -412,7 +481,6 @@
             font-weight: 600;
         }
 
-        /* Large Drop Zone Table Cells */
         td.droppable-cell {
             padding: 4px;
             cursor: pointer;
@@ -431,16 +499,10 @@
             outline-offset: -2px;
         }
 
-        .cell-content-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            width: 100%;
-        }
-
         .time-pill {
-            flex: 1;
+            display: block;
+            width: calc(100% - 12px);
+            margin: 0 auto;
             padding: 6px 4px;
             border-radius: 6px;
             background: #ffffff;
@@ -458,6 +520,15 @@
             cursor: grabbing;
         }
 
+        .time-pill.time-pill-new {
+            width: auto;
+            min-width: 70px;
+            background: #eff6ff;
+            border: 1px solid #93c5fd;
+            color: #1d4ed8;
+            padding: 4px 10px;
+        }
+
         .time-pill.selected-swap {
             border-color: #ea580c !important;
             background: #ffedd5 !important;
@@ -465,34 +536,10 @@
             box-shadow: 0 0 0 2px #f97316;
         }
 
-        .btn-trash-inline {
-            background: transparent;
-            border: none;
-            color: #94a3b8;
-            font-size: 13px;
-            cursor: pointer;
-            padding: 2px;
-            border-radius: 4px;
-            transition: color 0.15s;
-        }
-
-        .btn-trash-inline:hover {
-            color: #dc2626;
-            background: #fee2e2;
-        }
-
-        /* Input and Dropdown for Empty Slots */
-        .slot-inputs-row {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            width: 100%;
-        }
-
         .empty-slot-select {
             width: 100%;
-            padding: 4px 2px;
-            font-size: 10.5px;
+            padding: 5px 2px;
+            font-size: 11px;
             font-weight: 600;
             color: #475569;
             border: 1px dashed #94a3b8;
@@ -509,9 +556,9 @@
             color: #1d4ed8;
         }
 
-        .manual-time-input {
-            width: calc(100% - 10px);
-            padding: 3px 4px;
+        .manual-sat-input {
+            width: calc(100% - 12px);
+            padding: 4px;
             font-size: 11px;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
@@ -522,7 +569,7 @@
             background: #ffffff;
         }
 
-        .manual-time-input:focus {
+        .manual-sat-input:focus {
             border-color: #2563eb;
             background: #f0fdf4;
         }
@@ -643,7 +690,6 @@
                     </div>
                 </div>
 
-                <!-- 3-Step Special Day Selector Bar -->
                 <div>
                     <label style="display: block; margin-bottom: 6px;">Add Special Day (Holiday / Leave / MC / Team Off):</label>
                     <div class="special-day-builder">
@@ -706,28 +752,44 @@
 
         <!-- Interactive Move Tip -->
         <div class="tip-banner">
-            💡 <strong>Interactive Adjustments:</strong> Drag any punch to exchange positions, drop it onto the <strong>🗑️ Trash Bin</strong> to delete it, or type directly into empty input boxes. On Saturdays, break and multiple columns offer direct manual entry without peer dropdowns.
+            💡 <strong>Time Workshop:</strong> Type a timestamp (or pick one) and click <strong>Create Block</strong>, then drag it directly into any table cell. Drag any unwanted block—from the table or tray—into the <strong>🗑️ Dustbin</strong> to remove it.
         </div>
 
-        <!-- Action & Search Row with Trash Bin Zone -->
+        <!-- WORKSHOP: CREATE SPACE & DUSTBIN -->
+        <div class="workshop-panel">
+            <!-- 1. Create Space -->
+            <div class="workshop-create-section">
+                <div class="workshop-input-row">
+                    <label style="font-size: 13px; font-weight: bold; color: #334155;">✨ Time Block Creator:</label>
+                    <input type="time" id="newTimePicker" step="1" class="time-builder-input" value="09:00:00">
+                    <button type="button" class="btn" onclick="createNewTimeBlock()">+ Create Block</button>
+                </div>
+                <div id="createdBlocksTray" class="created-blocks-tray">
+                    <span class="tray-placeholder" id="trayPlaceholder">Created blocks appear here. Drag them anywhere into the table!</span>
+                </div>
+            </div>
+
+            <!-- 2. Dustbin Space -->
+            <div class="workshop-trash-section">
+                <div id="trashZone" class="trash-dropzone" 
+                     ondragover="handleTrashDragOver(event)" 
+                     ondragleave="handleTrashDragLeave(event)" 
+                     ondrop="handleTrashDrop(event)"
+                     onclick="handleTrashClick()"
+                     title="Drag any time block here to throw it away, or select a time block and click here">
+                    <span style="font-size: 22px;">🗑️</span>
+                    <span>Dustbin (Throw Away)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Row -->
         <div class="action-bar">
-            <div class="search-row">
-                <label for="searchInput"><strong>Search:</strong></label>
-                <input type="text" id="searchInput" class="search-input" placeholder="Type name prefix..." oninput="onSearchType()">
+            <label for="searchInput"><strong>Search:</strong></label>
+            <input type="text" id="searchInput" class="search-input" placeholder="Type name prefix..." oninput="onSearchType()">
 
-                <label for="empDropdown"><strong>Select:</strong></label>
-                <select id="empDropdown" onchange="renderEmployeeTable()"></select>
-            </div>
-
-            <!-- Trash Dustbin Zone -->
-            <div id="trashZone" class="trash-dropzone" 
-                 ondragover="handleTrashDragOver(event)" 
-                 ondragleave="handleTrashDragLeave(event)" 
-                 ondrop="handleTrashDrop(event)"
-                 onclick="handleTrashClick()"
-                 title="Drag any time block here to throw it away, or select a time block and click here">
-                🗑️ Throw Time Block (Dustbin)
-            </div>
+            <label for="empDropdown"><strong>Select:</strong></label>
+            <select id="empDropdown" onchange="renderEmployeeTable()"></select>
         </div>
 
         <!-- Table View -->
@@ -783,6 +845,7 @@
     let employeeNames = [];
     let specialEntries = [];
     let swapSource = null;
+    let createdBlockCounter = 0;
 
     function openTutorialModal() {
         document.getElementById('tutorialModal').classList.add('active');
@@ -1033,7 +1096,7 @@
         const secBin = parseTimeSeconds(record["Break In (Back)"]);
         const secCout = parseTimeSeconds(record["Clock Out"]);
 
-        // 1. Late to Work (Start: 09:00:00 -> 32400)
+        // 1. Late to Work (Start: 09:00:00 -> 32400 sec)
         let lateWorkMins = 0;
         if (secCin !== null) {
             if (secCin > 32400) {
@@ -1111,7 +1174,58 @@
     }
 
     // -----------------------------------------------------------------
-    // CELL BUILDER (Peer Dropdown + Manual Input + Saturday Rules)
+    // TIME WORKSHOP: CREATING NEW TIME BLOCKS
+    // -----------------------------------------------------------------
+    function createNewTimeBlock() {
+        const picker = document.getElementById('newTimePicker');
+        let timeVal = picker.value.trim();
+        if (!timeVal) return;
+
+        // Ensure HH:MM:SS format
+        if (timeVal.split(":").length === 2) {
+            timeVal += ":00";
+        }
+
+        const tray = document.getElementById('createdBlocksTray');
+        const placeholder = document.getElementById('trayPlaceholder');
+        if (placeholder) placeholder.style.display = 'none';
+
+        createdBlockCounter++;
+        const blockId = `tray_block_${createdBlockCounter}`;
+
+        const pill = document.createElement('span');
+        pill.className = 'time-pill time-pill-new';
+        pill.id = blockId;
+        pill.draggable = true;
+        pill.innerText = timeVal;
+        pill.setAttribute('data-type', 'new-created');
+        pill.setAttribute('data-time', timeVal);
+
+        pill.ondragstart = function(e) {
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                type: 'new-created',
+                timeVal: timeVal,
+                elementId: blockId
+            }));
+            pill.classList.add('selected-swap');
+        };
+
+        pill.onclick = function() {
+            if (swapSource && swapSource.elementId === blockId) {
+                pill.classList.remove('selected-swap');
+                swapSource = null;
+            } else {
+                if (swapSource && swapSource.pill) swapSource.pill.classList.remove('selected-swap');
+                swapSource = { type: 'new-created', timeVal, pill, elementId: blockId };
+                pill.classList.add('selected-swap');
+            }
+        };
+
+        tray.appendChild(pill);
+    }
+
+    // -----------------------------------------------------------------
+    // TABLE CELL BUILDER (Peer Dropdown + Saturday Input Box)
     // -----------------------------------------------------------------
     function makeCell(timeVal, rowIdx, colKey) {
         const isEmpty = (!timeVal || timeVal === "--");
@@ -1120,7 +1234,7 @@
 
         // 1. EMPTY SLOT LOGIC
         if (isEmpty) {
-            // SPECIAL RULE: Saturday for break time and multiple punch -> Manual Input ONLY (No Dropdown)
+            // SATURDAY SPECIAL CASE: Break time & multiple time use input box only
             const isSaturdaySpecialCol = isSaturday && (colKey.includes("Break") || colKey.includes("Multiple"));
 
             if (isSaturdaySpecialCol) {
@@ -1130,15 +1244,15 @@
                             ondragover="handleCellDragOver(event)" 
                             ondragleave="handleCellDragLeave(event)" 
                             ondrop="handleCellDrop(event)">
-                            <input type="text" class="manual-time-input" 
+                            <input type="text" class="manual-sat-input" 
                                    placeholder="HH:MM:SS" 
-                                   title="Enter manual time and press Enter"
-                                   onkeydown="handleManualKey(event, ${rowIdx}, '${colKey}')"
-                                   onblur="handleManualBlur(this, ${rowIdx}, '${colKey}')">
+                                   title="Enter Saturday punch and press Enter"
+                                   onkeydown="handleSatInputKey(event, ${rowIdx}, '${colKey}')"
+                                   onblur="handleSatInputBlur(this, ${rowIdx}, '${colKey}')">
                         </td>`;
             }
 
-            // Standard Day or Saturday Clock In/Out: Peer Dropdown + Manual Input Option
+            // Standard Day or Saturday Clock In/Out: Peer Dropdown
             const currentDate = record.Date;
             const activeEmp = record.Name;
             let peerOptions = '';
@@ -1151,30 +1265,35 @@
                 }
             });
 
+            if (peerOptions) {
+                return `<td class="droppable-cell"
+                            data-row="${rowIdx}" 
+                            data-col="${colKey}"
+                            ondragover="handleCellDragOver(event)" 
+                            ondragleave="handleCellDragLeave(event)" 
+                            ondrop="handleCellDrop(event)">
+                            <select class="empty-slot-select" 
+                                    onchange="copyPeerTime(this, ${rowIdx}, '${colKey}')"
+                                    title="Choose colleague to sync ${colKey}">
+                                <option value="" selected>-- (Copy from...)</option>
+                                ${peerOptions}
+                            </select>
+                        </td>`;
+            }
+
+            // If no peer option exists, standard empty dashed box
             return `<td class="droppable-cell"
                         data-row="${rowIdx}" 
                         data-col="${colKey}"
                         ondragover="handleCellDragOver(event)" 
                         ondragleave="handleCellDragLeave(event)" 
-                        ondrop="handleCellDrop(event)">
-                        <div class="slot-inputs-row">
-                            <input type="text" class="manual-time-input" 
-                                   placeholder="Type HH:MM" 
-                                   title="Enter time and press Enter"
-                                   onkeydown="handleManualKey(event, ${rowIdx}, '${colKey}')"
-                                   onblur="handleManualBlur(this, ${rowIdx}, '${colKey}')">
-                            ${peerOptions ? `
-                            <select class="empty-slot-select" 
-                                    onchange="copyPeerTime(this, ${rowIdx}, '${colKey}')"
-                                    title="Or select colleague to copy">
-                                <option value="" selected>-- Peer Sync</option>
-                                ${peerOptions}
-                            </select>` : ''}
-                        </div>
+                        ondrop="handleCellDrop(event)"
+                        onclick="handleCellClick(this)">
+                        <span class="time-pill" style="color: #94a3b8; border-style: dashed; background: #f8fafc;">--</span>
                     </td>`;
         }
 
-        // 2. FILLED SLOT WITH VALUE (Draggable + Inline Throw Away Button)
+        // 2. FILLED SLOT WITH VALUE (Draggable block)
         return `<td class="droppable-cell"
                     data-row="${rowIdx}" 
                     data-col="${colKey}"
@@ -1182,22 +1301,17 @@
                     ondragleave="handleCellDragLeave(event)" 
                     ondrop="handleCellDrop(event)"
                     onclick="handleCellClick(this)">
-                    <div class="cell-content-wrapper">
-                        <span 
-                            class="time-pill" 
-                            draggable="true" 
-                            data-row="${rowIdx}" 
-                            data-col="${colKey}"
-                            ondragstart="handleDragStart(event)">${timeVal}</span>
-                        <button type="button" class="btn-trash-inline" 
-                                onclick="throwAwaySpecific(event, ${rowIdx}, '${colKey}')"
-                                title="Throw this time block away">🗑️</button>
-                    </div>
+                    <span 
+                        class="time-pill" 
+                        draggable="true" 
+                        data-row="${rowIdx}" 
+                        data-col="${colKey}"
+                        ondragstart="handleDragStart(event)">${timeVal}</span>
                 </td>`;
     }
 
     // -----------------------------------------------------------------
-    // DUSTBIN / TRASH CAN HANDLERS
+    // DUSTBIN / TRASH CAN (Handles both Table Blocks & Created Tray Blocks)
     // -----------------------------------------------------------------
     function handleTrashDragOver(e) {
         e.preventDefault();
@@ -1212,24 +1326,36 @@
         e.preventDefault();
         document.getElementById('trashZone').classList.remove('drag-hover');
         const sourceData = JSON.parse(e.dataTransfer.getData('text/plain'));
-        if (sourceData && sourceData.row !== undefined && sourceData.col) {
-            clearTimeSlot(Number(sourceData.row), sourceData.col);
+
+        if (sourceData) {
+            if (sourceData.type === 'new-created') {
+                // Remove from tray
+                const el = document.getElementById(sourceData.elementId);
+                if (el) el.remove();
+                checkTrayEmpty();
+            } else if (sourceData.row !== undefined && sourceData.col) {
+                // Clear table block
+                clearTimeSlot(Number(sourceData.row), sourceData.col);
+            }
         }
     }
 
     function handleTrashClick() {
-        if (swapSource) {
-            clearTimeSlot(swapSource.row, swapSource.col);
-            swapSource.pill.classList.remove('selected-swap');
-            swapSource = null;
-        } else {
-            alert("Click on any time block to select it first, then click this dustbin to throw it away (or drag it here directly).");
+        if (!swapSource) {
+            alert("Click on any time block in the table or tray first, then click this dustbin to throw it away (or drag it here).");
+            return;
         }
-    }
 
-    function throwAwaySpecific(event, rowIdx, colKey) {
-        event.stopPropagation();
-        clearTimeSlot(rowIdx, colKey);
+        if (swapSource.type === 'new-created') {
+            const el = document.getElementById(swapSource.elementId);
+            if (el) el.remove();
+            checkTrayEmpty();
+        } else {
+            clearTimeSlot(swapSource.row, swapSource.col);
+        }
+
+        if (swapSource.pill) swapSource.pill.classList.remove('selected-swap');
+        swapSource = null;
     }
 
     function clearTimeSlot(rowIdx, colKey) {
@@ -1241,16 +1367,25 @@
         renderEmployeeTable();
     }
 
-    // -----------------------------------------------------------------
-    // MANUAL INPUT HANDLERS
-    // -----------------------------------------------------------------
-    function handleManualKey(event, rowIdx, colKey) {
-        if (event.key === "Enter") {
-            event.target.blur();
+    function checkTrayEmpty() {
+        const tray = document.getElementById('createdBlocksTray');
+        const pills = tray.querySelectorAll('.time-pill-new');
+        if (pills.length === 0) {
+            const placeholder = document.getElementById('trayPlaceholder');
+            if (placeholder) placeholder.style.display = 'inline';
         }
     }
 
-    function handleManualBlur(inputEl, rowIdx, colKey) {
+    // -----------------------------------------------------------------
+    // SATURDAY INPUT HANDLERS
+    // -----------------------------------------------------------------
+    function handleSatInputKey(e, rowIdx, colKey) {
+        if (e.key === "Enter") {
+            e.target.blur();
+        }
+    }
+
+    function handleSatInputBlur(inputEl, rowIdx, colKey) {
         const val = inputEl.value.trim();
         if (!val) return;
         const normalized = normalizeTimeInput(val);
@@ -1275,7 +1410,7 @@
     }
 
     // -----------------------------------------------------------------
-    // DRAG & DROP AND CLICK-TO-SWAP ENGINE
+    // DRAG & DROP AND CLICK-TO-SWAP / CLICK-TO-PLACE
     // -----------------------------------------------------------------
     function handleDragStart(e) {
         const row = e.target.getAttribute('data-row');
@@ -1301,11 +1436,31 @@
         cell.classList.remove('drag-over');
 
         const sourceData = JSON.parse(e.dataTransfer.getData('text/plain'));
-        const targetRow = cell.getAttribute('data-row');
+        const targetRow = Number(cell.getAttribute('data-row'));
         const targetCol = cell.getAttribute('data-col');
 
-        if (sourceData && targetRow !== null && targetCol !== null) {
-            executeSwap(Number(sourceData.row), sourceData.col, Number(targetRow), targetCol);
+        if (!sourceData || targetRow === null || !targetCol) return;
+
+        // If dragging from New Created Tray
+        if (sourceData.type === 'new-created') {
+            const targetRecord = globalData[targetRow];
+            targetRecord[targetCol] = sourceData.timeVal;
+
+            // Remove block from tray
+            const el = document.getElementById(sourceData.elementId);
+            if (el) el.remove();
+            checkTrayEmpty();
+
+            recalculateRow(targetRecord);
+            syncChangeToBackend(globalData);
+            refreshStats();
+            renderEmployeeTable();
+            return;
+        }
+
+        // Dragging within table
+        if (sourceData.row !== undefined && sourceData.col) {
+            executeSwap(Number(sourceData.row), sourceData.col, targetRow, targetCol);
         }
     }
 
@@ -1314,9 +1469,26 @@
         const col = cell.getAttribute('data-col');
         const pill = cell.querySelector('.time-pill');
 
-        if (!pill) return; // Ignore clicks on input boxes
+        // Case A: Placing a newly created block into a cell by clicking
+        if (swapSource && swapSource.type === 'new-created') {
+            const targetRecord = globalData[row];
+            targetRecord[col] = swapSource.timeVal;
 
+            const el = document.getElementById(swapSource.elementId);
+            if (el) el.remove();
+            checkTrayEmpty();
+
+            swapSource = null;
+            recalculateRow(targetRecord);
+            syncChangeToBackend(globalData);
+            refreshStats();
+            renderEmployeeTable();
+            return;
+        }
+
+        // Case B: Table-to-table click swap
         if (!swapSource) {
+            if (!pill || pill.innerText === "--") return;
             swapSource = { row, col, pill };
             pill.classList.add('selected-swap');
         } else {
