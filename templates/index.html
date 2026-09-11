@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Attendance Portal</title>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Company Attendance Portal</title>
+        <style>
         :root {
             --primary: #1F4E79;
             --accent: #2c6cb0;
@@ -637,199 +637,293 @@
             border: none;
         }
 
+/* Custom UI Toast Notification */
+.app-toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: #ffffff;
+    color: #1e293b;
+    border-left: 5px solid #ef4444;
+    padding: 14px 18px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 2000;
+    font-size: 13px;
+    font-weight: 500;
+    max-width: 420px;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    pointer-events: none;
+}
+
+.app-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.app-toast .toast-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.app-toast .toast-close {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #94a3b8;
+    margin-left: auto;
+    padding: 0 4px;
+    line-height: 1;
+}
+.app-toast .toast-close:hover {
+    color: #334155;
+}
+
         .hidden {
             display: none;
         }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="header">
-        <div class="header-top">
-            <div style="flex: 1;"></div>
-            <h1 style="text-align: center; flex: 2;">Attendance Punch Card Portal</h1>
-            <div style="flex: 1; text-align: right;">
-                <button type="button" class="btn btn-guide" onclick="openTutorialModal()">📖 User Guide / Tutorial</button>
-            </div>
+        </style>
+    </head>
+    <body>
+        <!-- Toast Notification Element -->
+        <div id="appToast" class="app-toast">
+            <span class="toast-icon">⚠️</span>
+            <span id="appToastMessage">Notification message</span>
+            <button type="button" class="toast-close" onclick="hideToast()">×</button>
         </div>
-        <p>Work Start: <strong>09:00</strong> &nbsp;|&nbsp; Weekday End: <strong>18:00</strong> &nbsp;|&nbsp; Saturday End: <strong>13:30</strong> &nbsp;|&nbsp; Lunch: <strong>1h 10m</strong></p>
-    </div>
-
-    <!-- Step 1: Upload File & Calendar Settings -->
-    <div class="card">
-        <div class="upload-section">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <label><strong>Select Punch File:</strong></label>
-                <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="autoProcess()">
-            </div>
-
-            <div class="calendar-config">
-                <div class="config-row">
-                    <div>
-                        <label>Month Start Date:</label>
-                        <input type="date" id="startDateInput" onchange="onDateRangeChange()">
-                    </div>
-                    <div>
-                        <label>Month End Date:</label>
-                        <input type="date" id="endDateInput" onchange="onDateRangeChange()">
+        <div class="container">
+            <div class="header">
+                <div class="header-top">
+                    <div style="flex: 1;"></div>
+                    <h1 style="text-align: center; flex: 2;">Attendance Punch Card Portal</h1>
+                    <div style="flex: 1; text-align: right;">
+                        <button type="button"
+                                class="btn btn-guide"
+                                onclick="openTutorialModal()">📖 User Guide / Tutorial</button>
                     </div>
                 </div>
-
-                <div>
-                    <label style="display: block; margin-bottom: 6px;">Add Special Day (Holiday / Leave / MC / Team Off):</label>
-                    <div class="special-day-builder">
-                        <label>1. Date:</label>
-                        <input type="date" id="specialDatePicker">
-
-                        <label>2. Type:</label>
-                        <select id="specialTypeSelect">
-                            <option value="Holiday">Holiday</option>
-                            <option value="Annual Leave">Annual Leave</option>
-                            <option value="MC">MC</option>
-                            <option value="Team A off day">Team A off day</option>
-                            <option value="Team B off day">Team B off day</option>
-                        </select>
-
-                        <label>3. Apply To:</label>
-                        <select id="specialTargetSelect">
-                            <option value="current">Current Selected Person Only</option>
-                            <option value="all">All Employees (Company-Wide)</option>
-                        </select>
-
-                        <button type="button" class="btn" onclick="confirmSpecialDay()">Confirm</button>
+                <p>Work Start: <strong>09:00</strong> &nbsp;|&nbsp; Weekday End: <strong>18:00</strong> &nbsp;|&nbsp; Saturday End: <strong>13:30</strong> &nbsp;|&nbsp; Lunch: <strong>1h 10m</strong></p>
+            </div>
+            <!-- Step 1: Upload File & Calendar Settings -->
+            <div class="card">
+                <div class="upload-section">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <label><strong>Select Punch File:</strong></label>
+                        <input type="file"
+                               id="fileInput"
+                               accept=".xlsx, .xls"
+                               onchange="autoProcess()">
                     </div>
-                    
-                    <div id="holidayTags" class="holiday-tags-container">
-                        <span style="font-size: 12px; color: #94a3b8; font-style: italic;" id="noHolidaysText">No special dates added yet.</span>
+                    <div class="calendar-config">
+                        <div class="config-row">
+                            <div>
+                                <label>Month Start Date:</label>
+                                <input type="date" id="startDateInput" onchange="onDateRangeChange()">
+                            </div>
+                            <div>
+                                <label>Month End Date:</label>
+                                <input type="date" id="endDateInput" onchange="onDateRangeChange()">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display: block;
+                                          margin-bottom: 6px">Add Special Day (Holiday / Leave / MC / Team Off):</label>
+                            <div class="special-day-builder">
+                                <label>1. Date:</label>
+                                <input type="date" id="specialDatePicker">
+                                <label>2. Type:</label>
+                                <select id="specialTypeSelect">
+                                    <option value="Holiday">Holiday</option>
+                                    <option value="Annual Leave">Annual Leave</option>
+                                    <option value="MC">MC</option>
+                                    <option value="Team A off day">Team A off day</option>
+                                    <option value="Team B off day">Team B off day</option>
+                                </select>
+                                <label>3. Apply To:</label>
+                                <select id="specialTargetSelect">
+                                    <option value="current">Current Selected Person Only</option>
+                                    <option value="all">All Employees (Company-Wide)</option>
+                                </select>
+                                <button type="button" class="btn" onclick="confirmSpecialDay()">Confirm</button>
+                            </div>
+                            <div id="holidayTags" class="holiday-tags-container">
+                                <span style="font-size: 12px;
+                                             color: #94a3b8;
+                                             font-style: italic"
+                                      id="noHolidaysText">No special dates added yet.</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Step 2: Dashboard & Preview -->
-    <div id="resultsCard" class="card hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-            <h2 style="margin: 0; color: var(--primary); font-size: 20px;">Monthly Overview</h2>
-            <button class="btn btn-success" onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-val" id="statEmployees">0</div>
-                <div class="stat-label">Total Employees</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-val" id="statWorkingDays">0</div>
-                <div class="stat-label">Total Calendar Days</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
-                <div class="stat-label">Total Absences</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-val" id="statAlerts" style="color: #b91c1c;">0</div>
-                <div class="stat-label">Punch Irregularities</div>
-            </div>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
-
-        <!-- Interactive Move Tip -->
-        <div class="tip-banner">
-            💡 <strong>Time Workshop:</strong> Pick/type a timestamp and click <strong>+ Create Block</strong>, then drag it directly into any table slot. Drag any unwanted block to the <strong>🗑️ Dustbin</strong>. Note: Off-days are locked, and timestamps must maintain chronological order.
-        </div>
-
-        <!-- WORKSHOP: CREATE SPACE & DUSTBIN -->
-        <div class="workshop-panel">
-            <div class="workshop-create-section">
-                <div class="workshop-input-row">
-                    <label style="font-size: 13px; font-weight: bold; color: #334155;">✨ Time Block Creator:</label>
-                    <input type="time" id="newTimePicker" step="1" class="time-builder-input" value="09:00:00">
-                    <button type="button" class="btn" onclick="createNewTimeBlock()">+ Create Block</button>
+            <!-- Step 2: Dashboard & Preview -->
+            <div id="resultsCard" class="card hidden">
+                <div style="display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            margin-bottom: 18px">
+                    <h2 style="margin: 0; color: var(--primary); font-size: 20px;">Monthly Overview</h2>
+                    <button class="btn btn-success"
+                            onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
                 </div>
-                <div id="createdBlocksTray" class="created-blocks-tray">
-                    <span class="tray-placeholder" id="trayPlaceholder">Created blocks appear here. Drag them into any work day!</span>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-val" id="statEmployees">0</div>
+                        <div class="stat-label">Total Employees</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="statWorkingDays">0</div>
+                        <div class="stat-label">Total Calendar Days</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
+                        <div class="stat-label">Total Absences</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-val" id="statAlerts" style="color: #b91c1c;">0</div>
+                        <div class="stat-label">Punch Irregularities</div>
+                    </div>
+                </div>
+                <hr style="border: 0;
+                           border-top: 1px solid var(--border);
+                           margin: 20px 0">
+                <!-- Interactive Move Tip -->
+                <div class="tip-banner">
+                    💡 <strong>Time Workshop:</strong> Pick/type a timestamp and click <strong>+ Create Block</strong>, then drag it directly into any table slot. Drag any unwanted block to the <strong>🗑️ Dustbin</strong>. Note: Off-days are locked, and timestamps must maintain chronological order.
+                </div>
+                <!-- WORKSHOP: CREATE SPACE & DUSTBIN -->
+                <div class="workshop-panel">
+                    <div class="workshop-create-section">
+                        <div class="workshop-input-row">
+                            <label style="font-size: 13px;
+                                          font-weight: bold;
+                                          color: #334155">✨ Time Block Creator:</label>
+                            <input type="time"
+                                   id="newTimePicker"
+                                   step="1"
+                                   class="time-builder-input"
+                                   value="09:00:00">
+                            <button type="button" class="btn" onclick="createNewTimeBlock()">+ Create Block</button>
+                        </div>
+                        <div id="createdBlocksTray" class="created-blocks-tray">
+                            <span class="tray-placeholder"
+                                  id="trayPlaceholder">Created blocks appear here. Drag them into any work day!</span>
+                        </div>
+                    </div>
+                    <div class="workshop-trash-section">
+                        <div id="trashZone"
+                             class="trash-dropzone"
+                             ondragover="handleTrashDragOver(event)"
+                             ondragleave="handleTrashDragLeave(event)"
+                             ondrop="handleTrashDrop(event)"
+                             onclick="handleTrashClick()"
+                             title="Drag any time block here to throw it away, or select a time block and click here">
+                            <span style="font-size: 22px;">🗑️</span>
+                            <span>Dustbin (Throw Away)</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Filter Row -->
+                <div class="action-bar">
+                    <label for="searchInput"><strong>Search:</strong></label>
+                    <input type="text"
+                           id="searchInput"
+                           class="search-input"
+                           placeholder="Type name prefix..."
+                           oninput="onSearchType()">
+                    <label for="empDropdown"><strong>Select:</strong></label>
+                    <select id="empDropdown" onchange="renderEmployeeTable()"></select>
+                </div>
+                <!-- Table View -->
+                <div style="overflow-x: auto;">
+                    <table id="attendanceTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th style="background-color: #1e3a8a;">Clock In ⇄</th>
+                                <th style="background-color: #1e3a8a;">Break Out ⇄</th>
+                                <th style="background-color: #1e3a8a;">Break In ⇄</th>
+                                <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
+                                <th>Lunch Duration</th>
+                                <th style="background-color: #2e5b88;">Late to Work</th>
+                                <th>Late Time (Lunch)</th>
+                                <th style="background-color: #b91c1c;">Total Late Time</th>
+                                <th style="background-color: #7a2048;">Early Leave</th>
+                                <th>Work Hours</th>
+                                <th>Status / Alert</th>
+                                <th style="background-color: #475569;">Multiple (Earlier) ⇄</th>
+                                <th style="background-color: #475569;">Multiple (Later) ⇄</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-            <div class="workshop-trash-section">
-                <div id="trashZone" class="trash-dropzone" 
-                     ondragover="handleTrashDragOver(event)" 
-                     ondragleave="handleTrashDragLeave(event)" 
-                     ondrop="handleTrashDrop(event)"
-                     onclick="handleTrashClick()"
-                     title="Drag any time block here to throw it away, or select a time block and click here">
-                    <span style="font-size: 22px;">🗑️</span>
-                    <span>Dustbin (Throw Away)</span>
+        </div>
+        <!-- Tutorial Modal Popup -->
+        <div id="tutorialModal"
+             class="modal-backdrop"
+             onclick="handleBackdropClick(event)">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <h3>📖 Attendance Portal Instructions & Tutorial</h3>
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
+                           target="_blank"
+                           style="color: #cbd5e1;
+                                  font-size: 13px;
+                                  text-decoration: underline">Open in New Tab ↗</a>
+                        <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">×</button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
+                        <p style="padding: 20px; text-align: center;">
+                            Your browser does not support inline PDFs.
+                            <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
+                               target="_blank"
+                               style="color: #2563eb;
+                                      font-weight: bold">Click here to download and view the tutorial PDF</a>.
+                        </p>
+                    </iframe>
                 </div>
             </div>
         </div>
-
-        <!-- Filter Row -->
-        <div class="action-bar">
-            <label for="searchInput"><strong>Search:</strong></label>
-            <input type="text" id="searchInput" class="search-input" placeholder="Type name prefix..." oninput="onSearchType()">
-
-            <label for="empDropdown"><strong>Select:</strong></label>
-            <select id="empDropdown" onchange="renderEmployeeTable()"></select>
-        </div>
-
-        <!-- Table View -->
-        <div style="overflow-x: auto;">
-            <table id="attendanceTable">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th style="background-color: #1e3a8a;">Clock In ⇄</th>
-                        <th style="background-color: #1e3a8a;">Break Out ⇄</th>
-                        <th style="background-color: #1e3a8a;">Break In ⇄</th>
-                        <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
-                        <th>Lunch Duration</th>
-                        <th style="background-color: #2e5b88;">Late to Work</th>
-                        <th>Late Time (Lunch)</th>
-                        <th style="background-color: #b91c1c;">Total Late Time</th>
-                        <th style="background-color: #7a2048;">Early Leave</th>
-                        <th>Work Hours</th>
-                        <th>Status / Alert</th>
-                        <th style="background-color: #475569;">Multiple (Earlier) ⇄</th>
-                        <th style="background-color: #475569;">Multiple (Later) ⇄</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<!-- Tutorial Modal Popup -->
-<div id="tutorialModal" class="modal-backdrop" onclick="handleBackdropClick(event)">
-    <div class="modal-window">
-        <div class="modal-header">
-            <h3>📖 Attendance Portal Instructions & Tutorial</h3>
-            <div style="display: flex; align-items: center; gap: 14px;">
-                <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf" target="_blank" style="color: #cbd5e1; font-size: 13px; text-decoration: underline;">Open in New Tab ↗</a>
-                <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">&times;</button>
-            </div>
-        </div>
-        <div class="modal-body">
-            <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
-                <p style="padding: 20px; text-align: center;">
-                    Your browser does not support inline PDFs. 
-                    <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf" target="_blank" style="color: #2563eb; font-weight: bold;">Click here to download and view the tutorial PDF</a>.
-                </p>
-            </iframe>
-        </div>
-    </div>
-</div>
-
-<script>
+        <script>
     let globalData = [];
     let employeeNames = [];
     let specialEntries = [];
     let swapSource = null;
     let createdBlockCounter = 0;
+    let toastTimer = null;
+    function showToast(message, isError = true) {
+    const toast = document.getElementById('appToast');
+    const msgEl = document.getElementById('appToastMessage');
+    
+    msgEl.innerText = message;
+    toast.style.borderLeftColor = isError ? '#ef4444' : '#10b981';
+    toast.querySelector('.toast-icon').innerText = isError ? '⚠️' : '✅';
+    
+    toast.classList.add('show');
+    
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        hideToast();
+    }, 4000); // Disappears automatically after 4 seconds
+}
+
+function hideToast() {
+    const toast = document.getElementById('appToast');
+    if (toast) toast.classList.remove('show');
+}
 
     const OFF_DAY_TYPES = ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"];
 
@@ -1381,7 +1475,7 @@
         if (!check.valid) {
             record[colKey] = oldVal;
             selectEl.value = "";
-            alert(check.message);
+            showToast(check.message);
             return;
         }
 
@@ -1419,7 +1513,7 @@
         cell.classList.remove('drag-over');
 
         if (cell.classList.contains('cell-locked')) {
-            alert("This day is marked as an off-day. You cannot add punches to it.");
+            showToast("This day is marked as an off-day. You cannot add punches to it.");
             return;
         }
 
@@ -1439,7 +1533,7 @@
             const check = isValidChronology(targetRecord);
             if (!check.valid) {
                 targetRecord[targetCol] = oldVal;
-                alert(check.message);
+                showToast(check.message);
                 return;
             }
 
@@ -1477,7 +1571,7 @@
             const check = isValidChronology(targetRecord);
             if (!check.valid) {
                 targetRecord[col] = oldVal;
-                alert(check.message);
+                showToast(check.message);
                 return;
             }
 
@@ -1513,7 +1607,7 @@
 
     function executeSwap(sourceRow, sourceCol, targetRow, targetCol) {
         if (sourceRow !== targetRow) {
-            alert("Please exchange time punches within the same date row.");
+            showToast("Please exchange time punches within the same date row.");
             return;
         }
 
@@ -1529,7 +1623,7 @@
         if (!check.valid) {
             record[sourceCol] = valSource;
             record[targetCol] = valTarget;
-            alert(check.message);
+            showToast(check.message);
             return;
         }
 
@@ -1630,7 +1724,6 @@
     function downloadExcel() {
         window.location.href = '/api/download';
     }
-</script>
-
-</body>
+        </script>
+    </body>
 </html>
