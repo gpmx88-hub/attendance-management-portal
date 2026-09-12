@@ -15,21 +15,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import holidays
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "super-secret-key-change-in-prod-2026")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "prod-session-key-attendance-2026")
 
-# Directory for user-isolated drafts
+# Directory for user-isolated drafts and game-style saves
 DRAFTS_DIR = os.path.join(os.path.dirname(__file__), "user_drafts")
 os.makedirs(DRAFTS_DIR, exist_ok=True)
 
-# User Credentials Store (Add team members here)
-# Passwords can be changed or stored as hashed strings
+# Admin & Staff Credentials Store
 USERS = {
-    "admin": generate_password_hash("jiaen123")
+    "admin": generate_password_hash("admin123"),
+    "hr_alice": generate_password_hash("alice2026"),
+    "hr_bob": generate_password_hash("bob2026")
 }
-#after add/deduct/change passsword remember update and push in terminal:
-#git add main.py
-#git commit -m "Update authorized user accounts and credentials"
-#git push origin main
 
 # Per-user active DataFrames in memory
 USER_DATAFRAMES = {}
@@ -70,9 +67,24 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def get_user_draft_path(username):
+def get_user_slots_file(username):
     safe_user = re.sub(r'[^a-zA-Z0-9_-]', '', username)
-    return os.path.join(DRAFTS_DIR, f"draft_{safe_user}.json")
+    return os.path.join(DRAFTS_DIR, f"{safe_user}_saveslots.json")
+
+def load_user_slots(username):
+    file_path = get_user_slots_file(username)
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+    return []
+
+def save_user_slots(username, slots):
+    file_path = get_user_slots_file(username)
+    with open(file_path, "w", encoding="utf-8") as f:
+        json.dump(slots, f, indent=2)
 
 def get_malaysia_holiday_name(d_obj):
     raw_name = MY_HOLIDAYS.get(d_obj)
@@ -179,12 +191,8 @@ def categorize_punches(raw_punch_list, is_saturday):
             assigned_punches.append(c_out)
 
     extra_punches = [p for p in punch_list if p not in assigned_punches] + close_duplicates
-    multi_earlier, multi_later = "--", "--"
-    if len(extra_punches) == 1:
-        multi_earlier = extra_punches[0]
-    elif len(extra_punches) >= 2:
-        multi_earlier = extra_punches[0]
-        multi_later = extra_punches[-1]
+    multi_earlier = extra_punches[0] if len(extra_punches) >= 1 else "--"
+    multi_later = extra_punches[-1] if len(extra_punches) >= 2 else "--"
 
     issues = []
     if is_saturday:
@@ -667,7 +675,6 @@ def api_process():
         raw_df = pd.read_excel(file, header=None)
         df_processed, detected_start, detected_end = process_time_card(raw_df, start_date, end_date, special_entries)
         
-        # User-isolated state
         current_user = session["user"]
         USER_DATAFRAMES[current_user] = df_processed
 
@@ -686,50 +693,84 @@ def api_update_records():
     if data and "records" in data:
         current_user = session["user"]
         USER_DATAFRAMES[current_user] = pd.DataFrame(data["records"])
-
-        # Auto-persist user's private draft to disk
-        draft_path = get_user_draft_path(current_user)
-        try:
-            with open(draft_path, "w", encoding="utf-8") as f:
-                json.dump({
-                    "savedAt": datetime.now().isoformat(),
-                    "user": current_user,
-                    "startDate": data.get("startDate", ""),
-                    "endDate": data.get("endDate", ""),
-                    "specialEntries": data.get("specialEntries", []),
-                    "records": data["records"]
-                }, f)
-        except Exception as err:
-            print("Draft file save error:", err)
-
         return jsonify({"status": "success"})
     return jsonify({"error": "No data received"}), 400
 
-@app.route("/api/get_user_draft", methods=["GET"])
+# --- Game-Style Save Slot Endpoints ---
+@app.route("/api/slots", methods=["GET"])
 @login_required
-def api_get_user_draft():
-    current_user = session["user"]
-    draft_path = get_user_draft_path(current_user)
-    if os.path.exists(draft_path):
-        try:
-            with open(draft_path, "r", encoding="utf-8") as f:
-                draft_data = json.load(f)
-            return jsonify({"has_draft": True, "draft": draft_data})
-        except Exception:
-            pass
-    return jsonify({"has_draft": False})
+def api_get_slots():
+    slots = load_user_slots(session["user"])
+    slot_headers = [{
+        "id": s["id"],
+        "title": s["title"],
+        "updatedAt": s["updatedAt"],
+        "startDate": s.get("startDate", ""),
+        "endDate": s.get("endDate", ""),
+        "totalEmployees": s.get("totalEmployees", 0)
+    } for s in slots]
+    return jsonify({"slots": slot_headers})
 
-@app.route("/api/dismiss_user_draft", methods=["POST"])
+@app.route("/api/slots/save", methods=["POST"])
 @login_required
-def api_dismiss_user_draft():
-    current_user = session["user"]
-    draft_path = get_user_draft_path(current_user)
-    if os.path.exists(draft_path):
-        try:
-            os.remove(draft_path)
-        except Exception:
-            pass
-    return jsonify({"status": "cleared"})
+def api_save_slot():
+    data = request.get_json()
+    if not data or "records" not in data:
+        return jsonify({"error": "No data provided"}), 400
+
+    username = session["user"]
+    slots = load_user_slots(username)
+
+    slot_id = data.get("slotId")
+    title = data.get("title", "").strip() or f"Save {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+    unique_emps = len(set(r.get("Name") for r in data["records"]))
+
+    new_slot_entry = {
+        "id": slot_id if slot_id else f"slot_{int(datetime.now().timestamp() * 1000)}",
+        "title": title,
+        "updatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "startDate": data.get("startDate", ""),
+        "endDate": data.get("endDate", ""),
+        "specialEntries": data.get("specialEntries", []),
+        "totalEmployees": unique_emps,
+        "records": data["records"]
+    }
+
+    if slot_id:
+        updated = False
+        for i, s in enumerate(slots):
+            if s["id"] == slot_id:
+                slots[i] = new_slot_entry
+                updated = True
+                break
+        if not updated:
+            slots.insert(0, new_slot_entry)
+    else:
+        slots.insert(0, new_slot_entry)
+
+    save_user_slots(username, slots)
+    USER_DATAFRAMES[username] = pd.DataFrame(data["records"])
+    return jsonify({"status": "success", "slotId": new_slot_entry["id"]})
+
+@app.route("/api/slots/load/<slot_id>", methods=["GET"])
+@login_required
+def api_load_slot(slot_id):
+    username = session["user"]
+    slots = load_user_slots(username)
+    for s in slots:
+        if s["id"] == slot_id:
+            USER_DATAFRAMES[username] = pd.DataFrame(s["records"])
+            return jsonify({"status": "success", "slot": s})
+    return jsonify({"error": "Slot not found"}), 404
+
+@app.route("/api/slots/delete/<slot_id>", methods=["POST"])
+@login_required
+def api_delete_slot(slot_id):
+    username = session["user"]
+    slots = load_user_slots(username)
+    slots = [s for s in slots if s["id"] != slot_id]
+    save_user_slots(username, slots)
+    return jsonify({"status": "success"})
 
 @app.route("/api/download", methods=["GET"])
 @login_required
