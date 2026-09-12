@@ -23,10 +23,12 @@ os.makedirs(DRAFTS_DIR, exist_ok=True)
 
 # Admin & Staff Credentials Store
 USERS = {
-    "admin": generate_password_hash("admin123"),
-    "hr_alice": generate_password_hash("alice2026"),
-    "hr_bob": generate_password_hash("bob2026")
+    "admin": generate_password_hash("jiaen123")
 }
+#after changing any username or password remember to change in terminal:
+#git add main.py
+#git commit -m "Update account password"
+#git push origin main
 
 # Per-user active DataFrames in memory
 USER_DATAFRAMES = {}
