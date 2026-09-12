@@ -207,6 +207,15 @@
             opacity: 0.9;
         }
 
+        .dirty-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #f59e0b;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
         .holiday-tags-container {
             display: flex;
             flex-wrap: wrap;
@@ -653,7 +662,7 @@
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
             <button type="button" class="btn-guide" onclick="openTutorialModal()">📖 Guide</button>
-            <a href="/logout" style="text-decoration: none;">
+            <a href="/logout" style="text-decoration: none;" onclick="return handleSignOutClick(event)">
                 <button type="button" class="btn-guide" style="background: #dc2626;">🚪 Sign Out</button>
             </a>
         </div>
@@ -706,7 +715,7 @@
 
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <button type="button" class="btn-action" style="background: #059669;" onclick="openSaveModal()">
-                            💾 Save Progress
+                            <span id="saveDirtyDot" class="dirty-indicator hidden" title="Unsaved modifications"></span>💾 Save Progress
                         </button>
                         <button type="button" class="btn-action" style="background: #475569;" onclick="openRestoreModal()">
                             📂 Restore Save
@@ -848,7 +857,7 @@
 <div id="restoreSlotModal" class="modal-backdrop" onclick="handleSlotBackdropClick(event)">
     <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh;">
         <div class="modal-header" style="background: #1e293b;">
-            <h3>📂 Load Saved Progress</h3>
+            <h3>📂 Load Saved Game / Progress</h3>
             <button type="button" class="modal-close-btn" onclick="closeRestoreModal()">&times;</button>
         </div>
         <div style="padding: 20px; overflow-y: auto;">
@@ -864,9 +873,41 @@
     let swapSource = null;
     let createdBlockCounter = 0;
     let toastTimer = null;
+    let hasUnsavedChanges = false;
 
     const OFF_DAY_TYPES = ["Holiday", "Public Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"];
     const COLUMN_TIME_ORDER = ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out"];
+
+    function markChangesDirty() {
+        hasUnsavedChanges = true;
+        const dot = document.getElementById('saveDirtyDot');
+        if (dot) dot.classList.remove('hidden');
+    }
+
+    function markChangesSaved() {
+        hasUnsavedChanges = false;
+        const dot = document.getElementById('saveDirtyDot');
+        if (dot) dot.classList.add('hidden');
+    }
+
+    function handleSignOutClick(e) {
+        if (hasUnsavedChanges) {
+            const confirmed = confirm("You have unsaved changes! If you sign out now, any modifications not saved to a slot will be lost. Do you still want to sign out?");
+            if (!confirmed) {
+                e.preventDefault();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    window.addEventListener('beforeunload', function (e) {
+        if (hasUnsavedChanges) {
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        }
+    });
 
     function isRowOffDay(status) {
         if (!status) return false;
@@ -914,6 +955,7 @@
             document.getElementById('endDateInput').value = '';
             specialEntries = [];
             renderSpecialTags();
+            markChangesSaved();
             executeAnalysis(true);
         }
     }
@@ -923,6 +965,7 @@
         if (startDate && !document.getElementById('specialDatePicker').value) {
             document.getElementById('specialDatePicker').value = startDate;
         }
+        markChangesDirty();
         executeAnalysis(false);
     }
 
@@ -948,12 +991,14 @@
         specialEntries.push({ date: chosenDate, type: chosenType, target: targetName });
 
         renderSpecialTags();
+        markChangesDirty();
         executeAnalysis(false);
     }
 
     function removeSpecialDay(index) {
         specialEntries.splice(index, 1);
         renderSpecialTags();
+        markChangesDirty();
         executeAnalysis(false);
     }
 
@@ -1141,6 +1186,7 @@
             record._late_lunch_mins = 0;
             record._total_late_mins = 0;
             record._early_leave_mins = 0;
+            markChangesDirty();
             return;
         }
 
@@ -1216,6 +1262,8 @@
             let baseStatus = issues.length ? issues.join(', ') : "Normal";
             record["Status / Alert"] = earlyRemark ? ((baseStatus === "Normal") ? `Normal (${earlyRemark})` : `${baseStatus}, ${earlyRemark}`) : baseStatus;
         }
+
+        markChangesDirty();
     }
 
     function createNewTimeBlock() {
@@ -1673,6 +1721,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
+            markChangesSaved();
         } catch (e) {
             console.error("Save slot failed", e);
             showToast("Failed to save progress.");
@@ -1685,6 +1734,7 @@
             const data = await res.json();
             if (data.status === 'success' && data.slot) {
                 restoreSession(data.slot);
+                markChangesSaved();
                 closeRestoreModal();
                 showToast(`Loaded: "${data.slot.title}"`, false);
             } else {
