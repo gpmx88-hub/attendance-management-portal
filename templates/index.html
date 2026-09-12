@@ -97,6 +97,26 @@
             background: #1e293b;
         }
 
+        /* Auto-restore prompt banner */
+        .restore-alert-bar {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 12px 18px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+            color: #1e40af;
+        }
+
+        .restore-alert-bar .restore-btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
         .section-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -635,6 +655,17 @@
 </div>
 
 <div class="container">
+    <!-- Auto-Save Restore Alert -->
+    <div id="autoRestoreBanner" class="restore-alert-bar hidden">
+        <div>
+            🕒 <strong>Unfinished Progress Found:</strong> You have an auto-saved draft from <span id="autoSavedTimeText">recently</span>.
+        </div>
+        <div class="restore-btn-group">
+            <button type="button" class="btn-action" style="padding: 4px 12px; font-size: 12px;" onclick="loadAutoSavedSession()">Restore</button>
+            <button type="button" class="btn-action" style="padding: 4px 10px; font-size: 12px; background: #64748b;" onclick="dismissAutoSave()">Discard</button>
+        </div>
+    </div>
+
     <header class="app-header">
         <div class="header-title-group">
             <h1>Attendance Punch Card Portal</h1>
@@ -745,13 +776,25 @@
             </div>
         </div>
 
+        <!-- Filter & Hybrid Save / Resume Toolbar -->
         <div class="employee-toolbar">
             <div class="filter-actions">
                 <label for="searchInput" style="font-size: 13px; font-weight: 600;">Employee:</label>
-                <input type="text" id="searchInput" placeholder="Search prefix (e.g. 'tan')..." oninput="onSearchType()" style="width: 200px;">
-                <select id="empDropdown" onchange="renderEmployeeTable()" style="min-width: 200px;"></select>
+                <input type="text" id="searchInput" placeholder="Search prefix (e.g. 'tan')..." oninput="onSearchType()" style="width: 190px;">
+                <select id="empDropdown" onchange="renderEmployeeTable()" style="min-width: 190px;"></select>
             </div>
-            <button type="button" class="btn-download" onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn-action" style="background: #475569;" onclick="exportDraftSession()" title="Download session file to continue on another PC">
+                    💾 Save Progress
+                </button>
+                <button type="button" class="btn-action" style="background: #0284c7;" onclick="document.getElementById('draftFileInput').click()" title="Load a saved draft session file">
+                    📂 Resume Progress
+                </button>
+                <input type="file" id="draftFileInput" accept=".json" style="display: none;" onchange="importDraftSession(event)">
+                <button type="button" class="btn-download" onclick="downloadExcel()">
+                    📥 Download Clean Excel
+                </button>
+            </div>
         </div>
 
         <div class="table-viewport">
@@ -944,6 +987,7 @@
             document.getElementById('resultsCard').classList.remove('hidden');
             populateDropdown(employeeNames);
             renderEmployeeTable();
+            autoSaveToStorage();
         } catch (e) {
             console.error(e);
             showToast("Server connection error");
@@ -1099,17 +1143,15 @@
         let earlyLeaveMins = 0;
         let earlyRemark = "";
         const targetEndSec = isSat ? 48600 : 64800;
-        if (secCout !== null) {
-            if (secCout < targetEndSec) {
-                earlyLeaveMins = Math.round((targetEndSec - secCout) / 60);
-                if (earlyLeaveMins > 0) {
-                    const halfHourBlocks = Math.ceil(earlyLeaveMins / 30);
-                    if (halfHourBlocks === 1) {
-                        earlyRemark = "Early up 30 mins";
-                    } else {
-                        const totalHours = halfHourBlocks * 0.5;
-                        earlyRemark = `Early up ${totalHours} ${totalHours === 1 ? 'hour' : 'hours'}`;
-                    }
+        if (secCout !== null && secCout < targetEndSec) {
+            earlyLeaveMins = Math.round((targetEndSec - secCout) / 60);
+            if (earlyLeaveMins > 0) {
+                const halfHourBlocks = Math.ceil(earlyLeaveMins / 30);
+                if (halfHourBlocks === 1) {
+                    earlyRemark = "Early up 30 mins";
+                } else {
+                    const totalHours = halfHourBlocks * 0.5;
+                    earlyRemark = `Early up ${totalHours} ${totalHours === 1 ? 'hour' : 'hours'}`;
                 }
             }
         }
@@ -1454,6 +1496,7 @@
     }
 
     async function syncChangeToBackend(updatedRecords) {
+        autoSaveToStorage();
         try {
             await fetch('/api/update_records', {
                 method: 'POST',
@@ -1464,6 +1507,131 @@
             console.error("Backend sync failed:", e);
         }
     }
+
+    // -----------------------------------------------------------------
+    // HYBRID SESSION ARCHITECTURE (AUTO-SAVE + PORTABLE DRAFT)
+    // -----------------------------------------------------------------
+    function autoSaveToStorage() {
+        if (!globalData || !globalData.length) return;
+        const sessionPayload = {
+            savedAt: new Date().toISOString(),
+            startDate: document.getElementById('startDateInput').value,
+            endDate: document.getElementById('endDateInput').value,
+            specialEntries: specialEntries,
+            records: globalData
+        };
+        try {
+            localStorage.setItem('attendance_auto_draft', JSON.stringify(sessionPayload));
+        } catch (e) {
+            console.warn("Storage quota exceeded", e);
+        }
+    }
+
+    function restoreSession(session) {
+        globalData = session.records;
+        specialEntries = session.specialEntries || [];
+        employeeNames = [...new Set(globalData.map(r => r.Name))].sort();
+
+        if (session.startDate) document.getElementById('startDateInput').value = session.startDate;
+        if (session.endDate) document.getElementById('endDateInput').value = session.endDate;
+
+        renderSpecialTags();
+        refreshStats();
+        populateDropdown(employeeNames);
+        document.getElementById('resultsCard').classList.remove('hidden');
+        renderEmployeeTable();
+
+        syncChangeToBackend(globalData);
+    }
+
+    function loadAutoSavedSession() {
+        const raw = localStorage.getItem('attendance_auto_draft');
+        if (!raw) return;
+        try {
+            const session = JSON.parse(raw);
+            restoreSession(session);
+            document.getElementById('autoRestoreBanner').classList.add('hidden');
+            showToast("Auto-saved work session restored!", false);
+        } catch (e) {
+            showToast("Failed to restore session.");
+        }
+    }
+
+    function dismissAutoSave() {
+        localStorage.removeItem('attendance_auto_draft');
+        document.getElementById('autoRestoreBanner').classList.add('hidden');
+    }
+
+    function exportDraftSession() {
+        if (!globalData || !globalData.length) {
+            showToast("No active data to save.");
+            return;
+        }
+
+        const activeMonth = document.getElementById('startDateInput').value || 'Month';
+        const sessionPayload = {
+            version: "1.0",
+            savedAt: new Date().toISOString(),
+            startDate: document.getElementById('startDateInput').value,
+            endDate: document.getElementById('endDateInput').value,
+            specialEntries: specialEntries,
+            records: globalData
+        };
+
+        const jsonBlob = new Blob([JSON.stringify(sessionPayload, null, 2)], { type: "application/json" });
+        const downloadUrl = URL.createObjectURL(jsonBlob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `Attendance_Draft_${activeMonth}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(downloadUrl);
+
+        showToast("Session draft exported! Carry this file to resume on any PC.", false);
+    }
+
+    function importDraftSession(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const session = JSON.parse(e.target.result);
+
+                if (!session.records || !Array.isArray(session.records)) {
+                    showToast("Invalid draft file format.");
+                    return;
+                }
+
+                restoreSession(session);
+                dismissAutoSave();
+                showToast("Unfinished draft resumed successfully!", false);
+            } catch (err) {
+                console.error(err);
+                showToast("Failed to parse the draft file.");
+            } finally {
+                event.target.value = '';
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    // Check for unfinished work session on page load
+    window.addEventListener('DOMContentLoaded', () => {
+        const raw = localStorage.getItem('attendance_auto_draft');
+        if (raw) {
+            try {
+                const parsed = JSON.parse(raw);
+                const savedDate = new Date(parsed.savedAt);
+                document.getElementById('autoSavedTimeText').innerText = savedDate.toLocaleString();
+                document.getElementById('autoRestoreBanner').classList.remove('hidden');
+            } catch (e) {
+                localStorage.removeItem('attendance_auto_draft');
+            }
+        }
+    });
 
     function renderEmployeeTable() {
         const dropdown = document.getElementById('empDropdown');
