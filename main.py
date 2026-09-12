@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, session
+from functools import wraps
 import pandas as pd
 from datetime import datetime, date, timedelta, time
 import calendar
@@ -10,16 +11,32 @@ import os
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+from werkzeug.security import generate_password_hash, check_password_hash
 import holidays
 
 app = Flask(__name__)
-CURRENT_DF = None
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "super-secret-key-change-in-prod-2026")
+
+# Directory for user-isolated drafts
+DRAFTS_DIR = os.path.join(os.path.dirname(__file__), "user_drafts")
+os.makedirs(DRAFTS_DIR, exist_ok=True)
+
+# User Credentials Store (Add team members here)
+# Passwords can be changed or stored as hashed strings
+USERS = {
+    "admin": generate_password_hash("admin123"),
+    "hr_alice": generate_password_hash("alice2026"),
+    "hr_bob": generate_password_hash("bob2026")
+}
+
+# Per-user active DataFrames in memory
+USER_DATAFRAMES = {}
 
 # Business Rules
-WORK_START_TIME = time(9, 0, 0)         # Mon - Sat start: 09:00:00
-WEEKDAY_END_TIME = time(18, 0, 0)       # Mon - Fri finish: 18:00:00
-SATURDAY_END_TIME = time(13, 30, 0)     # Saturday finish: 13:30:00
-LUNCH_LIMIT_MINS = 70                   # Lunch limit: 1 hour 10 mins
+WORK_START_TIME = time(9, 0, 0)
+WEEKDAY_END_TIME = time(18, 0, 0)
+SATURDAY_END_TIME = time(13, 30, 0)
+LUNCH_LIMIT_MINS = 70
 
 # Malaysia Public Holidays Engine (English-first)
 MY_HOLIDAYS = holidays.country_holidays('MY', language='en')
@@ -40,6 +57,20 @@ HOLIDAY_EN_MAP = {
     "Awal Muharram": "Awal Muharram",
     "Thaipusam": "Thaipusam",
 }
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user" not in session:
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "Authentication required"}), 401
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def get_user_draft_path(username):
+    safe_user = re.sub(r'[^a-zA-Z0-9_-]', '', username)
+    return os.path.join(DRAFTS_DIR, f"draft_{safe_user}.json")
 
 def get_malaysia_holiday_name(d_obj):
     raw_name = MY_HOLIDAYS.get(d_obj)
@@ -146,8 +177,7 @@ def categorize_punches(raw_punch_list, is_saturday):
             assigned_punches.append(c_out)
 
     extra_punches = [p for p in punch_list if p not in assigned_punches] + close_duplicates
-    multi_earlier = "--"
-    multi_later = "--"
+    multi_earlier, multi_later = "--", "--"
     if len(extra_punches) == 1:
         multi_earlier = extra_punches[0]
     elif len(extra_punches) >= 2:
@@ -214,7 +244,6 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
         except Exception:
             pass
 
-    # Full month auto-detection
     if dates_in_file:
         detected_date = dates_in_file[0]
         year = detected_date.year
@@ -261,9 +290,7 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
 
             if is_sunday:
                 records.append({
-                    "Employee ID": emp_id,
-                    "Name": name,
-                    "Department": dept,
+                    "Employee ID": emp_id, "Name": name, "Department": dept,
                     "Date": f"{date_str} ({day_name})",
                     "Clock In": "--", "Break Out (Lunch)": "--", "Break In (Back)": "--", "Clock Out": "--",
                     "Lunch Duration": "--", "Late to Work": "--", "Late Time (Lunch)": "--",
@@ -286,9 +313,7 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     is_off = 0
 
                 records.append({
-                    "Employee ID": emp_id,
-                    "Name": name,
-                    "Department": dept,
+                    "Employee ID": emp_id, "Name": name, "Department": dept,
                     "Date": f"{date_str} ({day_name})",
                     "Clock In": "--", "Break Out (Lunch)": "--", "Break In (Back)": "--", "Clock Out": "--",
                     "Lunch Duration": "--", "Late to Work": "--", "Late Time (Lunch)": "--",
@@ -359,14 +384,9 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     work_mins = max(0, gross_mins - lunch_mins)
 
             records.append({
-                "Employee ID": emp_id,
-                "Name": name,
-                "Department": dept,
+                "Employee ID": emp_id, "Name": name, "Department": dept,
                 "Date": f"{date_str} ({day_name})",
-                "Clock In": c_in,
-                "Break Out (Lunch)": b_out,
-                "Break In (Back)": b_in,
-                "Clock Out": c_out,
+                "Clock In": c_in, "Break Out (Lunch)": b_out, "Break In (Back)": b_in, "Clock Out": c_out,
                 "Lunch Duration": format_mins_to_time(lunch_mins) if lunch_mins > 0 else "--",
                 "Late to Work": format_mins_to_time(late_work_mins) if late_work_mins > 0 else "--",
                 "Late Time (Lunch)": format_mins_to_time(late_lunch_mins) if late_lunch_mins > 0 else "--",
@@ -374,16 +394,10 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                 "Early Leave": format_mins_to_time(early_leave_mins) if early_leave_mins > 0 else "--",
                 "Work Hours": format_mins_to_time(work_mins) if work_mins > 0 else "--",
                 "Status / Alert": status,
-                "Multiple Punch (Earlier)": multi_earlier,
-                "Multiple Punch (Later)": multi_later,
-                "_work_mins": work_mins,
-                "_lunch_mins": lunch_mins,
-                "_late_work_mins": late_work_mins,
-                "_late_lunch_mins": late_lunch_mins,
-                "_total_late_mins": total_late_mins,
-                "_early_leave_mins": early_leave_mins,
-                "_is_absent": 0,
-                "_is_sunday": 0,
+                "Multiple Punch (Earlier)": multi_earlier, "Multiple Punch (Later)": multi_later,
+                "_work_mins": work_mins, "_lunch_mins": lunch_mins, "_late_work_mins": late_work_mins,
+                "_late_lunch_mins": late_lunch_mins, "_total_late_mins": total_late_mins,
+                "_early_leave_mins": early_leave_mins, "_is_absent": 0, "_is_sunday": 0,
                 "_is_offday": 1 if special_type else 0
             })
 
@@ -415,7 +429,7 @@ def build_excel_workbook(df):
     align_center = Alignment(horizontal="center", vertical="center")
     align_left = Alignment(horizontal="left", vertical="center")
 
-    # Overview Summary
+    # Summary Sheet
     ws_summary = wb.create_sheet(title="Overview Summary")
     ws_summary.views.sheetView[0].showGridLines = True
 
@@ -485,7 +499,7 @@ def build_excel_workbook(df):
         col_letter = get_column_letter(col[0].column)
         ws_summary.column_dimensions[col_letter].width = max(max_len + 4, 14)
 
-    # Individual Employee Sheets
+    # Individual Sheets
     employee_cols = [
         "Date", "Clock In", "Break Out (Lunch)", "Break In (Back)",
         "Clock Out", "Lunch Duration", "Late to Work", "Late Time (Lunch)", 
@@ -604,13 +618,36 @@ def build_excel_workbook(df):
     output.seek(0)
     return output
 
+# --- Authentication Endpoints ---
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+
+        if username in USERS and check_password_hash(USERS[username], password):
+            session["user"] = username
+            return redirect(url_for("index"))
+        else:
+            error = "Invalid username or password"
+
+    return render_template("login.html", error=error)
+
+@app.route("/logout")
+def logout():
+    session.pop("user", None)
+    return redirect(url_for("login"))
+
+# --- Protected Application Endpoints ---
 @app.route("/")
+@login_required
 def index():
-    return render_template("index.html")
+    return render_template("index.html", current_user=session.get("user"))
 
 @app.route("/api/process", methods=["POST"])
+@login_required
 def api_process():
-    global CURRENT_DF
     file = request.files.get("file")
     if not file:
         return jsonify({"error": "No file uploaded"}), 400
@@ -626,9 +663,14 @@ def api_process():
 
     try:
         raw_df = pd.read_excel(file, header=None)
-        CURRENT_DF, detected_start, detected_end = process_time_card(raw_df, start_date, end_date, special_entries)
+        df_processed, detected_start, detected_end = process_time_card(raw_df, start_date, end_date, special_entries)
+        
+        # User-isolated state
+        current_user = session["user"]
+        USER_DATAFRAMES[current_user] = df_processed
+
         return jsonify({
-            "records": CURRENT_DF.to_dict(orient="records"),
+            "records": df_processed.to_dict(orient="records"),
             "detected_start": detected_start,
             "detected_end": detected_end
         })
@@ -636,25 +678,70 @@ def api_process():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/update_records", methods=["POST"])
+@login_required
 def api_update_records():
-    global CURRENT_DF
     data = request.get_json()
     if data and "records" in data:
-        CURRENT_DF = pd.DataFrame(data["records"])
+        current_user = session["user"]
+        USER_DATAFRAMES[current_user] = pd.DataFrame(data["records"])
+
+        # Auto-persist user's private draft to disk
+        draft_path = get_user_draft_path(current_user)
+        try:
+            with open(draft_path, "w", encoding="utf-8") as f:
+                json.dump({
+                    "savedAt": datetime.now().isoformat(),
+                    "user": current_user,
+                    "startDate": data.get("startDate", ""),
+                    "endDate": data.get("endDate", ""),
+                    "specialEntries": data.get("specialEntries", []),
+                    "records": data["records"]
+                }, f)
+        except Exception as err:
+            print("Draft file save error:", err)
+
         return jsonify({"status": "success"})
     return jsonify({"error": "No data received"}), 400
 
-@app.route("/api/download", methods=["GET"])
-def api_download():
-    global CURRENT_DF
-    if CURRENT_DF is None:
-        return "No processed data available", 400
+@app.route("/api/get_user_draft", methods=["GET"])
+@login_required
+def api_get_user_draft():
+    current_user = session["user"]
+    draft_path = get_user_draft_path(current_user)
+    if os.path.exists(draft_path):
+        try:
+            with open(draft_path, "r", encoding="utf-8") as f:
+                draft_data = json.load(f)
+            return jsonify({"has_draft": True, "draft": draft_data})
+        except Exception:
+            pass
+    return jsonify({"has_draft": False})
 
-    excel_file = build_excel_workbook(CURRENT_DF)
+@app.route("/api/dismiss_user_draft", methods=["POST"])
+@login_required
+def api_dismiss_user_draft():
+    current_user = session["user"]
+    draft_path = get_user_draft_path(current_user)
+    if os.path.exists(draft_path):
+        try:
+            os.remove(draft_path)
+        except Exception:
+            pass
+    return jsonify({"status": "cleared"})
+
+@app.route("/api/download", methods=["GET"])
+@login_required
+def api_download():
+    current_user = session["user"]
+    user_df = USER_DATAFRAMES.get(current_user)
+    if user_df is None:
+        return "No processed data available for this user session", 400
+
+    excel_file = build_excel_workbook(user_df)
     return send_file(
         excel_file,
         as_attachment=True,
-        download_name="Monthly_Attendance_Summary.xlsx",
+        download_name=f"Monthly_Attendance_Summary_{current_user}.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
