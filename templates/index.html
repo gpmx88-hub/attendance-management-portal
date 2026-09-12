@@ -685,7 +685,7 @@
         <div class="setup-grid">
             <div class="file-drop-box">
                 <label for="fileInput">📁 Upload Biometric Punch File</label>
-                <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="autoProcess()">
+                <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleNewFileUpload()">
             </div>
 
             <div class="config-controls">
@@ -886,10 +886,11 @@
         if (e.target.id === 'tutorialModal') closeTutorialModal();
     }
 
-    // Auto-detect & reset when a new file is uploaded
-    function autoProcess() {
+    // Triggered ONLY when a user selects a brand new Excel file
+    function handleNewFileUpload() {
         const fileInput = document.getElementById('fileInput');
         if (fileInput.files.length > 0) {
+            // Clear inputs so the backend can detect the new file's month range
             document.getElementById('startDateInput').value = '';
             document.getElementById('endDateInput').value = '';
             specialEntries = [];
@@ -897,14 +898,17 @@
             localStorage.removeItem('attendance_auto_draft');
             document.getElementById('autoRestoreBanner').classList.add('hidden');
 
-            executeAnalysis();
+            executeAnalysis(true); // true = brand new file upload
         }
     }
 
+    // Triggered when user modifies Start Date or End Date manually
     function onDateRangeChange() {
         const startDate = document.getElementById('startDateInput').value;
-        if (startDate) document.getElementById('specialDatePicker').value = startDate;
-        autoProcess();
+        if (startDate && !document.getElementById('specialDatePicker').value) {
+            document.getElementById('specialDatePicker').value = startDate;
+        }
+        executeAnalysis(false); // false = keep user's customized dates
     }
 
     function confirmSpecialDay() {
@@ -929,13 +933,13 @@
         specialEntries.push({ date: chosenDate, type: chosenType, target: targetName });
 
         renderSpecialTags();
-        autoProcess();
+        executeAnalysis(false);
     }
 
     function removeSpecialDay(index) {
         specialEntries.splice(index, 1);
         renderSpecialTags();
-        autoProcess();
+        executeAnalysis(false);
     }
 
     function renderSpecialTags() {
@@ -963,7 +967,7 @@
         });
     }
 
-    async function executeAnalysis() {
+    async function executeAnalysis(isNewFile = false) {
         const fileInput = document.getElementById('fileInput');
         if (!fileInput.files.length) return;
 
@@ -985,12 +989,16 @@
             globalData = data.records;
             employeeNames = [...new Set(globalData.map(r => r.Name))].sort();
 
-            // Always adopt newly detected dates from file
-            document.getElementById('startDateInput').value = data.detected_start;
-            document.getElementById('endDateInput').value = data.detected_end;
+            // Only overwrite date inputs if this is a newly uploaded file
+            if (isNewFile || !document.getElementById('startDateInput').value) {
+                document.getElementById('startDateInput').value = data.detected_start;
+            }
+            if (isNewFile || !document.getElementById('endDateInput').value) {
+                document.getElementById('endDateInput').value = data.detected_end;
+            }
 
             const curPicker = document.getElementById('specialDatePicker');
-            if (data.detected_start) curPicker.value = data.detected_start;
+            if (!curPicker.value && data.detected_start) curPicker.value = data.detected_start;
 
             refreshStats();
             document.getElementById('resultsCard').classList.remove('hidden');
