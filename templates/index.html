@@ -890,7 +890,17 @@
 
     function autoProcess() {
         const fileInput = document.getElementById('fileInput');
-        if (fileInput.files.length > 0) executeAnalysis();
+        if (fileInput.files.length > 0) {
+            // A brand new file was chosen: clear out stale month dates & tags
+            document.getElementById('startDateInput').value = '';
+            document.getElementById('endDateInput').value = '';
+            specialEntries = [];
+            renderSpecialTags();
+            localStorage.removeItem('attendance_auto_draft');
+            document.getElementById('autoRestoreBanner').classList.add('hidden');
+            
+            executeAnalysis();
+        }
     }
 
     function onDateRangeChange() {
@@ -977,9 +987,9 @@
             globalData = data.records;
             employeeNames = [...new Set(globalData.map(r => r.Name))].sort();
 
-            if (!document.getElementById('startDateInput').value) document.getElementById('startDateInput').value = data.detected_start;
-            if (!document.getElementById('endDateInput').value) document.getElementById('endDateInput').value = data.detected_end;
-
+            document.getElementById('startDateInput').value = data.detected_start;
+            document.getElementById('endDateInput').value = data.detected_end;
+            
             const curPicker = document.getElementById('specialDatePicker');
             if (!curPicker.value && data.detected_start) curPicker.value = data.detected_start;
 
