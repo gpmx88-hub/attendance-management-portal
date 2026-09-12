@@ -655,7 +655,6 @@
 </div>
 
 <div class="container">
-    <!-- Auto-Save Restore Alert -->
     <div id="autoRestoreBanner" class="restore-alert-bar hidden">
         <div>
             🕒 <strong>Unfinished Progress Found:</strong> You have an auto-saved draft from <span id="autoSavedTimeText">recently</span>.
@@ -776,7 +775,6 @@
             </div>
         </div>
 
-        <!-- Filter & Hybrid Save / Resume Toolbar -->
         <div class="employee-toolbar">
             <div class="filter-actions">
                 <label for="searchInput" style="font-size: 13px; font-weight: 600;">Employee:</label>
@@ -888,17 +886,17 @@
         if (e.target.id === 'tutorialModal') closeTutorialModal();
     }
 
+    // Auto-detect & reset when a new file is uploaded
     function autoProcess() {
         const fileInput = document.getElementById('fileInput');
         if (fileInput.files.length > 0) {
-            // A brand new file was chosen: clear out stale month dates & tags
             document.getElementById('startDateInput').value = '';
             document.getElementById('endDateInput').value = '';
             specialEntries = [];
             renderSpecialTags();
             localStorage.removeItem('attendance_auto_draft');
             document.getElementById('autoRestoreBanner').classList.add('hidden');
-            
+
             executeAnalysis();
         }
     }
@@ -987,11 +985,12 @@
             globalData = data.records;
             employeeNames = [...new Set(globalData.map(r => r.Name))].sort();
 
+            // Always adopt newly detected dates from file
             document.getElementById('startDateInput').value = data.detected_start;
             document.getElementById('endDateInput').value = data.detected_end;
-            
+
             const curPicker = document.getElementById('specialDatePicker');
-            if (!curPicker.value && data.detected_start) curPicker.value = data.detected_start;
+            if (data.detected_start) curPicker.value = data.detected_start;
 
             refreshStats();
             document.getElementById('resultsCard').classList.remove('hidden');
@@ -1518,9 +1517,6 @@
         }
     }
 
-    // -----------------------------------------------------------------
-    // HYBRID SESSION ARCHITECTURE (AUTO-SAVE + PORTABLE DRAFT)
-    // -----------------------------------------------------------------
     function autoSaveToStorage() {
         if (!globalData || !globalData.length) return;
         const sessionPayload = {
@@ -1628,7 +1624,6 @@
         reader.readAsText(file);
     }
 
-    // Check for unfinished work session on page load
     window.addEventListener('DOMContentLoaded', () => {
         const raw = localStorage.getItem('attendance_auto_draft');
         if (raw) {
