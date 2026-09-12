@@ -45,7 +45,6 @@
             margin: 0 auto;
         }
 
-        /* App Header Bar */
         .app-header {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -98,7 +97,6 @@
             background: #1e293b;
         }
 
-        /* Section Cards */
         .section-card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -108,21 +106,6 @@
             box-shadow: 0 1px 3px 0 rgba(0,0,0,0.03);
         }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .card-header h2 {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin: 0;
-        }
-
-        /* Config Grid Layout */
         .setup-grid {
             display: grid;
             grid-template-columns: 280px 1fr;
@@ -196,7 +179,6 @@
             border-color: var(--primary-accent);
         }
 
-        /* Special Day Builder Toolbar */
         .special-day-toolbar {
             display: flex;
             align-items: center;
@@ -257,7 +239,6 @@
             font-size: 14px;
         }
 
-        /* Stats Counter Bar */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -292,7 +273,6 @@
             margin-top: 4px;
         }
 
-        /* Workshop & Dustbin Panel */
         .workshop-panel {
             display: grid;
             grid-template-columns: 1fr 260px;
@@ -358,7 +338,6 @@
             transform: scale(1.02);
         }
 
-        /* Employee Filter & Action Toolbar */
         .employee-toolbar {
             display: flex;
             justify-content: space-between;
@@ -393,7 +372,6 @@
             background: #047857;
         }
 
-        /* Table Architecture with Sticky Headers */
         .table-viewport {
             max-height: 680px;
             overflow: auto;
@@ -436,7 +414,6 @@
             background-color: #f8fafc;
         }
 
-        /* Interactive Time Pills */
         td.droppable-cell {
             padding: 4px;
             min-width: 90px;
@@ -512,7 +489,6 @@
             background: #eff6ff;
         }
 
-        /* Merged Sunday & Off-Day Banner Row */
         tr.row-merged-banner td.merged-banner-cell {
             color: var(--danger) !important;
             font-weight: 700 !important;
@@ -523,7 +499,6 @@
             background: #fff5f5 !important;
         }
 
-        /* Badges */
         .badge {
             display: inline-block;
             padding: 2px 7px;
@@ -545,7 +520,6 @@
         .badge-totallate { background: #fee2e2; color: var(--danger); font-weight: 700; }
         .badge-early { background: #fce7f3; color: #9d174d; font-weight: 700; }
 
-        /* Toast Notifications */
         .app-toast {
             position: fixed;
             top: 24px;
@@ -584,7 +558,6 @@
             margin-left: auto;
         }
 
-        /* Modal Overlay */
         .modal-backdrop {
             display: none;
             position: fixed;
@@ -655,7 +628,6 @@
 </head>
 <body>
 
-<!-- Global Toast Notification -->
 <div id="appToast" class="app-toast">
     <span class="toast-icon">⚠️</span>
     <span id="appToastMessage">Notification message</span>
@@ -663,7 +635,6 @@
 </div>
 
 <div class="container">
-    <!-- Main Header -->
     <header class="app-header">
         <div class="header-title-group">
             <h1>Attendance Punch Card Portal</h1>
@@ -680,7 +651,6 @@
         <button type="button" class="btn-guide" onclick="openTutorialModal()">📖 User Guide / Tutorial</button>
     </header>
 
-    <!-- Setup Card: File & Calendar -->
     <section class="section-card">
         <div class="setup-grid">
             <div class="file-drop-box">
@@ -700,7 +670,6 @@
                     </div>
                 </div>
 
-                <!-- Special Day Builder -->
                 <div class="special-day-toolbar">
                     <div class="field-group">
                         <label>Date:</label>
@@ -733,9 +702,7 @@
         </div>
     </section>
 
-    <!-- Interactive Dashboard Card -->
     <section id="resultsCard" class="section-card hidden">
-        <!-- KPI Metrics -->
         <div class="stats-grid">
             <div class="stat-box">
                 <div class="stat-val" id="statEmployees">0</div>
@@ -755,7 +722,6 @@
             </div>
         </div>
 
-        <!-- Time Block Workshop & Dustbin Panel -->
         <div class="workshop-panel">
             <div class="workshop-create">
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -779,7 +745,6 @@
             </div>
         </div>
 
-        <!-- Filter & Export Toolbar -->
         <div class="employee-toolbar">
             <div class="filter-actions">
                 <label for="searchInput" style="font-size: 13px; font-weight: 600;">Employee:</label>
@@ -789,7 +754,6 @@
             <button type="button" class="btn-download" onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
         </div>
 
-        <!-- Sticky Header Scroll Table -->
         <div class="table-viewport">
             <table id="attendanceTable">
                 <thead>
@@ -816,7 +780,6 @@
     </section>
 </div>
 
-<!-- Tutorial Modal Popup -->
 <div id="tutorialModal" class="modal-backdrop" onclick="handleBackdropClick(event)">
     <div class="modal-window">
         <div class="modal-header">
@@ -845,7 +808,7 @@
     let createdBlockCounter = 0;
     let toastTimer = null;
 
-    const OFF_DAY_TYPES = ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"];
+    const OFF_DAY_TYPES = ["Holiday", "Public Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"];
     const COLUMN_TIME_ORDER = ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out"];
 
     function isRowOffDay(status) {
@@ -1136,11 +1099,18 @@
         let earlyLeaveMins = 0;
         let earlyRemark = "";
         const targetEndSec = isSat ? 48600 : 64800;
-        if (secCout !== null && secCout < targetEndSec) {
-            earlyLeaveMins = Math.round((targetEndSec - secCout) / 60);
-            if (earlyLeaveMins > 0) {
-                const tier = Math.ceil(earlyLeaveMins / 60);
-                earlyRemark = `Early up ${tier} ${tier === 1 ? 'hour' : 'hours'}`;
+        if (secCout !== null) {
+            if (secCout < targetEndSec) {
+                earlyLeaveMins = Math.round((targetEndSec - secCout) / 60);
+                if (earlyLeaveMins > 0) {
+                    const halfHourBlocks = Math.ceil(earlyLeaveMins / 30);
+                    if (halfHourBlocks === 1) {
+                        earlyRemark = "Early up 30 mins";
+                    } else {
+                        const totalHours = halfHourBlocks * 0.5;
+                        earlyRemark = `Early up ${totalHours} ${totalHours === 1 ? 'hour' : 'hours'}`;
+                    }
+                }
             }
         }
         record["Early Leave"] = earlyLeaveMins > 0 ? formatMinutesToTime(earlyLeaveMins) : "--";
@@ -1525,7 +1495,7 @@
             let badge = `<span class="badge-ok">Normal</span>`;
             if (status === "Absent") {
                 badge = `<span class="badge badge-absent">Absent</span>`;
-            } else if (status.includes("Holiday")) {
+            } else if (status.includes("Holiday") || status.includes("Public Holiday")) {
                 badge = `<span class="badge badge-holiday">${status}</span>`;
             } else if (status.includes("Annual Leave")) {
                 badge = `<span class="badge badge-leave">${status}</span>`;

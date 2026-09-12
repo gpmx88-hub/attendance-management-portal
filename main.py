@@ -10,6 +10,7 @@ import os
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+import holidays
 
 app = Flask(__name__)
 CURRENT_DF = None
@@ -19,6 +20,35 @@ WORK_START_TIME = time(9, 0, 0)         # Mon - Sat start: 09:00:00
 WEEKDAY_END_TIME = time(18, 0, 0)       # Mon - Fri finish: 18:00:00
 SATURDAY_END_TIME = time(13, 30, 0)     # Saturday finish: 13:30:00
 LUNCH_LIMIT_MINS = 70                   # Lunch limit: 1 hour 10 mins
+
+# Malaysia Public Holidays Engine (English-first)
+MY_HOLIDAYS = holidays.country_holidays('MY', language='en')
+
+HOLIDAY_EN_MAP = {
+    "Hari Kebangsaan": "National Day",
+    "Hari Malaysia": "Malaysia Day",
+    "Hari Pekerja": "Labour Day",
+    "Tahun Baru Cina": "Chinese New Year",
+    "Hari Raya Aidilfitri": "Hari Raya Aidilfitri",
+    "Hari Raya Aidiladha": "Hari Raya Haji",
+    "Hari Deepavali": "Deepavali",
+    "Hari Keputeraan Yang di-Pertuan Agong": "King's Birthday",
+    "Hari Keputeraan Nabi Muhammad S.A.W. (Maulidur Rasul)": "Prophet Muhammad's Birthday",
+    "Hari Krismas": "Christmas Day",
+    "Tahun Baru": "New Year's Day",
+    "Hari Wesak": "Wesak Day",
+    "Awal Muharram": "Awal Muharram",
+    "Thaipusam": "Thaipusam",
+}
+
+def get_malaysia_holiday_name(d_obj):
+    raw_name = MY_HOLIDAYS.get(d_obj)
+    if not raw_name:
+        return None
+    for my_name, en_name in HOLIDAY_EN_MAP.items():
+        if my_name.lower() in raw_name.lower():
+            return en_name
+    return raw_name.replace(" (Observed)", "").replace(" (observed)", "").strip()
 
 def parse_time_str(t_str):
     try:
@@ -44,14 +74,12 @@ def deduplicate_close_punches(punch_list, threshold_minutes=3):
         dt = parse_time_str(p)
         if not dt:
             continue
-
         if not valid_punches:
             valid_punches.append((dt, p))
             continue
 
-        prev_dt, prev_p = valid_punches[-1]
+        prev_dt, _ = valid_punches[-1]
         diff_sec = (dt - prev_dt).total_seconds()
-
         if diff_sec <= (threshold_minutes * 60):
             close_duplicates.append(p)
         else:
@@ -61,7 +89,6 @@ def deduplicate_close_punches(punch_list, threshold_minutes=3):
 
 def categorize_punches(raw_punch_list, is_saturday):
     punch_list, close_duplicates = deduplicate_close_punches(raw_punch_list, threshold_minutes=3)
-
     p_tuples = []
     for p in punch_list:
         dt = parse_time_str(p)
@@ -74,7 +101,6 @@ def categorize_punches(raw_punch_list, is_saturday):
     if is_saturday:
         morning = [p for p in p_tuples if p[0].hour < 11 or (p[0].hour == 11 and p[0].minute < 30)]
         afternoon = [p for p in p_tuples if p[0].hour > 11 or (p[0].hour == 11 and p[0].minute >= 30)]
-        
         if morning:
             c_in = morning[0][1]
             assigned_punches.append(c_in)
@@ -98,7 +124,6 @@ def categorize_punches(raw_punch_list, is_saturday):
         if lunch_out_candidates:
             b_out = lunch_out_candidates[-1][1]
             assigned_punches.append(b_out)
-
         if lunch_in_candidates:
             b_in = lunch_in_candidates[0][1]
             assigned_punches.append(b_in)
@@ -121,12 +146,10 @@ def categorize_punches(raw_punch_list, is_saturday):
             assigned_punches.append(c_out)
 
     extra_punches = [p for p in punch_list if p not in assigned_punches] + close_duplicates
-    
     multi_earlier = "--"
     multi_later = "--"
     if len(extra_punches) == 1:
         multi_earlier = extra_punches[0]
-        multi_later = "--"
     elif len(extra_punches) >= 2:
         multi_earlier = extra_punches[0]
         multi_later = extra_punches[-1]
@@ -191,11 +214,11 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
         except Exception:
             pass
 
-    # FULL MONTH AUTO-DETECTION: Detect month & calculate 1st to last day
+    # Full month auto-detection
     if dates_in_file:
-        detected_month_date = dates_in_file[0]
-        year = detected_month_date.year
-        month = detected_month_date.month
+        detected_date = dates_in_file[0]
+        year = detected_date.year
+        month = detected_date.month
         last_day = calendar.monthrange(year, month)[1]
         min_d = date(year, month, 1)
         max_d = date(year, month, last_day)
@@ -212,7 +235,6 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
         try: max_d = datetime.strptime(end_date_str, "%Y-%m-%d").date()
         except Exception: pass
 
-    # Include all calendar days including Sundays
     calendar_dates = []
     curr = min_d
     while curr <= max_d:
@@ -229,43 +251,30 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
             is_sunday = (w_date.weekday() == 6)
             is_saturday = (w_date.weekday() == 5)
             day_name = w_date.strftime("%a")
-            
+
             special_type = special_lookup.get((date_str, name)) or special_lookup.get((date_str, "ALL"))
+            if special_type == "Holiday":
+                h_name = get_malaysia_holiday_name(w_date)
+                special_type = f"Public Holiday ({h_name})" if h_name else "Public Holiday"
+
             raw_times_str = raw_punches.get((emp_id, date_str))
 
-            # Case A: Sunday
             if is_sunday:
                 records.append({
                     "Employee ID": emp_id,
                     "Name": name,
                     "Department": dept,
                     "Date": f"{date_str} ({day_name})",
-                    "Clock In": "--",
-                    "Break Out (Lunch)": "--",
-                    "Break In (Back)": "--",
-                    "Clock Out": "--",
-                    "Lunch Duration": "--",
-                    "Late to Work": "--",
-                    "Late Time (Lunch)": "--",
-                    "Total Late Time": "--",
-                    "Early Leave": "--",
-                    "Work Hours": "--",
+                    "Clock In": "--", "Break Out (Lunch)": "--", "Break In (Back)": "--", "Clock Out": "--",
+                    "Lunch Duration": "--", "Late to Work": "--", "Late Time (Lunch)": "--",
+                    "Total Late Time": "--", "Early Leave": "--", "Work Hours": "--",
                     "Status / Alert": "Sunday",
-                    "Multiple Punch (Earlier)": "--",
-                    "Multiple Punch (Later)": "--",
-                    "_work_mins": 0,
-                    "_lunch_mins": 0,
-                    "_late_work_mins": 0,
-                    "_late_lunch_mins": 0,
-                    "_total_late_mins": 0,
-                    "_early_leave_mins": 0,
-                    "_is_absent": 0,
-                    "_is_sunday": 1,
-                    "_is_offday": 1
+                    "Multiple Punch (Earlier)": "--", "Multiple Punch (Later)": "--",
+                    "_work_mins": 0, "_lunch_mins": 0, "_late_work_mins": 0, "_late_lunch_mins": 0,
+                    "_total_late_mins": 0, "_early_leave_mins": 0, "_is_absent": 0, "_is_sunday": 1, "_is_offday": 1
                 })
                 continue
 
-            # Case B: No punches logged on this date
             if not raw_times_str:
                 if special_type:
                     status_text = special_type
@@ -281,43 +290,25 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     "Name": name,
                     "Department": dept,
                     "Date": f"{date_str} ({day_name})",
-                    "Clock In": "--",
-                    "Break Out (Lunch)": "--",
-                    "Break In (Back)": "--",
-                    "Clock Out": "--",
-                    "Lunch Duration": "--",
-                    "Late to Work": "--",
-                    "Late Time (Lunch)": "--",
-                    "Total Late Time": "--",
-                    "Early Leave": "--",
+                    "Clock In": "--", "Break Out (Lunch)": "--", "Break In (Back)": "--", "Clock Out": "--",
+                    "Lunch Duration": "--", "Late to Work": "--", "Late Time (Lunch)": "--",
+                    "Total Late Time": "--", "Early Leave": "--",
                     "Work Hours": "0:00" if is_absent_flag else "--",
                     "Status / Alert": status_text,
-                    "Multiple Punch (Earlier)": "--",
-                    "Multiple Punch (Later)": "--",
-                    "_work_mins": 0,
-                    "_lunch_mins": 0,
-                    "_late_work_mins": 0,
-                    "_late_lunch_mins": 0,
-                    "_total_late_mins": 0,
-                    "_early_leave_mins": 0,
-                    "_is_absent": is_absent_flag,
-                    "_is_sunday": 0,
-                    "_is_offday": is_off
+                    "Multiple Punch (Earlier)": "--", "Multiple Punch (Later)": "--",
+                    "_work_mins": 0, "_lunch_mins": 0, "_late_work_mins": 0, "_late_lunch_mins": 0,
+                    "_total_late_mins": 0, "_early_leave_mins": 0, "_is_absent": is_absent_flag,
+                    "_is_sunday": 0, "_is_offday": is_off
                 })
                 continue
 
-            # Case C: Has punches
             punch_list = [t.strip() for t in raw_times_str.split(",") if t.strip()]
             c_in, b_out, b_in, c_out, status, multi_earlier, multi_later = categorize_punches(punch_list, is_saturday)
 
             if special_type:
                 status = f"{special_type} (Worked)" if status == "Normal" else f"{special_type} ({status})"
 
-            lunch_mins = 0
-            work_mins = 0
-            late_work_mins = 0
-            late_lunch_mins = 0
-            early_leave_mins = 0
+            lunch_mins, work_mins, late_work_mins, late_lunch_mins, early_leave_mins = 0, 0, 0, 0, 0
 
             if c_in != "--":
                 dt_cin = parse_time_str(c_in)
@@ -343,12 +334,17 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     if dt_cout < end_dt:
                         early_leave_mins = round((end_dt - dt_cout).total_seconds() / 60)
                         if early_leave_mins > 0:
-                            tier_hours = math.ceil(early_leave_mins / 60)
-                            hr_label = "hour" if tier_hours == 1 else "hours"
-                            early_remark = f"Early up {tier_hours} {hr_label}"
+                            half_hour_blocks = math.ceil(early_leave_mins / 30)
+                            if half_hour_blocks == 1:
+                                early_remark = "Early up 30 mins"
+                            else:
+                                total_hours = half_hour_blocks * 0.5
+                                hr_str = f"{int(total_hours)}" if total_hours.is_integer() else f"{total_hours}"
+                                hr_label = "hour" if total_hours == 1.0 else "hours"
+                                early_remark = f"Early up {hr_str} {hr_label}"
 
             if early_remark:
-                if status in ["Normal", "Saturday (Half Day)"] or "off day" in status or "Leave" in status or "Holiday" in status or "MC" in status:
+                if status in ["Normal", "Saturday (Half Day)"] or any(k in status for k in ["off day", "Leave", "Holiday", "MC"]):
                     status = f"{status} ({early_remark})"
                 else:
                     status = f"{status}, {early_remark}"
@@ -397,9 +393,9 @@ def build_excel_workbook(df):
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
 
-    header_fill = PatternFill(start_color="1F4E79", end_color="1F4E79", fill_type="solid")
+    header_fill = PatternFill(start_color="0F2D59", end_color="0F2D59", fill_type="solid")
     total_fill = PatternFill(start_color="D9E1F2", end_color="D9E1F2", fill_type="solid")
-    offday_fill = PatternFill(start_color="F8FAFC", end_color="F8FAFC", fill_type="solid")
+    offday_fill = PatternFill(start_color="FFF5F5", end_color="FFF5F5", fill_type="solid")
     absent_fill = PatternFill(start_color="FCA5A5", end_color="FCA5A5", fill_type="solid")
     late_fill = PatternFill(start_color="FEF08A", end_color="FEF08A", fill_type="solid")
     alert_fill = PatternFill(start_color="FED7AA", end_color="FED7AA", fill_type="solid")
@@ -408,7 +404,7 @@ def build_excel_workbook(df):
     font_header = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
     font_bold = Font(name="Calibri", size=11, bold=True)
     font_regular = Font(name="Calibri", size=11)
-    font_merged_banner = Font(name="Calibri", size=11, bold=True, color="FF0000")
+    font_merged_banner = Font(name="Calibri", size=11, bold=True, color="DC2626")
 
     thin_border = Border(
         left=Side(style="thin", color="CBD5E1"),
@@ -419,7 +415,7 @@ def build_excel_workbook(df):
     align_center = Alignment(horizontal="center", vertical="center")
     align_left = Alignment(horizontal="left", vertical="center")
 
-    # 1. Overview Summary Sheet
+    # Overview Summary
     ws_summary = wb.create_sheet(title="Overview Summary")
     ws_summary.views.sheetView[0].showGridLines = True
 
@@ -436,12 +432,12 @@ def build_excel_workbook(df):
         cell.font = font_header
         cell.alignment = align_center
 
-    non_work_categories = ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day", "Sunday"]
+    non_work_categories = ["Holiday", "Public Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day", "Sunday"]
 
     overview_data = []
     for (emp_id, emp_name), emp_group in df.groupby(["Employee ID", "Name"], sort=False):
         dept = emp_group["Department"].iloc[0]
-        days_present = len(emp_group[(emp_group["_is_absent"] == 0) & (~emp_group["Status / Alert"].isin(non_work_categories))])
+        days_present = len(emp_group[(emp_group["_is_absent"] == 0) & (~emp_group["Status / Alert"].str.contains('|'.join(non_work_categories)))])
         days_absent = len(emp_group[emp_group["_is_absent"] == 1])
         total_work_m = emp_group["_work_mins"].sum()
         total_lunch_m = emp_group["_lunch_mins"].sum()
@@ -453,7 +449,7 @@ def build_excel_workbook(df):
             ~emp_group["Status / Alert"].str.startswith("Normal") & 
             ~emp_group["Status / Alert"].str.startswith("Saturday (Half Day)") & 
             (emp_group["Status / Alert"] != "Absent") &
-            (~emp_group["Status / Alert"].isin(non_work_categories))
+            (~emp_group["Status / Alert"].str.contains('|'.join(non_work_categories)))
         ])
         
         overview_data.append([
@@ -489,7 +485,7 @@ def build_excel_workbook(df):
         col_letter = get_column_letter(col[0].column)
         ws_summary.column_dimensions[col_letter].width = max(max_len + 4, 14)
 
-    # 2. Individual Employee Sheets
+    # Individual Employee Sheets
     employee_cols = [
         "Date", "Clock In", "Break Out (Lunch)", "Break In (Back)",
         "Clock Out", "Lunch Duration", "Late to Work", "Late Time (Lunch)", 
@@ -528,49 +524,32 @@ def build_excel_workbook(df):
             curr_row = start_row + r_offset
             status_val = str(row_data["Status / Alert"])
             is_sunday = (status_val == "Sunday")
-            is_offday = any(cat in status_val for cat in ["Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"]) and (row_data["Clock In"] == "--" and row_data["Clock Out"] == "--")
-            
-            # MERGED ROW FOR SUNDAY OR OFF-DAYS
+            is_offday = any(cat in status_val for cat in ["Holiday", "Public Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"]) and (row_data["Clock In"] == "--" and row_data["Clock Out"] == "--")
+
             if is_sunday or is_offday:
                 banner_text = "Sunday" if is_sunday else status_val.upper()
-                
-                # Date Cell
                 date_cell = ws_emp.cell(row=curr_row, column=1, value=row_data["Date"])
                 date_cell.font = font_bold
                 date_cell.border = thin_border
                 date_cell.alignment = align_center
 
-                # Fill all remaining cells in row with borders
                 for c_idx in range(2, len(employee_cols) + 1):
                     c = ws_emp.cell(row=curr_row, column=c_idx)
                     c.border = thin_border
                     c.fill = offday_fill
 
-                # Merge columns 2 to 14
                 ws_emp.merge_cells(start_row=curr_row, start_column=2, end_row=curr_row, end_column=len(employee_cols))
                 merged_cell = ws_emp.cell(row=curr_row, column=2, value=banner_text)
                 merged_cell.alignment = align_center
                 merged_cell.font = font_merged_banner
                 continue
 
-            # NORMAL WORK DAY
             row_vals = [
-                row_data["Date"],
-                row_data["Clock In"],
-                row_data["Break Out (Lunch)"],
-                row_data["Break In (Back)"],
-                row_data["Clock Out"],
-                row_data["Lunch Duration"],
-                row_data["Late to Work"],
-                row_data["Late Time (Lunch)"],
-                row_data["Total Late Time"],
-                row_data["Early Leave"],
-                row_data["Work Hours"],
-                row_data["Status / Alert"],
-                row_data["Multiple Punch (Earlier)"],
-                row_data["Multiple Punch (Later)"]
+                row_data["Date"], row_data["Clock In"], row_data["Break Out (Lunch)"], row_data["Break In (Back)"],
+                row_data["Clock Out"], row_data["Lunch Duration"], row_data["Late to Work"], row_data["Late Time (Lunch)"],
+                row_data["Total Late Time"], row_data["Early Leave"], row_data["Work Hours"], row_data["Status / Alert"],
+                row_data["Multiple Punch (Earlier)"], row_data["Multiple Punch (Later)"]
             ]
-            
             is_absent = (status_val == "Absent")
 
             for col_idx, val in enumerate(row_vals, 1):
@@ -638,8 +617,8 @@ def api_process():
 
     start_date = request.form.get("start_date")
     end_date = request.form.get("end_date")
-    
     special_entries_raw = request.form.get("special_entries", "[]")
+
     try:
         special_entries = json.loads(special_entries_raw)
     except Exception:
