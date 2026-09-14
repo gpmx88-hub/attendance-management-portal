@@ -704,6 +704,10 @@
                             </select>
                         </div>
                         <div class="field-group">
+                            <label>Remark / Name (Optional):</label>
+                            <input type="text" id="customRemarkInput" placeholder="e.g. Johor Sultan Birthday" style="width: 200px;">
+                        </div>
+                        <div class="field-group">
                             <label>Target:</label>
                             <select id="specialTargetSelect">
                                 <option value="current">Current Employee</option>
@@ -973,6 +977,7 @@
         const picker = document.getElementById('specialDatePicker');
         const chosenDate = picker.value;
         const chosenType = document.getElementById('specialTypeSelect').value;
+        const customRemark = document.getElementById('customRemarkInput').value.trim();
         const targetScope = document.getElementById('specialTargetSelect').value;
         const activePerson = document.getElementById('empDropdown').value;
 
@@ -988,7 +993,15 @@
         }
 
         specialEntries = specialEntries.filter(e => !(e.date === chosenDate && e.target === targetName));
-        specialEntries.push({ date: chosenDate, type: chosenType, target: targetName });
+        specialEntries.push({
+            date: chosenDate,
+            type: chosenType,
+            target: targetName,
+            remark: customRemark
+        });
+
+        // Clear the remark input for the next entry
+        document.getElementById('customRemarkInput').value = '';
 
         renderSpecialTags();
         markChangesDirty();
@@ -1020,9 +1033,10 @@
             else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️"; }
 
             const targetLabel = (entry.target === 'ALL') ? 'All' : entry.target.split(' ')[0];
+            const labelContent = entry.remark ? `${entry.type}: ${entry.remark}` : entry.type;
             const tag = document.createElement('span');
             tag.className = tagClass;
-            tag.innerHTML = `${icon} ${entry.date} [${entry.type}] (${targetLabel}) <span class="remove-btn" onclick="removeSpecialDay(${idx})">&times;</span>`;
+            tag.innerHTML = `${icon} ${entry.date} [${labelContent}] (${targetLabel}) <span class="remove-btn" onclick="removeSpecialDay(${idx})">&times;</span>`;
             container.appendChild(tag);
         });
     }

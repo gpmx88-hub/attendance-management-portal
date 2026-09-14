@@ -219,7 +219,8 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
 
     special_lookup = {}
     for entry in special_entries:
-        special_lookup[(entry['date'], entry['target'])] = entry['type']
+        # Store both type and optional custom remark: (entry['type'], entry.get('remark', ''))
+        special_lookup[(entry['date'], entry['target'])] = (entry['type'], entry.get('remark', '').strip())
 
     header_idx = None
     for idx, row in df_raw.iloc[:5].iterrows():
@@ -293,10 +294,21 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
             is_saturday = (w_date.weekday() == 5)
             day_name = w_date.strftime("%a")
 
-            special_type = special_lookup.get((date_str, name)) or special_lookup.get((date_str, "ALL"))
-            if special_type == "Holiday":
-                h_name = get_malaysia_holiday_name(w_date)
-                special_type = f"Public Holiday ({h_name})" if h_name else "Public Holiday"
+            special_info = special_lookup.get((date_str, name)) or special_lookup.get((date_str, "ALL"))
+            special_type = None
+
+            if special_info:
+                st_type, st_remark = special_info
+                if st_remark:
+                    # User provided an explicit custom name/remark
+                    special_type = f"{st_type} ({st_remark})" if st_type not in st_remark else st_remark
+                else:
+                    # Fallback to automatic holiday engine if no custom remark was typed
+                    if st_type == "Holiday":
+                        h_name = get_malaysia_holiday_name(w_date)
+                        special_type = f"Public Holiday ({h_name})" if h_name else "Public Holiday"
+                    else:
+                        special_type = st_type
 
             raw_times_str = raw_punches.get((emp_id, date_str))
 
