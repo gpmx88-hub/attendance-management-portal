@@ -1033,7 +1033,6 @@
                     </div>
                 </div>
             </div>
-
             <script>
     let globalData = [];
     let employeeNames = [];
@@ -2032,11 +2031,24 @@ function makeCell(timeVal, rowIdx, colKey) {
         });
     }
 
-    function downloadExcel() {
-        window.location.href = '/api/download';
-    }
-            </script>
+async function downloadExcel() {
+        if (!globalData || !globalData.length) {
+            showToast("No active attendance data to download.");
+            return;
+        }
 
+        try {
+            // Push active on-screen modifications to the server first
+            await syncChangeToBackend(globalData);
+            // Trigger download of the freshly updated data
+            window.location.href = '/api/download';
+        } catch (err) {
+            console.error(err);
+            showToast("Failed to sync latest changes before downloading.");
+        }
+    }
+    
+            </script>
             <!-- Slide-Out Sidebar Drawer -->
             <div id="sideDrawerBackdrop"
                  class="side-drawer-backdrop"
