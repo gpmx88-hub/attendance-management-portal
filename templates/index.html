@@ -239,37 +239,119 @@
         }
 
 
-        .workspace-quick-panel {
-            background: #f8fafc;
+        /* Hamburger Trigger Button */
+        .btn-menu-trigger {
+            background: #ffffff;
+            color: var(--primary);
             border: 1px solid var(--border-strong);
-            border-radius: 10px;
-            padding: 12px 14px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-menu-trigger:hover {
+            background: #f1f5f9;
+            border-color: var(--primary-accent);
+        }
+
+        /* Slide-Out Side Drawer */
+        .side-drawer-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 1200;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .side-drawer-backdrop.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .side-drawer {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 300px;
+            height: 100vh;
+            background: #ffffff;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+            z-index: 1300;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            min-width: 260px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            transition: right 0.25s ease-in-out;
         }
 
-        .workspace-panel-title {
-            font-size: 11px;
+        .side-drawer.active {
+            right: 0;
+        }
+
+        .side-drawer-header {
+            padding: 18px 20px;
+            background: var(--primary);
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .side-drawer-header h3 {
+            margin: 0;
+            font-size: 16px;
             font-weight: 700;
-            color: var(--text-muted);
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
+            letter-spacing: -0.01em;
         }
 
-        .workspace-btn-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+        .side-drawer-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
         }
 
-        .workspace-btn-grid button {
+        .side-drawer-btn {
             width: 100%;
-            justify-content: center;
-            font-size: 12px;
-            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+        .side-drawer-btn:hover {
+            background: #f1f5f9;
+            border-color: var(--primary-accent);
+            transform: translateX(-2px);
+        }
+
+        .side-drawer-btn.btn-signout {
+            color: #dc2626;
+            background: #fef2f2;
+            border-color: #fecaca;
+            margin-top: auto;
+        }
+
+        .side-drawer-btn.btn-signout:hover {
+            background: #fee2e2;
         }
 
         .holiday-tag.tag-leave { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; }
@@ -693,6 +775,12 @@
                         <span>Lunch Limit: <strong>1h 10m</strong></span>
                     </div>
                 </div>
+                <button type="button" class="btn-menu-trigger" onclick="openSideDrawer()">
+                    <span id="saveDirtyDot"
+                          class="dirty-indicator hidden"
+                          title="Unsaved modifications"></span>
+                    ☰ Menu
+                </button>
             </header>
             <section class="section-card">
                 <div class="setup-grid">
@@ -703,87 +791,55 @@
                                accept=".xlsx, .xls"
                                onchange="handleNewFileUpload()">
                     </div>
-                    <div class="config-controls"
-                         style="display: grid;
-                                grid-template-columns: 1fr auto;
-                                gap: 16px;
-                                align-items: start">
-                        <!-- Left Column: Dates & Special Days -->
-                        <div style="display: flex; flex-direction: column; gap: 14px;">
-                            <div class="date-range-row">
-                                <div class="field-group">
-                                    <label>Start Date:</label>
-                                    <input type="date" id="startDateInput" onchange="onDateRangeChange()">
-                                </div>
-                                <div class="field-group">
-                                    <label>End Date:</label>
-                                    <input type="date" id="endDateInput" onchange="onDateRangeChange()">
-                                </div>
+                    <div class="config-controls">
+                        <div class="date-range-row">
+                            <div class="field-group">
+                                <label>Start Date:</label>
+                                <input type="date" id="startDateInput" onchange="onDateRangeChange()">
                             </div>
-                            <div class="special-day-toolbar">
-                                <div class="field-group">
-                                    <label>Date:</label>
-                                    <input type="date" id="specialDatePicker">
-                                </div>
-                                <div class="field-group">
-                                    <label>Type:</label>
-                                    <select id="specialTypeSelect">
-                                        <option value="Holiday">Holiday</option>
-                                        <option value="Annual Leave">Annual Leave</option>
-                                        <option value="MC">MC</option>
-                                        <option value="Team A off day">Team A off day</option>
-                                        <option value="Team B off day">Team B off day</option>
-                                    </select>
-                                </div>
-                                <div class="field-group">
-                                    <label>Remark / Name (Optional):</label>
-                                    <input type="text"
-                                           id="customRemarkInput"
-                                           placeholder="e.g. Johor Sultan Birthday"
-                                           style="width: 170px">
-                                </div>
-                                <div class="field-group">
-                                    <label>Target:</label>
-                                    <select id="specialTargetSelect">
-                                        <option value="current">Current Employee</option>
-                                        <option value="all">Company-Wide (All)</option>
-                                    </select>
-                                </div>
-                                <button type="button"
-                                        class="btn-action"
-                                        onclick="confirmSpecialDay()">+ Add Special Day</button>
-                            </div>
-                            <div id="holidayTags" class="holiday-tags-container">
-                                <span style="font-size: 12px;
-                                             color: var(--text-muted);
-                                             font-style: italic"
-                                      id="noHolidaysText">No custom holidays or leave days added.</span>
+                            <div class="field-group">
+                                <label>End Date:</label>
+                                <input type="date" id="endDateInput" onchange="onDateRangeChange()">
                             </div>
                         </div>
-                        <!-- Right Column: Workspace Control Box -->
-                        <div class="workspace-quick-panel">
-                            <span class="workspace-panel-title">⚡ Workspace Controls</span>
-                            <div class="workspace-btn-grid">
-                                <button type="button" class="btn-guide" onclick="openTutorialModal()">📖 Guide</button>
-                                <button type="button"
-                                        class="btn-action"
-                                        style="background: #059669"
-                                        onclick="openSaveModal()">
-                                    <span id="saveDirtyDot"
-                                          class="dirty-indicator hidden"
-                                          title="Unsaved modifications"></span>💾 Save
-                                </button>
-                                <button type="button"
-                                        class="btn-action"
-                                        style="background: #475569"
-                                        onclick="openRestoreModal()">📂 Restore</button>
-                                <a href="/logout"
-                                   style="text-decoration: none;
-                                          display: block"
-                                   onclick="return handleSignOutClick(event)">
-                                    <button type="button" class="btn-guide" style="background: #dc2626;">🚪 Sign Out</button>
-                                </a>
+                        <div class="special-day-toolbar">
+                            <div class="field-group">
+                                <label>Date:</label>
+                                <input type="date" id="specialDatePicker">
                             </div>
+                            <div class="field-group">
+                                <label>Type:</label>
+                                <select id="specialTypeSelect">
+                                    <option value="Holiday">Holiday</option>
+                                    <option value="Annual Leave">Annual Leave</option>
+                                    <option value="MC">MC</option>
+                                    <option value="Team A off day">Team A off day</option>
+                                    <option value="Team B off day">Team B off day</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label>Remark / Name (Optional):</label>
+                                <input type="text"
+                                       id="customRemarkInput"
+                                       placeholder="e.g. Johor Sultan Birthday"
+                                       style="width: 190px">
+                            </div>
+                            <div class="field-group">
+                                <label>Target:</label>
+                                <select id="specialTargetSelect">
+                                    <option value="current">Current Employee</option>
+                                    <option value="all">Company-Wide (All)</option>
+                                </select>
+                            </div>
+                            <button type="button"
+                                    class="btn-action"
+                                    onclick="confirmSpecialDay()">+ Add Special Day</button>
+                        </div>
+                        <div id="holidayTags" class="holiday-tags-container">
+                            <span style="font-size: 12px;
+                                         color: var(--text-muted);
+                                         font-style: italic"
+                                  id="noHolidaysText">No custom holidays or leave days added.</span>
                         </div>
                     </div>
                 </section>
@@ -977,6 +1033,7 @@
                     </div>
                 </div>
             </div>
+
             <script>
     let globalData = [];
     let employeeNames = [];
@@ -988,6 +1045,16 @@
 
     const OFF_DAY_TYPES = ["Holiday", "Public Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"];
     const COLUMN_TIME_ORDER = ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out"];
+
+    function openSideDrawer() {
+        document.getElementById('sideDrawer').classList.add('active');
+        document.getElementById('sideDrawerBackdrop').classList.add('active');
+    }
+
+    function closeSideDrawer() {
+        document.getElementById('sideDrawer').classList.remove('active');
+        document.getElementById('sideDrawerBackdrop').classList.remove('active');
+    }
 
     function markChangesDirty() {
         hasUnsavedChanges = true;
@@ -1968,5 +2035,38 @@
         window.location.href = '/api/download';
     }
             </script>
+
+            <!-- Slide-Out Sidebar Drawer -->
+            <div id="sideDrawerBackdrop"
+                 class="side-drawer-backdrop"
+                 onclick="closeSideDrawer()"></div>
+            <div id="sideDrawer" class="side-drawer">
+                <div class="side-drawer-header">
+                    <h3>⚡ Workspace Menu</h3>
+                    <button type="button" class="modal-close-btn" onclick="closeSideDrawer()">×</button>
+                </div>
+                <div class="side-drawer-body">
+                    <button type="button"
+                            class="side-drawer-btn"
+                            onclick="openTutorialModal(); closeSideDrawer();">
+                        <span style="font-size: 18px;">📖</span> User Guide & Tutorial
+                    </button>
+                    <button type="button"
+                            class="side-drawer-btn"
+                            onclick="openSaveModal(); closeSideDrawer();">
+                        <span style="font-size: 18px;">💾</span> Save Progress Slot
+                    </button>
+                    <button type="button"
+                            class="side-drawer-btn"
+                            onclick="openRestoreModal(); closeSideDrawer();">
+                        <span style="font-size: 18px;">📂</span> Load Saved Slot
+                    </button>
+                    <a href="/logout"
+                       class="side-drawer-btn btn-signout"
+                       onclick="return handleSignOutClick(event)">
+                        <span style="font-size: 18px;">🚪</span> Sign Out
+                    </a>
+                </div>
+            </div>
         </body>
     </html>
