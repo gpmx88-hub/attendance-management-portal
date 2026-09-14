@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Attendance Punch Card Portal</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-              rel="stylesheet">
-        <style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Punch Card Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
         :root {
             --primary: #0f2d59;
             --primary-light: #1e427b;
@@ -79,23 +78,32 @@
             color: var(--text-main);
         }
 
-        .btn-guide {
-            background: #334155;
-            color: white;
-            border: none;
-            padding: 8px 16px;
+        .btn-menu-trigger {
+            background: #ffffff;
+            color: var(--primary);
+            border: 1px solid var(--border-strong);
+            padding: 8px 14px;
             border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             transition: all 0.15s ease;
         }
 
-        .btn-guide:hover {
-            background: #1e293b;
+        .btn-menu-trigger:hover {
+            background: #f1f5f9;
+            border-color: var(--primary-accent);
+        }
+
+        .dirty-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: #f59e0b;
+            border-radius: 50%;
         }
 
         .section-card {
@@ -186,7 +194,6 @@
             padding: 10px 14px;
             border-radius: 8px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
@@ -206,15 +213,6 @@
 
         .btn-action:hover {
             opacity: 0.9;
-        }
-
-        .dirty-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background-color: #f59e0b;
-            border-radius: 50%;
-            margin-right: 4px;
         }
 
         .holiday-tags-container {
@@ -238,132 +236,28 @@
             border: 1px solid #bbf7d0;
         }
 
-
-        /* Hamburger Trigger Button */
-        .btn-menu-trigger {
-            background: #ffffff;
-            color: var(--primary);
-            border: 1px solid var(--border-strong);
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.15s ease;
-        }
-
-        .btn-menu-trigger:hover {
-            background: #f1f5f9;
-            border-color: var(--primary-accent);
-        }
-
-        /* Slide-Out Side Drawer */
-        .side-drawer-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(2px);
-            z-index: 1200;
-            opacity: 0;
-            transition: opacity 0.25s ease;
-        }
-
-        .side-drawer-backdrop.active {
-            display: block;
-            opacity: 1;
-        }
-
-        .side-drawer {
-            position: fixed;
-            top: 0;
-            right: -320px;
-            width: 300px;
-            height: 100vh;
-            background: #ffffff;
-            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
-            z-index: 1300;
-            display: flex;
-            flex-direction: column;
-            transition: right 0.25s ease-in-out;
-        }
-
-        .side-drawer.active {
-            right: 0;
-        }
-
-        .side-drawer-header {
-            padding: 18px 20px;
-            background: var(--primary);
-            color: #ffffff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .side-drawer-header h3 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: -0.01em;
-        }
-
-        .side-drawer-body {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            flex: 1;
-        }
-
-        .side-drawer-btn {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 12px;
-            padding: 12px 16px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: #f8fafc;
-            color: var(--text-main);
-            cursor: pointer;
-            transition: all 0.15s ease;
-            text-decoration: none;
-        }
-
-        .side-drawer-btn:hover {
-            background: #f1f5f9;
-            border-color: var(--primary-accent);
-            transform: translateX(-2px);
-        }
-
-        .side-drawer-btn.btn-signout {
-            color: #dc2626;
-            background: #fef2f2;
-            border-color: #fecaca;
-            margin-top: auto;
-        }
-
-        .side-drawer-btn.btn-signout:hover {
-            background: #fee2e2;
-        }
-
         .holiday-tag.tag-leave { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; }
         .holiday-tag.tag-mc { background: #ffe4e6; color: #9f1239; border-color: #fecdd3; }
         .holiday-tag.tag-teama { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
         .holiday-tag.tag-teamb { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
+        .holiday-tag.tag-meeting { background: #e0f2fe; color: #0284c7; border-color: #bae6fd; }
 
         .holiday-tag .remove-btn {
             cursor: pointer;
             color: #ef4444;
             font-weight: bold;
             font-size: 14px;
+        }
+
+        .badge-lunch-meeting {
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            border: 1px solid #bae6fd;
+            font-size: 11px;
         }
 
         .stats-grid {
@@ -685,13 +579,106 @@
             margin-left: auto;
         }
 
+        /* Slide-Out Side Drawer */
+        .side-drawer-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 1200;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .side-drawer-backdrop.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .side-drawer {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 300px;
+            height: 100vh;
+            background: #ffffff;
+            box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+            z-index: 1300;
+            display: flex;
+            flex-direction: column;
+            transition: right 0.25s ease-in-out;
+        }
+
+        .side-drawer.active {
+            right: 0;
+        }
+
+        .side-drawer-header {
+            padding: 18px 20px;
+            background: var(--primary);
+            color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .side-drawer-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .side-drawer-body {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .side-drawer-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            color: var(--text-main);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+
+        .side-drawer-btn:hover {
+            background: #f1f5f9;
+            border-color: var(--primary-accent);
+            transform: translateX(-2px);
+        }
+
+        .side-drawer-btn.btn-signout {
+            color: #dc2626;
+            background: #fef2f2;
+            border-color: #fecaca;
+            margin-top: auto;
+        }
+
+        .side-drawer-btn.btn-signout:hover {
+            background: #fee2e2;
+        }
+
         .modal-backdrop {
             display: none;
             position: fixed;
             inset: 0;
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(2px);
-            z-index: 1000;
+            z-index: 1400;
             align-items: center;
             justify-content: center;
             padding: 24px;
@@ -749,291 +736,257 @@
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
-        </style>
-    </head>
-    <body>
-        <div id="appToast" class="app-toast">
-            <span class="toast-icon">⚠️</span>
-            <span id="appToastMessage">Notification message</span>
-            <button type="button" class="toast-close" onclick="hideToast()">×</button>
+    </style>
+</head>
+<body>
+
+<div id="appToast" class="app-toast">
+    <span class="toast-icon">⚠️</span>
+    <span id="appToastMessage">Notification message</span>
+    <button type="button" class="toast-close" onclick="hideToast()">&times;</button>
+</div>
+
+<!-- Slide-Out Sidebar Drawer -->
+<div id="sideDrawerBackdrop" class="side-drawer-backdrop" onclick="closeSideDrawer()"></div>
+<div id="sideDrawer" class="side-drawer">
+    <div class="side-drawer-header">
+        <h3>⚡ Workspace Menu</h3>
+        <button type="button" class="modal-close-btn" onclick="closeSideDrawer()">&times;</button>
+    </div>
+    <div class="side-drawer-body">
+        <button type="button" class="side-drawer-btn" onclick="openTutorialModal(); closeSideDrawer();">
+            <span style="font-size: 18px;">📖</span> User Guide & Tutorial
+        </button>
+        <button type="button" class="side-drawer-btn" onclick="openSaveModal(); closeSideDrawer();">
+            <span style="font-size: 18px;">💾</span> Save Progress Slot
+        </button>
+        <button type="button" class="side-drawer-btn" onclick="openRestoreModal(); closeSideDrawer();">
+            <span style="font-size: 18px;">📂</span> Load Saved Slot
+        </button>
+        
+        <a href="/logout" class="side-drawer-btn btn-signout" onclick="return handleSignOutClick(event)">
+            <span style="font-size: 18px;">🚪</span> Sign Out
+        </a>
+    </div>
+</div>
+
+<div class="container">
+    <header class="app-header">
+        <div class="header-title-group">
+            <h1>Attendance Punch Card Portal</h1>
+            <div class="header-meta">
+                <span>User: <strong style="color: #2563eb;">{{ current_user }}</strong></span>
+                <span>•</span>
+                <span>Start: <strong>09:00</strong></span>
+                <span>•</span>
+                <span>Weekday End: <strong>18:00</strong></span>
+                <span>•</span>
+                <span>Saturday End: <strong>13:30</strong></span>
+                <span>•</span>
+                <span>Lunch Limit: <strong>1h 10m</strong></span>
+            </div>
         </div>
-        <div class="container">
-            <header class="app-header">
-                <div class="header-title-group">
-                    <h1>Attendance Punch Card Portal</h1>
-                    <div class="header-meta">
-                        <span>User: <strong style="color: #2563eb;">{{ current_user }}</strong></span>
-                        <span>•</span>
-                        <span>Start: <strong>09:00</strong></span>
-                        <span>•</span>
-                        <span>Weekday End: <strong>18:00</strong></span>
-                        <span>•</span>
-                        <span>Saturday End: <strong>13:30</strong></span>
-                        <span>•</span>
-                        <span>Lunch Limit: <strong>1h 10m</strong></span>
+        <button type="button" class="btn-menu-trigger" onclick="openSideDrawer()">
+            <span id="saveDirtyDot" class="dirty-indicator hidden" title="Unsaved modifications"></span>
+            ☰ Menu
+        </button>
+    </header>
+
+    <section class="section-card">
+        <div class="setup-grid">
+            <div class="file-drop-box">
+                <label for="fileInput">📁 Upload Biometric Punch File</label>
+                <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleNewFileUpload()">
+            </div>
+
+            <div class="config-controls">
+                <div class="date-range-row">
+                    <div class="field-group">
+                        <label>Start Date:</label>
+                        <input type="date" id="startDateInput" onchange="onDateRangeChange()">
+                    </div>
+                    <div class="field-group">
+                        <label>End Date:</label>
+                        <input type="date" id="endDateInput" onchange="onDateRangeChange()">
                     </div>
                 </div>
-                <button type="button" class="btn-menu-trigger" onclick="openSideDrawer()">
-                    <span id="saveDirtyDot"
-                          class="dirty-indicator hidden"
-                          title="Unsaved modifications"></span>
-                    ☰ Menu
-                </button>
-            </header>
-            <section class="section-card">
-                <div class="setup-grid">
-                    <div class="file-drop-box">
-                        <label for="fileInput">📁 Upload Biometric Punch File</label>
-                        <input type="file"
-                               id="fileInput"
-                               accept=".xlsx, .xls"
-                               onchange="handleNewFileUpload()">
+
+                <div class="special-day-toolbar">
+                    <div class="field-group">
+                        <label>Date:</label>
+                        <input type="date" id="specialDatePicker">
                     </div>
-                    <div class="config-controls">
-                        <div class="date-range-row">
-                            <div class="field-group">
-                                <label>Start Date:</label>
-                                <input type="date" id="startDateInput" onchange="onDateRangeChange()">
-                            </div>
-                            <div class="field-group">
-                                <label>End Date:</label>
-                                <input type="date" id="endDateInput" onchange="onDateRangeChange()">
-                            </div>
-                        </div>
-                        <div class="special-day-toolbar">
-                            <div class="field-group">
-                                <label>Date:</label>
-                                <input type="date" id="specialDatePicker">
-                            </div>
-                            <div class="field-group">
-                                <label>Type:</label>
-                                <select id="specialTypeSelect">
-                                    <option value="Holiday">Holiday</option>
-                                    <option value="Annual Leave">Annual Leave</option>
-                                    <option value="MC">MC</option>
-                                    <option value="Team A off day">Team A off day</option>
-                                    <option value="Team B off day">Team B off day</option>
-                                </select>
-                            </div>
-                            <div class="field-group">
-                                <label>Remark / Name (Optional):</label>
-                                <input type="text"
-                                       id="customRemarkInput"
-                                       placeholder="e.g. Johor Sultan Birthday"
-                                       style="width: 190px">
-                            </div>
-                            <div class="field-group">
-                                <label>Target:</label>
-                                <select id="specialTargetSelect">
-                                    <option value="current">Current Employee</option>
-                                    <option value="all">Company-Wide (All)</option>
-                                </select>
-                            </div>
-                            <button type="button"
-                                    class="btn-action"
-                                    onclick="confirmSpecialDay()">+ Add Special Day</button>
-                        </div>
-                        <div id="holidayTags" class="holiday-tags-container">
-                            <span style="font-size: 12px;
-                                         color: var(--text-muted);
-                                         font-style: italic"
-                                  id="noHolidaysText">No custom holidays or leave days added.</span>
-                        </div>
+                    <div class="field-group">
+                        <label>Type:</label>
+                        <select id="specialTypeSelect">
+                            <option value="Holiday">Holiday</option>
+                            <option value="Annual Leave">Annual Leave</option>
+                            <option value="MC">MC</option>
+                            <option value="Team A off day">Team A off day</option>
+                            <option value="Team B off day">Team B off day</option>
+                            <option value="Lunch Meeting in Office">Lunch Meeting in Office</option>
+                        </select>
                     </div>
-                </section>
-                <section id="resultsCard" class="section-card hidden">
-                    <div class="stats-grid">
-                        <div class="stat-box">
-                            <div class="stat-val" id="statEmployees">0</div>
-                            <div class="stat-label">Total Employees</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-val" id="statWorkingDays">0</div>
-                            <div class="stat-label">Total Month Days</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
-                            <div class="stat-label">Total Absences</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-val" id="statAlerts" style="color: var(--danger);">0</div>
-                            <div class="stat-label">Punch Irregularities</div>
-                        </div>
+                    <div class="field-group">
+                        <label>Remark / Name (Optional):</label>
+                        <input type="text" id="customRemarkInput" placeholder="e.g. Johor Sultan Birthday" style="width: 190px;">
                     </div>
-                    <div class="workshop-panel">
-                        <div class="workshop-create">
-                            <div style="display: flex;
-                                        align-items: center;
-                                        gap: 10px;
-                                        flex-wrap: wrap">
-                                <span style="font-size: 13px; font-weight: 600;">✨ Custom Time Creator:</span>
-                                <input type="time" id="newTimePicker" step="1" value="09:00:00">
-                                <button type="button"
-                                        class="btn-action"
-                                        onclick="createNewTimeBlock()">+ Create Block</button>
-                            </div>
-                            <div id="createdBlocksTray" class="created-blocks-tray">
-                                <span style="font-size: 12px;
-                                             color: var(--text-muted);
-                                             font-style: italic"
-                                      id="trayPlaceholder">Newly created time blocks appear here. Drag them anywhere into the table.</span>
-                            </div>
-                        </div>
-                        <div id="trashZone"
-                             class="trash-dropzone"
-                             ondragover="handleTrashDragOver(event)"
-                             ondragleave="handleTrashDragLeave(event)"
-                             ondrop="handleTrashDrop(event)"
-                             onclick="handleTrashClick()"
-                             title="Drag any time block here to throw it away">
-                            <span style="font-size: 20px;">🗑️</span>
-                            <span>Dustbin (Throw Away)</span>
-                        </div>
+                    <div class="field-group">
+                        <label>Target:</label>
+                        <select id="specialTargetSelect">
+                            <option value="current">Current Employee</option>
+                            <option value="all">Company-Wide (All)</option>
+                        </select>
                     </div>
-                    <div class="employee-toolbar">
-                        <div class="filter-actions">
-                            <label for="searchInput" style="font-size: 13px; font-weight: 600;">Employee:</label>
-                            <input type="text"
-                                   id="searchInput"
-                                   placeholder="Search prefix (e.g. 'tan')..."
-                                   oninput="onSearchType()"
-                                   style="width: 190px">
-                            <select id="empDropdown"
-                                    onchange="renderEmployeeTable()"
-                                    style="min-width: 190px"></select>
-                        </div>
-                        <button type="button"
-                                class="btn-download"
-                                onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
-                    </div>
-                    <div class="table-viewport">
-                        <table id="attendanceTable">
-                            <thead>
-                                <tr>
-                                    <th style="min-width: 120px;">Date</th>
-                                    <th style="background-color: #1e3a8a;">Clock In ⇄</th>
-                                    <th style="background-color: #1e3a8a;">Break Out ⇄</th>
-                                    <th style="background-color: #1e3a8a;">Break In ⇄</th>
-                                    <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
-                                    <th>Lunch Duration</th>
-                                    <th style="background-color: #274c77;">Late (Work)</th>
-                                    <th>Late (Lunch)</th>
-                                    <th style="background-color: #b91c1c;">Total Late</th>
-                                    <th style="background-color: #831843;">Early Leave</th>
-                                    <th>Work Hours</th>
-                                    <th style="min-width: 130px;">Status / Alert</th>
-                                    <th style="background-color: #475569;">Multiple (Earlier)</th>
-                                    <th style="background-color: #475569;">Multiple (Later)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </section>
-            </div>
-            <!-- Tutorial Modal -->
-            <div id="tutorialModal"
-                 class="modal-backdrop"
-                 onclick="handleBackdropClick(event)">
-                <div class="modal-window">
-                    <div class="modal-header">
-                        <h3>📖 Attendance Portal Instructions & Tutorial</h3>
-                        <div style="display: flex; align-items: center; gap: 14px;">
-                            <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
-                               target="_blank"
-                               style="color: #cbd5e1;
-                                      font-size: 13px;
-                                      text-decoration: underline">Open in New Tab ↗</a>
-                            <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">×</button>
-                        </div>
-                    </div>
-                    <div class="modal-body">
-                        <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
-                            <p style="padding: 20px; text-align: center;">
-                                Your browser does not support inline PDFs.
-                                <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
-                                   target="_blank"
-                                   style="color: #2563eb;
-                                          font-weight: bold">Click here to download and view the tutorial PDF</a>.
-                            </p>
-                        </iframe>
-                    </div>
+                    <button type="button" class="btn-action" onclick="confirmSpecialDay()">+ Add Special Day</button>
+                </div>
+
+                <div id="holidayTags" class="holiday-tags-container">
+                    <span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="noHolidaysText">No custom holidays or leave days added.</span>
                 </div>
             </div>
-            <!-- Game Save Slot Modal -->
-            <div id="saveSlotModal"
-                 class="modal-backdrop"
-                 onclick="handleSlotBackdropClick(event)">
-                <div class="modal-window"
-                     style="max-width: 620px;
-                            height: auto;
-                            max-height: 80vh">
-                    <div class="modal-header">
-                        <h3>💾 Save Progress Slot</h3>
-                        <button type="button" class="modal-close-btn" onclick="closeSaveModal()">×</button>
-                    </div>
-                    <div style="padding: 20px; overflow-y: auto;">
-                        <div style="background: #f8fafc;
-                                    border: 1px solid #cbd5e1;
-                                    padding: 14px;
-                                    border-radius: 8px;
-                                    margin-bottom: 16px">
-                            <label style="display: block;
-                                          font-size: 12px;
-                                          font-weight: 700;
-                                          color: #1e3a8a;
-                                          margin-bottom: 6px">SAVE AS NEW SLOT</label>
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text"
-                                       id="newSlotTitleInput"
-                                       placeholder="e.g. June 2026 - Final Review"
-                                       style="flex: 1">
-                                <button type="button"
-                                        class="btn-action"
-                                        style="background: #059669"
-                                        onclick="executeSaveNewSlot()">Save New</button>
-                            </div>
-                        </div>
-                        <label style="display: block;
-                                      font-size: 12px;
-                                      font-weight: 700;
-                                      color: #64748b;
-                                      margin-bottom: 8px">OR OVERWRITE AN EXISTING SAVE</label>
-                        <div id="saveSlotsList"
-                             style="display: flex;
-                                    flex-direction: column;
-                                    gap: 8px;
-                                    max-height: 280px;
-                                    overflow-y: auto"></div>
-                    </div>
+        </div>
+    </section>
+
+    <section id="resultsCard" class="section-card hidden">
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-val" id="statEmployees">0</div>
+                <div class="stat-label">Total Employees</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="statWorkingDays">0</div>
+                <div class="stat-label">Total Month Days</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
+                <div class="stat-label">Total Absences</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="statAlerts" style="color: var(--danger);">0</div>
+                <div class="stat-label">Punch Irregularities</div>
+            </div>
+        </div>
+
+        <div class="workshop-panel">
+            <div class="workshop-create">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="font-size: 13px; font-weight: 600;">✨ Custom Time Creator:</span>
+                    <input type="time" id="newTimePicker" step="1" value="09:00:00">
+                    <button type="button" class="btn-action" onclick="createNewTimeBlock()">+ Create Block</button>
+                </div>
+                <div id="createdBlocksTray" class="created-blocks-tray">
+                    <span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="trayPlaceholder">Newly created time blocks appear here. Drag them anywhere into the table.</span>
                 </div>
             </div>
-            <!-- Restore Slot Modal -->
-            <div id="restoreSlotModal"
-                 class="modal-backdrop"
-                 onclick="handleSlotBackdropClick(event)">
-                <div class="modal-window"
-                     style="max-width: 620px;
-                            height: auto;
-                            max-height: 80vh">
-                    <div class="modal-header" style="background: #1e293b;">
-                        <h3>📂 Load Saved Game / Progress</h3>
-                        <button type="button" class="modal-close-btn" onclick="closeRestoreModal()">×</button>
-                    </div>
-                    <div style="padding: 20px; overflow-y: auto;">
-                        <div id="restoreSlotsList"
-                             style="display: flex;
-                                    flex-direction: column;
-                                    gap: 8px;
-                                    max-height: 380px;
-                                    overflow-y: auto"></div>
-                    </div>
+
+            <div id="trashZone" class="trash-dropzone" 
+                 ondragover="handleTrashDragOver(event)" 
+                 ondragleave="handleTrashDragLeave(event)" 
+                 ondrop="handleTrashDrop(event)"
+                 onclick="handleTrashClick()"
+                 title="Drag any time block here to throw it away">
+                <span style="font-size: 20px;">🗑️</span>
+                <span>Dustbin (Throw Away)</span>
+            </div>
+        </div>
+
+        <div class="employee-toolbar">
+            <div class="filter-actions">
+                <label for="searchInput" style="font-size: 13px; font-weight: 600;">Employee:</label>
+                <input type="text" id="searchInput" placeholder="Search prefix (e.g. 'tan')..." oninput="onSearchType()" style="width: 190px;">
+                <select id="empDropdown" onchange="renderEmployeeTable()" style="min-width: 190px;"></select>
+            </div>
+            <button type="button" class="btn-download" onclick="downloadExcel()">
+                📥 Download Clean Excel (Multi-Sheet)
+            </button>
+        </div>
+
+        <div class="table-viewport">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th style="min-width: 120px;">Date</th>
+                        <th style="background-color: #1e3a8a;">Clock In ⇄</th>
+                        <th style="background-color: #1e3a8a;">Break Out ⇄</th>
+                        <th style="background-color: #1e3a8a;">Break In ⇄</th>
+                        <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
+                        <th>Lunch Duration</th>
+                        <th style="background-color: #274c77;">Late (Work)</th>
+                        <th>Late (Lunch)</th>
+                        <th style="background-color: #b91c1c;">Total Late</th>
+                        <th style="background-color: #831843;">Early Leave</th>
+                        <th>Work Hours</th>
+                        <th style="min-width: 130px;">Status / Alert</th>
+                        <th style="background-color: #475569;">Multiple (Earlier)</th>
+                        <th style="background-color: #475569;">Multiple (Later)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<!-- Tutorial Modal -->
+<div id="tutorialModal" class="modal-backdrop" onclick="handleBackdropClick(event)">
+    <div class="modal-window">
+        <div class="modal-header">
+            <h3>📖 Attendance Portal Instructions & Tutorial</h3>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf" target="_blank" style="color: #cbd5e1; font-size: 13px; text-decoration: underline;">Open in New Tab ↗</a>
+                <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">&times;</button>
+            </div>
+        </div>
+        <div class="modal-body">
+            <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
+                <p style="padding: 20px; text-align: center;">
+                    Your browser does not support inline PDFs. 
+                    <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf" target="_blank" style="color: #2563eb; font-weight: bold;">Click here to download and view the tutorial PDF</a>.
+                </p>
+            </iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Game Save Slot Modal -->
+<div id="saveSlotModal" class="modal-backdrop" onclick="handleSlotBackdropClick(event)">
+    <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh;">
+        <div class="modal-header">
+            <h3>💾 Save Progress Slot</h3>
+            <button type="button" class="modal-close-btn" onclick="closeSaveModal()">&times;</button>
+        </div>
+        <div style="padding: 20px; overflow-y: auto;">
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 14px; border-radius: 8px; margin-bottom: 16px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #1e3a8a; margin-bottom: 6px;">SAVE AS NEW SLOT</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="newSlotTitleInput" placeholder="e.g. June 2026 - Final Review" style="flex: 1;">
+                    <button type="button" class="btn-action" style="background: #059669;" onclick="executeSaveNewSlot()">Save New</button>
                 </div>
             </div>
-            <script>
+
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px;">OR OVERWRITE AN EXISTING SAVE</label>
+            <div id="saveSlotsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Slot Modal -->
+<div id="restoreSlotModal" class="modal-backdrop" onclick="handleSlotBackdropClick(event)">
+    <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh;">
+        <div class="modal-header" style="background: #1e293b;">
+            <h3>📂 Load Saved Game / Progress</h3>
+            <button type="button" class="modal-close-btn" onclick="closeRestoreModal()">&times;</button>
+        </div>
+        <div style="padding: 20px; overflow-y: auto;">
+            <div id="restoreSlotsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
     let globalData = [];
     let employeeNames = [];
     let specialEntries = [];
@@ -1173,9 +1126,7 @@
             remark: customRemark
         });
 
-        // Clear the remark input for the next entry
         document.getElementById('customRemarkInput').value = '';
-
         renderSpecialTags();
         markChangesDirty();
         executeAnalysis(false);
@@ -1204,6 +1155,7 @@
             else if (entry.type === "MC") { tagClass += " tag-mc"; icon = "🏥"; }
             else if (entry.type === "Team A off day") { tagClass += " tag-teama"; icon = "🅰️"; }
             else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️"; }
+            else if (entry.type === "Lunch Meeting in Office") { tagClass += " tag-meeting"; icon = "🍱"; }
 
             const targetLabel = (entry.target === 'ALL') ? 'All' : entry.target.split(' ')[0];
             const labelContent = entry.remark ? `${entry.type}: ${entry.remark}` : entry.type;
@@ -1309,7 +1261,7 @@
     }
 
     function parseTimeSeconds(tStr) {
-        if (!tStr || tStr === "--") return null;
+        if (!tStr || tStr === "--" || tStr === "Lunch Meeting in Office") return null;
         const parts = tStr.split(":").map(Number);
         if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
         if (parts.length === 2) return parts[0] * 3600 + parts[1] * 60;
@@ -1329,7 +1281,7 @@
 
         for (const col of COLUMN_TIME_ORDER) {
             const timeStr = record[col];
-            if (timeStr && timeStr !== "--") {
+            if (timeStr && timeStr !== "--" && timeStr !== "Lunch Meeting in Office") {
                 const curSec = parseTimeSeconds(timeStr);
                 if (curSec !== null) {
                     if (curSec < lastSec) {
@@ -1349,10 +1301,11 @@
     function recalculateRow(record) {
         const isSat = record.Date.includes("(Sat)");
         const isOffday = isRowOffDay(record["Status / Alert"]);
+        const isLunchMeeting = record._is_lunch_meeting === 1 || record["Break Out (Lunch)"] === "Lunch Meeting in Office";
 
         const allPunchesEmpty = 
             record["Clock In"] === "--" &&
-            record["Break Out (Lunch)"] === "--" &&
+            (record["Break Out (Lunch)"] === "--" || record["Break Out (Lunch)"] === "Lunch Meeting in Office") &&
             record["Break In (Back)"] === "--" &&
             record["Clock Out"] === "--" &&
             record["Multiple Punch (Earlier)"] === "--" &&
@@ -1394,7 +1347,12 @@
 
         let lunchMins = 0;
         let lateLunchMins = 0;
-        if (!isSat && secBout !== null && secBin !== null && secBin > secBout) {
+        if (isLunchMeeting) {
+            record["Break Out (Lunch)"] = "Lunch Meeting in Office";
+            record["Break In (Back)"] = "--";
+            lunchMins = 0;
+            lateLunchMins = 0;
+        } else if (!isSat && secBout !== null && secBin !== null && secBin > secBout) {
             lunchMins = Math.round((secBin - secBout) / 60);
             if (lunchMins > 70) lateLunchMins = lunchMins - 70;
         }
@@ -1441,9 +1399,11 @@
             record["Status / Alert"] = earlyRemark ? `${base} (${earlyRemark})` : base;
         } else if (!isOffday) {
             if (record["Clock In"] === "--") issues.push("Missing Clock In");
-            if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] !== "--") issues.push("Missing Break Out");
-            if (record["Break Out (Lunch)"] !== "--" && record["Break In (Back)"] === "--") issues.push("Missing Break In");
-            if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] === "--") issues.push("No Lunch Punched");
+            if (!isLunchMeeting) {
+                if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] !== "--") issues.push("Missing Break Out");
+                if (record["Break Out (Lunch)"] !== "--" && record["Break In (Back)"] === "--") issues.push("Missing Break In");
+                if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] === "--") issues.push("No Lunch Punched");
+            }
             if (record["Clock Out"] === "--") issues.push("Missing Clock Out");
 
             let baseStatus = issues.length ? issues.join(', ') : "Normal";
@@ -1493,7 +1453,7 @@
         tray.appendChild(pill);
     }
 
-function makeCell(timeVal, rowIdx, colKey) {
+    function makeCell(timeVal, rowIdx, colKey) {
         const isEmpty = (!timeVal || timeVal === "--");
         const record = globalData[rowIdx];
         const isOffday = isRowOffDay(record["Status / Alert"]);
@@ -1506,7 +1466,6 @@ function makeCell(timeVal, rowIdx, colKey) {
         }
 
         if (isEmpty) {
-            // Exclude Break columns on Saturday, and exclude Multiple Punch columns completely from copy dropdown
             const isExcludedFromCopy = (isSaturday && colKey.includes("Break")) || colKey.includes("Multiple");
 
             if (!isExcludedFromCopy) {
@@ -1516,7 +1475,7 @@ function makeCell(timeVal, rowIdx, colKey) {
                 globalData.forEach(peer => {
                     if (peer.Date === currentDate && peer.Name !== activeEmp) {
                         const peerTime = peer[colKey];
-                        if (peerTime && peerTime !== "--") {
+                        if (peerTime && peerTime !== "--" && peerTime !== "Lunch Meeting in Office") {
                             peerOptions += `<option value="${peerTime}">${peer.Name}: ${peerTime}</option>`;
                         }
                     }
@@ -1975,6 +1934,7 @@ function makeCell(timeVal, rowIdx, colKey) {
             const status = r["Status / Alert"];
             const isSunday = (status === "Sunday");
             const isOffday = isRowOffDay(status) && (r["Clock In"] === "--" && r["Clock Out"] === "--");
+            const isLunchMeeting = (r._is_lunch_meeting === 1) || (r["Break Out (Lunch)"] === "Lunch Meeting in Office");
 
             if (isSunday || isOffday) {
                 tr.classList.add("row-merged-banner");
@@ -2011,11 +1971,24 @@ function makeCell(timeVal, rowIdx, colKey) {
             const totalLateCell = r["Total Late Time"] !== "--" ? `<span class="badge badge-totallate">${r["Total Late Time"]}</span>` : "--";
             const earlyLeaveCell = r["Early Leave"] !== "--" ? `<span class="badge badge-early">${r["Early Leave"]}</span>` : "--";
 
+            let lunchCellsHtml = '';
+            if (isLunchMeeting) {
+                lunchCellsHtml = `
+                    <td colspan="2" style="background: #f0f9ff; text-align: center;">
+                        <span class="badge-lunch-meeting">🍱 Lunch Meeting in Office</span>
+                    </td>
+                `;
+            } else {
+                lunchCellsHtml = `
+                    ${makeCell(r["Break Out (Lunch)"], idx, "Break Out (Lunch)")}
+                    ${makeCell(r["Break In (Back)"], idx, "Break In (Back)")}
+                `;
+            }
+
             tr.innerHTML = `
                 <td><strong>${r.Date}</strong></td>
                 ${makeCell(r["Clock In"], idx, "Clock In")}
-                ${makeCell(r["Break Out (Lunch)"], idx, "Break Out (Lunch)")}
-                ${makeCell(r["Break In (Back)"], idx, "Break In (Back)")}
+                ${lunchCellsHtml}
                 ${makeCell(r["Clock Out"], idx, "Clock Out")}
                 <td>${r["Lunch Duration"]}</td>
                 <td>${lateWorkCell}</td>
@@ -2031,17 +2004,14 @@ function makeCell(timeVal, rowIdx, colKey) {
         });
     }
 
-async function downloadExcel() {
+    async function downloadExcel() {
         if (!globalData || !globalData.length) {
             showToast("No active attendance data to download.");
             return;
         }
 
         try {
-            // 1. Sync live adjustments to the server
             await syncChangeToBackend(globalData);
-
-            // 2. Fetch the file blob directly to avoid triggering page navigation
             const res = await fetch('/api/download');
             if (!res.ok) {
                 showToast("Server failed to generate the Excel file.");
@@ -2050,16 +2020,12 @@ async function downloadExcel() {
 
             const blob = await res.blob();
             const downloadUrl = URL.createObjectURL(blob);
-
-            // 3. Trigger download via a hidden link element
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = downloadUrl;
             a.download = `Monthly_Attendance_Summary.xlsx`;
             document.body.appendChild(a);
             a.click();
-
-            // 4. Clean up allocated memory
             document.body.removeChild(a);
             URL.revokeObjectURL(downloadUrl);
         } catch (err) {
@@ -2067,39 +2033,7 @@ async function downloadExcel() {
             showToast("Failed to download Excel file.");
         }
     }
-    
-            </script>
-            <!-- Slide-Out Sidebar Drawer -->
-            <div id="sideDrawerBackdrop"
-                 class="side-drawer-backdrop"
-                 onclick="closeSideDrawer()"></div>
-            <div id="sideDrawer" class="side-drawer">
-                <div class="side-drawer-header">
-                    <h3>⚡ Workspace Menu</h3>
-                    <button type="button" class="modal-close-btn" onclick="closeSideDrawer()">×</button>
-                </div>
-                <div class="side-drawer-body">
-                    <button type="button"
-                            class="side-drawer-btn"
-                            onclick="openTutorialModal(); closeSideDrawer();">
-                        <span style="font-size: 18px;">📖</span> User Guide & Tutorial
-                    </button>
-                    <button type="button"
-                            class="side-drawer-btn"
-                            onclick="openSaveModal(); closeSideDrawer();">
-                        <span style="font-size: 18px;">💾</span> Save Progress Slot
-                    </button>
-                    <button type="button"
-                            class="side-drawer-btn"
-                            onclick="openRestoreModal(); closeSideDrawer();">
-                        <span style="font-size: 18px;">📂</span> Load Saved Slot
-                    </button>
-                    <a href="/logout"
-                       class="side-drawer-btn btn-signout"
-                       onclick="return handleSignOutClick(event)">
-                        <span style="font-size: 18px;">🚪</span> Sign Out
-                    </a>
-                </div>
-            </div>
-        </body>
-    </html>
+</script>
+
+</body>
+</html>
