@@ -15,12 +15,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import create_engine, text
 import holidays
 
+# --- Database Setup (Neon PostgreSQL) ---
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(DATABASE_URL) if DATABASE_URL else None
-# Auto-create the table on startup if it does not exist
+
 if engine:
     try:
         with engine.begin() as conn:
@@ -36,14 +37,14 @@ if engine:
                     payload JSONB NOT NULL
                 );
             """))
-            print("save_slots table verified/created in Neon.")
+            print("save_slots table initialized successfully in database.")
     except Exception as e:
         print("Database initialization error:", e)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "prod-session-key-attendance-2026")
 
-# Directory for user-isolated drafts and game-style saves
+# Directory fallback for user-isolated drafts
 DRAFTS_DIR = os.path.join(os.path.dirname(__file__), "user_drafts")
 os.makedirs(DRAFTS_DIR, exist_ok=True)
 
@@ -93,10 +94,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-def get_user_slots_file(username):
-    safe_user = re.sub(r'[^a-zA-Z0-9_-]', '', username)
-    return os.path.join(DRAFTS_DIR, f"{safe_user}_saveslots.json")
-
 def load_user_slots(username):
     if not engine:
         return []
@@ -113,7 +110,6 @@ def load_user_slots(username):
 
 def save_user_slots(username, slot_entry):
     if not engine:
-        print("Database engine not initialized!")
         return
     try:
         with engine.begin() as conn:
@@ -137,7 +133,6 @@ def save_user_slots(username, slot_entry):
                 "tot": slot_entry.get("totalEmployees", 0),
                 "p": json.dumps(slot_entry)
             })
-            print(f"Successfully saved slot {slot_entry['id']} to Neon PostgreSQL")
     except Exception as e:
         print("Error saving slot to DB:", e)
 
@@ -150,7 +145,6 @@ def delete_user_slot(username, slot_id):
                 text("DELETE FROM save_slots WHERE slot_id = :id AND username = :u"),
                 {"id": slot_id, "u": username}
             )
-            print(f"Successfully deleted slot {slot_id} from Neon PostgreSQL")
     except Exception as e:
         print("Error deleting slot from DB:", e)
 
@@ -801,7 +795,7 @@ def api_update_records():
         return jsonify({"status": "success"})
     return jsonify({"error": "No data received"}), 400
 
-# --- Game-Style Save Slot Endpoints ---
+# --- Game-Style Save Slot Endpoints (Postgres Linked) ---
 @app.route("/api/slots", methods=["GET"])
 @login_required
 def api_get_slots():
@@ -839,16 +833,9 @@ def api_save_slot():
         "records": data["records"]
     }
 
-    # Pass the single dictionary directly to the DB function
     save_user_slots(username, new_slot_entry)
     USER_DATAFRAMES[username] = pd.DataFrame(data["records"])
     return jsonify({"status": "success", "slotId": new_slot_entry["id"]})
-
-@app.route("/api/slots/delete/<slot_id>", methods=["POST"])
-@login_required
-def api_delete_slot(slot_id):
-    delete_user_slot(session["user"], slot_id)
-    return jsonify({"status": "success"})
 
 @app.route("/api/slots/load/<slot_id>", methods=["GET"])
 @login_required
@@ -864,10 +851,7 @@ def api_load_slot(slot_id):
 @app.route("/api/slots/delete/<slot_id>", methods=["POST"])
 @login_required
 def api_delete_slot(slot_id):
-    username = session["user"]
-    slots = load_user_slots(username)
-    slots = [s for s in slots if s["id"] != slot_id]
-    save_user_slots(username, slots)
+    delete_user_slot(session["user"], slot_id)
     return jsonify({"status": "success"})
 
 @app.route("/api/download", methods=["GET"])
