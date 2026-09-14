@@ -12,7 +12,14 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import create_engine, text
 import holidays
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+engine = create_engine(DATABASE_URL) if DATABASE_URL else None
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "prod-session-key-attendance-2026")
@@ -72,19 +79,46 @@ def get_user_slots_file(username):
     return os.path.join(DRAFTS_DIR, f"{safe_user}_saveslots.json")
 
 def load_user_slots(username):
-    file_path = get_user_slots_file(username)
-    if os.path.exists(file_path):
-        try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception:
-            return []
-    return []
+    if not engine:
+        return []
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                text("SELECT payload FROM save_slots WHERE username = :u ORDER BY updated_at DESC"),
+                {"u": username}
+            )
+            return [row[0] for row in result.fetchall()]
+    except Exception as e:
+        print("Error loading slots:", e)
+        return []
 
-def save_user_slots(username, slots):
-    file_path = get_user_slots_file(username)
-    with open(file_path, "w", encoding="utf-8") as f:
-        json.dump(slots, f, indent=2)
+def save_user_slots(username, slot_entry):
+    if not engine:
+        return
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("""
+                INSERT INTO save_slots (slot_id, username, title, updated_at, start_date, end_date, total_employees, payload)
+                VALUES (:id, :u, :t, :time, :s_date, :e_date, :tot, :p)
+                ON CONFLICT (slot_id) DO UPDATE 
+                SET title = EXCLUDED.title,
+                    updated_at = EXCLUDED.updated_at,
+                    start_date = EXCLUDED.start_date,
+                    end_date = EXCLUDED.end_date,
+                    total_employees = EXCLUDED.total_employees,
+                    payload = EXCLUDED.payload;
+            """), {
+                "id": slot_entry["id"],
+                "u": username,
+                "t": slot_entry["title"],
+                "time": slot_entry["updatedAt"],
+                "s_date": slot_entry.get("startDate", ""),
+                "e_date": slot_entry.get("endDate", ""),
+                "tot": slot_entry.get("totalEmployees", 0),
+                "p": json.dumps(slot_entry)
+            })
+    except Exception as e:
+        print("Error saving slot:", e)
 
 def get_malaysia_holiday_name(d_obj):
     raw_name = MY_HOLIDAYS.get(d_obj)

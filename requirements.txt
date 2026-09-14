@@ -4,3 +4,5 @@ openpyxl
 gunicorn
 holidays
 werkzeug
+psycopg2-binary
+sqlalchemy
