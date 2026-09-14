@@ -20,6 +20,25 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(DATABASE_URL) if DATABASE_URL else None
+# Auto-create the table on startup if it does not exist
+if engine:
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS save_slots (
+                    slot_id VARCHAR(100) PRIMARY KEY,
+                    username VARCHAR(50) NOT NULL,
+                    title VARCHAR(255) NOT NULL,
+                    updated_at VARCHAR(50) NOT NULL,
+                    start_date VARCHAR(20),
+                    end_date VARCHAR(20),
+                    total_employees INT,
+                    payload JSONB NOT NULL
+                );
+            """))
+            print("save_slots table verified/created in Neon.")
+    except Exception as e:
+        print("Database initialization error:", e)
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "prod-session-key-attendance-2026")
@@ -94,6 +113,7 @@ def load_user_slots(username):
 
 def save_user_slots(username, slot_entry):
     if not engine:
+        print("Database engine not initialized!")
         return
     try:
         with engine.begin() as conn:
@@ -117,8 +137,22 @@ def save_user_slots(username, slot_entry):
                 "tot": slot_entry.get("totalEmployees", 0),
                 "p": json.dumps(slot_entry)
             })
+            print(f"Successfully saved slot {slot_entry['id']} to Neon PostgreSQL")
     except Exception as e:
-        print("Error saving slot:", e)
+        print("Error saving slot to DB:", e)
+
+def delete_user_slot(username, slot_id):
+    if not engine:
+        return
+    try:
+        with engine.begin() as conn:
+            conn.execute(
+                text("DELETE FROM save_slots WHERE slot_id = :id AND username = :u"),
+                {"id": slot_id, "u": username}
+            )
+            print(f"Successfully deleted slot {slot_id} from Neon PostgreSQL")
+    except Exception as e:
+        print("Error deleting slot from DB:", e)
 
 def get_malaysia_holiday_name(d_obj):
     raw_name = MY_HOLIDAYS.get(d_obj)
@@ -790,8 +824,6 @@ def api_save_slot():
         return jsonify({"error": "No data provided"}), 400
 
     username = session["user"]
-    slots = load_user_slots(username)
-
     slot_id = data.get("slotId")
     title = data.get("title", "").strip() or f"Save {datetime.now().strftime('%d/%m/%Y %H:%M')}"
     unique_emps = len(set(r.get("Name") for r in data["records"]))
@@ -807,21 +839,16 @@ def api_save_slot():
         "records": data["records"]
     }
 
-    if slot_id:
-        updated = False
-        for i, s in enumerate(slots):
-            if s["id"] == slot_id:
-                slots[i] = new_slot_entry
-                updated = True
-                break
-        if not updated:
-            slots.insert(0, new_slot_entry)
-    else:
-        slots.insert(0, new_slot_entry)
-
-    save_user_slots(username, slots)
+    # Pass the single dictionary directly to the DB function
+    save_user_slots(username, new_slot_entry)
     USER_DATAFRAMES[username] = pd.DataFrame(data["records"])
     return jsonify({"status": "success", "slotId": new_slot_entry["id"]})
+
+@app.route("/api/slots/delete/<slot_id>", methods=["POST"])
+@login_required
+def api_delete_slot(slot_id):
+    delete_user_slot(session["user"], slot_id)
+    return jsonify({"status": "success"})
 
 @app.route("/api/slots/load/<slot_id>", methods=["GET"])
 @login_required
