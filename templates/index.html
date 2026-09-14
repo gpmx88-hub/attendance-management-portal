@@ -2038,13 +2038,33 @@ async function downloadExcel() {
         }
 
         try {
-            // Push active on-screen modifications to the server first
+            // 1. Sync live adjustments to the server
             await syncChangeToBackend(globalData);
-            // Trigger download of the freshly updated data
-            window.location.href = '/api/download';
+
+            // 2. Fetch the file blob directly to avoid triggering page navigation
+            const res = await fetch('/api/download');
+            if (!res.ok) {
+                showToast("Server failed to generate the Excel file.");
+                return;
+            }
+
+            const blob = await res.blob();
+            const downloadUrl = URL.createObjectURL(blob);
+
+            // 3. Trigger download via a hidden link element
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = downloadUrl;
+            a.download = `Monthly_Attendance_Summary.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+
+            // 4. Clean up allocated memory
+            document.body.removeChild(a);
+            URL.revokeObjectURL(downloadUrl);
         } catch (err) {
             console.error(err);
-            showToast("Failed to sync latest changes before downloading.");
+            showToast("Failed to download Excel file.");
         }
     }
     
