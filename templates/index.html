@@ -1494,7 +1494,7 @@
         tray.appendChild(pill);
     }
 
-    function makeCell(timeVal, rowIdx, colKey) {
+function makeCell(timeVal, rowIdx, colKey) {
         const isEmpty = (!timeVal || timeVal === "--");
         const record = globalData[rowIdx];
         const isOffday = isRowOffDay(record["Status / Alert"]);
@@ -1507,9 +1507,10 @@
         }
 
         if (isEmpty) {
-            const isSaturdaySpecialCol = isSaturday && (colKey.includes("Break") || colKey.includes("Multiple"));
+            // Exclude Break columns on Saturday, and exclude Multiple Punch columns completely from copy dropdown
+            const isExcludedFromCopy = (isSaturday && colKey.includes("Break")) || colKey.includes("Multiple");
 
-            if (!isSaturdaySpecialCol) {
+            if (!isExcludedFromCopy) {
                 const currentDate = record.Date;
                 const activeEmp = record.Name;
                 let peerOptions = '';
