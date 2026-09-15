@@ -913,7 +913,9 @@
                                 onchange="renderEmployeeTable()"
                                 style="min-width: 190px"></select>
                     </div>
-                    <button type="button" class="btn-download" onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
+                    <button type="button"
+                            class="btn-download"
+                            onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
                 </div>
                 <div class="table-viewport">
                     <table id="attendanceTable">
@@ -997,7 +999,8 @@
                             <input type="text"
                                    id="newSlotTitleInput"
                                    placeholder="e.g. June 2026 - Final Review"
-                                   style="flex: 1">
+                                   style="flex: 1"
+                                   onkeydown="if(event.key === 'Enter'){ event.preventDefault(); executeSaveNewSlot(); }">
                             <button type="button"
                                     class="btn-action"
                                     style="background: #059669"
@@ -1794,6 +1797,12 @@
 
         await renderSlotsForSave();
         document.getElementById('saveSlotModal').classList.add('active');
+
+        // Automatically focus the input field so user can press Enter immediately
+        setTimeout(() => {
+            inputEl.focus();
+            inputEl.select();
+        }, 50);
     }
 
     function closeSaveModal() {
@@ -2068,6 +2077,17 @@
             showToast("Failed to download Excel file.");
         }
     }
+
+    // Global ESC key handler to close any active modal or drawer
+    window.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            closeSaveModal();
+            closeRestoreModal();
+            closeTutorialModal();
+            closeSideDrawer();
+            hideToast();
+        }
+    });
         </script>
     </body>
 </html>
