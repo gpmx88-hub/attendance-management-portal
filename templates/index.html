@@ -1788,7 +1788,8 @@
 
         const startVal = document.getElementById('startDateInput').value;
         const endVal = document.getElementById('endDateInput').value;
-        const defaultTitle = startVal ? `Save: ${startVal} to ${endVal}` : `Save: ${new Date().toLocaleDateString()}`;
+        const myTimeStr = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' });
+        const defaultTitle = startVal ? `Save: ${startVal} to ${endVal}` : `Save: ${myTimeStr}`;
         document.getElementById('newSlotTitleInput').value = defaultTitle;
 
         await renderSlotsForSave();

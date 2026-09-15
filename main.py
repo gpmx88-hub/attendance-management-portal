@@ -14,6 +14,7 @@ from openpyxl.utils import get_column_letter
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import create_engine, text
 import holidays
+from zoneinfo import ZoneInfo
 
 # --- Database Setup (Neon PostgreSQL) ---
 DATABASE_URL = os.environ.get("DATABASE_URL")
@@ -789,11 +790,12 @@ def api_save_slot():
     slot_id = data.get("slotId")
     title = data.get("title", "").strip() or f"Save {datetime.now().strftime('%d/%m/%Y %H:%M')}"
     unique_emps = len(set(r.get("Name") for r in data["records"]))
+    myt_now = datetime.now(ZoneInfo("Asia/Kuala_Lumpur"))
 
     new_slot_entry = {
         "id": slot_id if slot_id else f"slot_{int(datetime.now().timestamp() * 1000)}",
         "title": title,
-        "updatedAt": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "updatedAt": myt_now.strftime("%Y-%m-%d %H:%M:%S"),
         "startDate": data.get("startDate", ""),
         "endDate": data.get("endDate", ""),
         "specialEntries": data.get("specialEntries", []),
