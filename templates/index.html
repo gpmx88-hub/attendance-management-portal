@@ -1103,19 +1103,31 @@
         if (!globalData || !globalData.length) return;
 
         globalData.forEach(r => {
-            const rawDate = r.Date.split(' ')[0]; // extracts "YYYY-MM-DD" from "YYYY-MM-DD (Fri)"
-            
-            // Check if there is a matching special entry for this row
-            const match = specialEntries.find(e => 
+            const rawDate = r.Date.split(' ')[0]; // extracts "YYYY-MM-DD"
+
+            // Look for matching entries on this specific date
+            const rowEntries = specialEntries.filter(e => 
                 e.date === rawDate && (e.target === 'ALL' || e.target === r.Name)
             );
 
-            if (match && match.type === "Lunch Meeting in Office") {
+            const meetingEntry = rowEntries.find(e => e.type === "Lunch Meeting in Office");
+            const offdayEntry = rowEntries.find(e => OFF_DAY_TYPES.some(t => e.type.includes(t)));
+
+            // 1. Handle Off-Day / Holiday
+            if (offdayEntry) {
+                const label = offdayEntry.remark ? `${offdayEntry.type} (${offdayEntry.remark})` : offdayEntry.type;
+                r["Status / Alert"] = label;
+            } else if (isRowOffDay(r["Status / Alert"])) {
+                // If an off-day was removed, revert row
+                r["Status / Alert"] = "Normal";
+            }
+
+            // 2. Handle Lunch Meeting
+            if (meetingEntry) {
                 r._is_lunch_meeting = 1;
                 r["Break Out (Lunch)"] = "Lunch Meeting in Office";
                 r["Break In (Back)"] = "--";
-            } else if (r._is_lunch_meeting === 1) {
-                // Revert if special entry was deleted
+            } else {
                 r._is_lunch_meeting = 0;
                 if (r["Break Out (Lunch)"] === "Lunch Meeting in Office") {
                     r["Break Out (Lunch)"] = "--";
@@ -1149,7 +1161,8 @@
             return;
         }
 
-        specialEntries = specialEntries.filter(e => !(e.date === chosenDate && e.target === targetName));
+        // Only remove existing entry if the same date, target, and type match
+        specialEntries = specialEntries.filter(e => !(e.date === chosenDate && e.target === targetName && e.type === chosenType));
         specialEntries.push({
             date: chosenDate,
             type: chosenType,
@@ -1160,8 +1173,6 @@
         document.getElementById('customRemarkInput').value = '';
         renderSpecialTags();
         markChangesDirty();
-
-        // Update active table on screen immediately
         applySpecialEntriesLocally();
     }
 
