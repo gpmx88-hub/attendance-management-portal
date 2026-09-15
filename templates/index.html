@@ -1099,6 +1099,37 @@
         executeAnalysis(false);
     }
 
+    function applySpecialEntriesLocally() {
+        if (!globalData || !globalData.length) return;
+
+        globalData.forEach(r => {
+            const rawDate = r.Date.split(' ')[0]; // extracts "YYYY-MM-DD" from "YYYY-MM-DD (Fri)"
+            
+            // Check if there is a matching special entry for this row
+            const match = specialEntries.find(e => 
+                e.date === rawDate && (e.target === 'ALL' || e.target === r.Name)
+            );
+
+            if (match && match.type === "Lunch Meeting in Office") {
+                r._is_lunch_meeting = 1;
+                r["Break Out (Lunch)"] = "Lunch Meeting in Office";
+                r["Break In (Back)"] = "--";
+            } else if (r._is_lunch_meeting === 1) {
+                // Revert if special entry was deleted
+                r._is_lunch_meeting = 0;
+                if (r["Break Out (Lunch)"] === "Lunch Meeting in Office") {
+                    r["Break Out (Lunch)"] = "--";
+                }
+            }
+
+            recalculateRow(r);
+        });
+
+        syncChangeToBackend(globalData);
+        refreshStats();
+        renderEmployeeTable();
+    }
+
     function confirmSpecialDay() {
         const picker = document.getElementById('specialDatePicker');
         const chosenDate = picker.value;
@@ -1129,14 +1160,16 @@
         document.getElementById('customRemarkInput').value = '';
         renderSpecialTags();
         markChangesDirty();
-        executeAnalysis(false);
+
+        // Update active table on screen immediately
+        applySpecialEntriesLocally();
     }
 
     function removeSpecialDay(index) {
         specialEntries.splice(index, 1);
         renderSpecialTags();
         markChangesDirty();
-        executeAnalysis(false);
+        applySpecialEntriesLocally();
     }
 
     function renderSpecialTags() {
@@ -1348,6 +1381,7 @@
         let lunchMins = 0;
         let lateLunchMins = 0;
         if (isLunchMeeting) {
+            record._is_lunch_meeting = 1;
             record["Break Out (Lunch)"] = "Lunch Meeting in Office";
             record["Break In (Back)"] = "--";
             lunchMins = 0;
