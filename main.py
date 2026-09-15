@@ -44,16 +44,14 @@ if engine:
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "prod-session-key-attendance-2026")
 
-# Directory fallback for user-isolated drafts
 DRAFTS_DIR = os.path.join(os.path.dirname(__file__), "user_drafts")
 os.makedirs(DRAFTS_DIR, exist_ok=True)
 
 # Admin & Staff Credentials Store
 USERS = {
-    "admin": generate_password_hash("jiaen123"),
+    "admin": generate_password_hash("jiaen123")
 }
 
-# Per-user active DataFrames in memory
 USER_DATAFRAMES = {}
 
 # Business Rules
@@ -356,9 +354,7 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
 
             if special_info:
                 st_type, st_remark = special_info
-                if st_type == "Lunch Meeting in Office":
-                    special_type = "Lunch Meeting in Office"
-                elif st_remark:
+                if st_remark:
                     special_type = f"{st_type} ({st_remark})" if st_type not in st_remark else st_remark
                 else:
                     if st_type == "Holiday":
@@ -367,7 +363,6 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     else:
                         special_type = st_type
 
-            is_lunch_meeting = (special_type == "Lunch Meeting in Office")
             raw_times_str = raw_punches.get((emp_id, date_str))
 
             if is_sunday:
@@ -380,20 +375,15 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     "Status / Alert": "Sunday",
                     "Multiple Punch (Earlier)": "--", "Multiple Punch (Later)": "--",
                     "_work_mins": 0, "_lunch_mins": 0, "_late_work_mins": 0, "_late_lunch_mins": 0,
-                    "_total_late_mins": 0, "_early_leave_mins": 0, "_is_absent": 0, "_is_sunday": 1, "_is_offday": 1,
-                    "_is_lunch_meeting": 0
+                    "_total_late_mins": 0, "_early_leave_mins": 0, "_is_absent": 0, "_is_sunday": 1, "_is_offday": 1
                 })
                 continue
 
             if not raw_times_str:
-                if special_type and not is_lunch_meeting:
+                if special_type:
                     status_text = special_type
                     is_absent_flag = 0
                     is_off = 1
-                elif is_lunch_meeting:
-                    status_text = "Absent"
-                    is_absent_flag = 1
-                    is_off = 0
                 else:
                     status_text = "Absent"
                     is_absent_flag = 1
@@ -410,21 +400,14 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     "Multiple Punch (Earlier)": "--", "Multiple Punch (Later)": "--",
                     "_work_mins": 0, "_lunch_mins": 0, "_late_work_mins": 0, "_late_lunch_mins": 0,
                     "_total_late_mins": 0, "_early_leave_mins": 0, "_is_absent": is_absent_flag,
-                    "_is_sunday": 0, "_is_offday": is_off, "_is_lunch_meeting": 1 if is_lunch_meeting else 0
+                    "_is_sunday": 0, "_is_offday": is_off
                 })
                 continue
 
             punch_list = [t.strip() for t in raw_times_str.split(",") if t.strip()]
             c_in, b_out, b_in, c_out, status, multi_earlier, multi_later = categorize_punches(punch_list, is_saturday)
 
-            if is_lunch_meeting:
-                b_out = "Lunch Meeting in Office"
-                b_in = "--"
-                for remove_issue in ["Missing Break Out", "Missing Break In", "No Lunch Punched"]:
-                    status = status.replace(remove_issue, "").strip().strip(",")
-                if not status:
-                    status = "Normal"
-            elif special_type:
+            if special_type:
                 status = f"{special_type} (Worked)" if status == "Normal" else f"{special_type} ({status})"
 
             lunch_mins, work_mins, late_work_mins, late_lunch_mins, early_leave_mins = 0, 0, 0, 0, 0
@@ -436,7 +419,7 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                     if dt_cin > start_dt:
                         late_work_mins = round((dt_cin - start_dt).total_seconds() / 60)
 
-            if not is_saturday and not is_lunch_meeting and b_out != "--" and b_in != "--":
+            if not is_saturday and b_out != "--" and b_in != "--":
                 dt_bout = parse_time_str(b_out)
                 dt_bin = parse_time_str(b_in)
                 if dt_bout and dt_bin and dt_bin > dt_bout:
@@ -492,8 +475,7 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                 "_work_mins": work_mins, "_lunch_mins": lunch_mins, "_late_work_mins": late_work_mins,
                 "_late_lunch_mins": late_lunch_mins, "_total_late_mins": total_late_mins,
                 "_early_leave_mins": early_leave_mins, "_is_absent": 0, "_is_sunday": 0,
-                "_is_offday": 1 if special_type and not is_lunch_meeting else 0,
-                "_is_lunch_meeting": 1 if is_lunch_meeting else 0
+                "_is_offday": 1 if special_type else 0
             })
 
     return pd.DataFrame(records), min_d.strftime("%Y-%m-%d"), max_d.strftime("%Y-%m-%d")
@@ -509,13 +491,11 @@ def build_excel_workbook(df):
     late_fill = PatternFill(start_color="FEF08A", end_color="FEF08A", fill_type="solid")
     alert_fill = PatternFill(start_color="FED7AA", end_color="FED7AA", fill_type="solid")
     multi_fill = PatternFill(start_color="F1F5F9", end_color="F1F5F9", fill_type="solid")
-    meeting_fill = PatternFill(start_color="E0F2FE", end_color="E0F2FE", fill_type="solid")
 
     font_header = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
     font_bold = Font(name="Calibri", size=11, bold=True)
     font_regular = Font(name="Calibri", size=11)
     font_merged_banner = Font(name="Calibri", size=11, bold=True, color="DC2626")
-    font_meeting = Font(name="Calibri", size=10, bold=True, color="0369A1")
 
     thin_border = Border(
         left=Side(style="thin", color="CBD5E1"),
@@ -636,7 +616,6 @@ def build_excel_workbook(df):
             status_val = str(row_data["Status / Alert"])
             is_sunday = (status_val == "Sunday")
             is_offday = any(cat in status_val for cat in ["Holiday", "Public Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"]) and (row_data["Clock In"] == "--" and row_data["Clock Out"] == "--")
-            is_lunch_meeting = (row_data.get("_is_lunch_meeting", 0) == 1) or ("Lunch Meeting in Office" in str(row_data["Break Out (Lunch)"]))
 
             if is_sunday or is_offday:
                 banner_text = "Sunday" if is_sunday else status_val.upper()
@@ -682,15 +661,6 @@ def build_excel_workbook(df):
                         cell.font = font_bold
                     if col_idx in [13, 14] and val != "--":
                         cell.fill = multi_fill
-
-            # Merge columns 3 & 4 for lunch meetings
-            if is_lunch_meeting:
-                ws_emp.merge_cells(start_row=curr_row, start_column=3, end_row=curr_row, end_column=4)
-                mtg_cell = ws_emp.cell(row=curr_row, column=3, value="Lunch Meeting in Office")
-                mtg_cell.alignment = align_center
-                mtg_cell.font = font_meeting
-                mtg_cell.fill = meeting_fill
-                ws_emp.cell(row=curr_row, column=4).border = thin_border
 
         tot_row = start_row + len(emp_group)
         tot_lunch = format_mins_to_time(emp_group["_lunch_mins"].sum())
@@ -746,7 +716,7 @@ def logout():
     session.pop("user", None)
     return redirect(url_for("login"))
 
-# --- Protected Application Endpoints ---
+# --- Application Endpoints ---
 @app.route("/")
 @login_required
 def index():
@@ -793,7 +763,7 @@ def api_update_records():
         return jsonify({"status": "success"})
     return jsonify({"error": "No data received"}), 400
 
-# --- Game-Style Save Slot Endpoints (Postgres Linked) ---
+# --- Save Slot Endpoints (Postgres Linked) ---
 @app.route("/api/slots", methods=["GET"])
 @login_required
 def api_get_slots():

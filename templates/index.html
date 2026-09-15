@@ -240,24 +240,12 @@
         .holiday-tag.tag-mc { background: #ffe4e6; color: #9f1239; border-color: #fecdd3; }
         .holiday-tag.tag-teama { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
         .holiday-tag.tag-teamb { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
-        .holiday-tag.tag-meeting { background: #e0f2fe; color: #0284c7; border-color: #bae6fd; }
 
         .holiday-tag .remove-btn {
             cursor: pointer;
             color: #ef4444;
             font-weight: bold;
             font-size: 14px;
-        }
-
-        .badge-lunch-meeting {
-            background: #e0f2fe;
-            color: #0369a1;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 6px;
-            display: inline-block;
-            border: 1px solid #bae6fd;
-            font-size: 11px;
         }
 
         .stats-grid {
@@ -763,7 +751,7 @@
             <span style="font-size: 18px;">💾</span> Save Progress Slot
         </button>
         <button type="button" class="side-drawer-btn" onclick="openRestoreModal(); closeSideDrawer();">
-            <span style="font-size: 18px;">📂</span> Load Saved Slot
+            <span style="font-size: 18px;">📂</span> Load Saved Progress
         </button>
         
         <a href="/logout" class="side-drawer-btn btn-signout" onclick="return handleSignOutClick(event)">
@@ -826,7 +814,6 @@
                             <option value="MC">MC</option>
                             <option value="Team A off day">Team A off day</option>
                             <option value="Team B off day">Team B off day</option>
-                            <option value="Lunch Meeting in Office">Lunch Meeting in Office</option>
                         </select>
                     </div>
                     <div class="field-group">
@@ -951,7 +938,7 @@
     </div>
 </div>
 
-<!-- Game Save Slot Modal -->
+<!-- Save Slot Modal -->
 <div id="saveSlotModal" class="modal-backdrop" onclick="handleSlotBackdropClick(event)">
     <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh;">
         <div class="modal-header">
@@ -1099,49 +1086,6 @@
         executeAnalysis(false);
     }
 
-    function applySpecialEntriesLocally() {
-        if (!globalData || !globalData.length) return;
-
-        globalData.forEach(r => {
-            const rawDate = r.Date.split(' ')[0]; // extracts "YYYY-MM-DD"
-
-            // Look for matching entries on this specific date
-            const rowEntries = specialEntries.filter(e => 
-                e.date === rawDate && (e.target === 'ALL' || e.target === r.Name)
-            );
-
-            const meetingEntry = rowEntries.find(e => e.type === "Lunch Meeting in Office");
-            const offdayEntry = rowEntries.find(e => OFF_DAY_TYPES.some(t => e.type.includes(t)));
-
-            // 1. Handle Off-Day / Holiday
-            if (offdayEntry) {
-                const label = offdayEntry.remark ? `${offdayEntry.type} (${offdayEntry.remark})` : offdayEntry.type;
-                r["Status / Alert"] = label;
-            } else if (isRowOffDay(r["Status / Alert"])) {
-                // If an off-day was removed, revert row
-                r["Status / Alert"] = "Normal";
-            }
-
-            // 2. Handle Lunch Meeting
-            if (meetingEntry) {
-                r._is_lunch_meeting = 1;
-                r["Break Out (Lunch)"] = "Lunch Meeting in Office";
-                r["Break In (Back)"] = "--";
-            } else {
-                r._is_lunch_meeting = 0;
-                if (r["Break Out (Lunch)"] === "Lunch Meeting in Office") {
-                    r["Break Out (Lunch)"] = "--";
-                }
-            }
-
-            recalculateRow(r);
-        });
-
-        syncChangeToBackend(globalData);
-        refreshStats();
-        renderEmployeeTable();
-    }
-
     function confirmSpecialDay() {
         const picker = document.getElementById('specialDatePicker');
         const chosenDate = picker.value;
@@ -1161,8 +1105,7 @@
             return;
         }
 
-        // Only remove existing entry if the same date, target, and type match
-        specialEntries = specialEntries.filter(e => !(e.date === chosenDate && e.target === targetName && e.type === chosenType));
+        specialEntries = specialEntries.filter(e => !(e.date === chosenDate && e.target === targetName));
         specialEntries.push({
             date: chosenDate,
             type: chosenType,
@@ -1173,14 +1116,14 @@
         document.getElementById('customRemarkInput').value = '';
         renderSpecialTags();
         markChangesDirty();
-        applySpecialEntriesLocally();
+        executeAnalysis(false);
     }
 
     function removeSpecialDay(index) {
         specialEntries.splice(index, 1);
         renderSpecialTags();
         markChangesDirty();
-        applySpecialEntriesLocally();
+        executeAnalysis(false);
     }
 
     function renderSpecialTags() {
@@ -1199,7 +1142,6 @@
             else if (entry.type === "MC") { tagClass += " tag-mc"; icon = "🏥"; }
             else if (entry.type === "Team A off day") { tagClass += " tag-teama"; icon = "🅰️"; }
             else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️"; }
-            else if (entry.type === "Lunch Meeting in Office") { tagClass += " tag-meeting"; icon = "🍱"; }
 
             const targetLabel = (entry.target === 'ALL') ? 'All' : entry.target.split(' ')[0];
             const labelContent = entry.remark ? `${entry.type}: ${entry.remark}` : entry.type;
@@ -1305,7 +1247,7 @@
     }
 
     function parseTimeSeconds(tStr) {
-        if (!tStr || tStr === "--" || tStr === "Lunch Meeting in Office") return null;
+        if (!tStr || tStr === "--") return null;
         const parts = tStr.split(":").map(Number);
         if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
         if (parts.length === 2) return parts[0] * 3600 + parts[1] * 60;
@@ -1325,7 +1267,7 @@
 
         for (const col of COLUMN_TIME_ORDER) {
             const timeStr = record[col];
-            if (timeStr && timeStr !== "--" && timeStr !== "Lunch Meeting in Office") {
+            if (timeStr && timeStr !== "--") {
                 const curSec = parseTimeSeconds(timeStr);
                 if (curSec !== null) {
                     if (curSec < lastSec) {
@@ -1345,11 +1287,10 @@
     function recalculateRow(record) {
         const isSat = record.Date.includes("(Sat)");
         const isOffday = isRowOffDay(record["Status / Alert"]);
-        const isLunchMeeting = record._is_lunch_meeting === 1 || record["Break Out (Lunch)"] === "Lunch Meeting in Office";
 
         const allPunchesEmpty = 
             record["Clock In"] === "--" &&
-            (record["Break Out (Lunch)"] === "--" || record["Break Out (Lunch)"] === "Lunch Meeting in Office") &&
+            record["Break Out (Lunch)"] === "--" &&
             record["Break In (Back)"] === "--" &&
             record["Clock Out"] === "--" &&
             record["Multiple Punch (Earlier)"] === "--" &&
@@ -1391,13 +1332,7 @@
 
         let lunchMins = 0;
         let lateLunchMins = 0;
-        if (isLunchMeeting) {
-            record._is_lunch_meeting = 1;
-            record["Break Out (Lunch)"] = "Lunch Meeting in Office";
-            record["Break In (Back)"] = "--";
-            lunchMins = 0;
-            lateLunchMins = 0;
-        } else if (!isSat && secBout !== null && secBin !== null && secBin > secBout) {
+        if (!isSat && secBout !== null && secBin !== null && secBin > secBout) {
             lunchMins = Math.round((secBin - secBout) / 60);
             if (lunchMins > 70) lateLunchMins = lunchMins - 70;
         }
@@ -1444,11 +1379,9 @@
             record["Status / Alert"] = earlyRemark ? `${base} (${earlyRemark})` : base;
         } else if (!isOffday) {
             if (record["Clock In"] === "--") issues.push("Missing Clock In");
-            if (!isLunchMeeting) {
-                if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] !== "--") issues.push("Missing Break Out");
-                if (record["Break Out (Lunch)"] !== "--" && record["Break In (Back)"] === "--") issues.push("Missing Break In");
-                if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] === "--") issues.push("No Lunch Punched");
-            }
+            if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] !== "--") issues.push("Missing Break Out");
+            if (record["Break Out (Lunch)"] !== "--" && record["Break In (Back)"] === "--") issues.push("Missing Break In");
+            if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] === "--") issues.push("No Lunch Punched");
             if (record["Clock Out"] === "--") issues.push("Missing Clock Out");
 
             let baseStatus = issues.length ? issues.join(', ') : "Normal";
@@ -1520,7 +1453,7 @@
                 globalData.forEach(peer => {
                     if (peer.Date === currentDate && peer.Name !== activeEmp) {
                         const peerTime = peer[colKey];
-                        if (peerTime && peerTime !== "--" && peerTime !== "Lunch Meeting in Office") {
+                        if (peerTime && peerTime !== "--") {
                             peerOptions += `<option value="${peerTime}">${peer.Name}: ${peerTime}</option>`;
                         }
                     }
@@ -1778,7 +1711,7 @@
     }
 
     // -----------------------------------------------------------------
-    // GAME SAVE SLOT & RESTORE SYSTEM
+    // SAVE SLOT & RESTORE SYSTEM
     // -----------------------------------------------------------------
     async function openSaveModal() {
         if (!globalData || !globalData.length) {
@@ -1979,7 +1912,6 @@
             const status = r["Status / Alert"];
             const isSunday = (status === "Sunday");
             const isOffday = isRowOffDay(status) && (r["Clock In"] === "--" && r["Clock Out"] === "--");
-            const isLunchMeeting = (r._is_lunch_meeting === 1) || (r["Break Out (Lunch)"] === "Lunch Meeting in Office");
 
             if (isSunday || isOffday) {
                 tr.classList.add("row-merged-banner");
@@ -2016,24 +1948,11 @@
             const totalLateCell = r["Total Late Time"] !== "--" ? `<span class="badge badge-totallate">${r["Total Late Time"]}</span>` : "--";
             const earlyLeaveCell = r["Early Leave"] !== "--" ? `<span class="badge badge-early">${r["Early Leave"]}</span>` : "--";
 
-            let lunchCellsHtml = '';
-            if (isLunchMeeting) {
-                lunchCellsHtml = `
-                    <td colspan="2" style="background: #f0f9ff; text-align: center;">
-                        <span class="badge-lunch-meeting">🍱 Lunch Meeting in Office</span>
-                    </td>
-                `;
-            } else {
-                lunchCellsHtml = `
-                    ${makeCell(r["Break Out (Lunch)"], idx, "Break Out (Lunch)")}
-                    ${makeCell(r["Break In (Back)"], idx, "Break In (Back)")}
-                `;
-            }
-
             tr.innerHTML = `
                 <td><strong>${r.Date}</strong></td>
                 ${makeCell(r["Clock In"], idx, "Clock In")}
-                ${lunchCellsHtml}
+                ${makeCell(r["Break Out (Lunch)"], idx, "Break Out (Lunch)")}
+                ${makeCell(r["Break In (Back)"], idx, "Break In (Back)")}
                 ${makeCell(r["Clock Out"], idx, "Clock Out")}
                 <td>${r["Lunch Duration"]}</td>
                 <td>${lateWorkCell}</td>
