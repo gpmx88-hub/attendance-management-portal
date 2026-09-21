@@ -491,13 +491,15 @@ def process_time_card(
                 )
                 continue
 
+            is_half_day = bool(special_type and "(0.5 Day)" in special_type)
+
             if not raw_times_str:
-                if special_type:
+                if special_type and not is_half_day:
                     status_text = special_type
                     is_absent_flag = 0
                     is_off = 1
                 else:
-                    status_text = "Absent"
+                    status_text = special_type if is_half_day else "Absent"
                     is_absent_flag = 1
                     is_off = 0
 
@@ -534,23 +536,56 @@ def process_time_card(
                 continue
 
             punch_list = [t.strip() for t in raw_times_str.split(",") if t.strip()]
-            c_in, b_out, b_in, c_out, status, multi_earlier, multi_later = (
-                categorize_punches(punch_list, is_saturday)
-            )
 
-            is_half_day = bool(special_type and "(0.5 Day)" in special_type)
-            if is_half_day:
-                for warn in ["Missing Break Out", "Missing Break In", "No Lunch Punched"]:
-                    status = status.replace(warn, "").strip().strip(",")
-                if not status:
-                    status = "Normal"
-
-            if special_type:
-                status = (
-                    f"{special_type} (Worked)"
-                    if status == "Normal"
-                    else f"{special_type} ({status})"
+            # Handle 0.5 Day leave: Earlier = Clock In, Later = Clock Out, Lunch = None
+            if is_half_day and not is_saturday:
+                clean_punches, extra_dups = deduplicate_close_punches(
+                    punch_list, threshold_minutes=3
                 )
+                sorted_punches = sorted(
+                    clean_punches, key=lambda p: parse_time_str(p) or datetime.min
+                )
+
+                if len(sorted_punches) >= 2:
+                    c_in = sorted_punches[0]
+                    c_out = sorted_punches[-1]
+                    extra = sorted_punches[1:-1] + extra_dups
+                elif len(sorted_punches) == 1:
+                    dt = parse_time_str(sorted_punches[0])
+                    if dt and dt.hour < 12:
+                        c_in = sorted_punches[0]
+                        c_out = "--"
+                    else:
+                        c_in = "--"
+                        c_out = sorted_punches[0]
+                    extra = extra_dups
+                else:
+                    c_in, c_out, extra = "--", "--", []
+
+                b_out, b_in = "--", "--"
+                multi_earlier = extra[0] if len(extra) >= 1 else "--"
+                multi_later = extra[-1] if len(extra) >= 2 else "--"
+
+                issues = []
+                if c_in == "--":
+                    issues.append("Missing Clock In")
+                if c_out == "--":
+                    issues.append("Missing Clock Out")
+                status = (
+                    f"{special_type} ({', '.join(issues)})"
+                    if issues
+                    else special_type
+                )
+            else:
+                c_in, b_out, b_in, c_out, status, multi_earlier, multi_later = (
+                    categorize_punches(punch_list, is_saturday)
+                )
+                if special_type:
+                    status = (
+                        f"{special_type} (Worked)"
+                        if status == "Normal"
+                        else f"{special_type} ({status})"
+                    )
 
             lunch_mins, work_mins, late_work_mins, late_lunch_mins, early_leave_mins = (
                 0,
@@ -961,7 +996,7 @@ def build_excel_workbook(df):
                     if col_idx in [13, 14] and val != "--":
                         cell.fill = multi_fill
 
-            # Merge columns 3 & 4 (Break Out and Break In) for half day leaves
+            # Merge columns 3 & 4 (Break Out and Break In) into the yellow block
             if is_half_day:
                 ws_emp.merge_cells(
                     start_row=curr_row,
@@ -969,14 +1004,12 @@ def build_excel_workbook(df):
                     end_row=curr_row,
                     end_column=4,
                 )
-                half_day_label = (
-                    status_val if "(" in status_val else f"{status_val} (0.5 Day)"
-                )
+                half_day_label = status_val.split(" (Missing")[0].strip()
                 hd_cell = ws_emp.cell(row=curr_row, column=3, value=half_day_label)
                 hd_cell.alignment = align_center
-                hd_cell.font = Font(name="Calibri", size=10, bold=True, color="92400E")
+                hd_cell.font = Font(name="Calibri", size=10, bold=True, color="854D0E")
                 hd_cell.fill = PatternFill(
-                    start_color="FEF3C7", end_color="FEF3C7", fill_type="solid"
+                    start_color="FDE047", end_color="FDE047", fill_type="solid"
                 )
                 ws_emp.cell(row=curr_row, column=4).border = thin_border
 

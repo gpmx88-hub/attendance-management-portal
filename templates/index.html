@@ -1366,6 +1366,12 @@
         const isOffday = isRowOffDay(record["Status / Alert"]);
         const isHalfDay = record["Status / Alert"] && record["Status / Alert"].includes("(0.5 Day)");
 
+        // If it's a half-day leave, lock the middle lunch breaks out completely
+        if (isHalfDay) {
+            record["Break Out (Lunch)"] = "--";
+            record["Break In (Back)"] = "--";
+        }
+
         const allPunchesEmpty = 
             record["Clock In"] === "--" &&
             record["Break Out (Lunch)"] === "--" &&
@@ -1403,14 +1409,15 @@
         const secBin = parseTimeSeconds(record["Break In (Back)"]);
         const secCout = parseTimeSeconds(record["Clock Out"]);
 
+        // Late to work
         let lateWorkMins = 0;
         if (secCin !== null && secCin > 32400) lateWorkMins = Math.round((secCin - 32400) / 60);
         record["Late to Work"] = lateWorkMins > 0 ? formatMinutesToTime(lateWorkMins) : "--";
         record._late_work_mins = lateWorkMins;
 
+        // Lunch Duration (Zero if half day)
         let lunchMins = 0;
         let lateLunchMins = 0;
-        // Half-day leaves only have Clock In & Out, so lunch break calculations are skipped
         if (!isSat && !isHalfDay && secBout !== null && secBin !== null && secBin > secBout) {
             lunchMins = Math.round((secBin - secBout) / 60);
             if (lunchMins > 70) lateLunchMins = lunchMins - 70;
@@ -1420,6 +1427,7 @@
         record._lunch_mins = lunchMins;
         record._late_lunch_mins = lateLunchMins;
 
+        // Early Leave (Half-day shifts shouldn't be penalized against 18:00)
         let earlyLeaveMins = 0;
         let earlyRemark = "";
         const targetEndSec = isSat ? 48600 : 64800;
@@ -1442,6 +1450,7 @@
         record["Total Late Time"] = totLate > 0 ? formatMinutesToTime(totLate) : "--";
         record._total_late_mins = totLate;
 
+        // Work Hours calculation
         let workMins = 0;
         if (secCin !== null && secCout !== null && secCout > secCin) {
             const gross = Math.round((secCout - secCin) / 60);
@@ -1450,6 +1459,7 @@
         record["Work Hours"] = workMins > 0 ? formatMinutesToTime(workMins) : "--";
         record._work_mins = workMins;
 
+        // Issues & alerts
         let issues = [];
         if (isSat) {
             if (record["Clock In"] === "--") issues.push("Missing Clock In");
@@ -1458,7 +1468,6 @@
             record["Status / Alert"] = earlyRemark ? `${base} (${earlyRemark})` : base;
         } else if (!isOffday) {
             if (record["Clock In"] === "--") issues.push("Missing Clock In");
-            // If half-day leave, DO NOT require lunch breaks
             if (!isHalfDay) {
                 if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] !== "--") issues.push("Missing Break Out");
                 if (record["Break Out (Lunch)"] !== "--" && record["Break In (Back)"] === "--") issues.push("Missing Break In");
@@ -1466,11 +1475,9 @@
             }
             if (record["Clock Out"] === "--") issues.push("Missing Clock Out");
 
-            let currentStatus = record["Status / Alert"] || "Normal";
             if (isHalfDay) {
-                if (issues.length) {
-                    record["Status / Alert"] = `${currentStatus.split(' (')[0]} (${issues.join(', ')})`;
-                }
+                const baseLabel = record["Status / Alert"].split(' (Missing')[0];
+                record["Status / Alert"] = issues.length ? `${baseLabel} (${issues.join(', ')})` : baseLabel;
             } else {
                 let baseStatus = issues.length ? issues.join(', ') : "Normal";
                 record["Status / Alert"] = earlyRemark ? ((baseStatus === "Normal") ? `Normal (${earlyRemark})` : `${baseStatus}, ${earlyRemark}`) : baseStatus;
@@ -2049,14 +2056,13 @@
             
             const isHalfDay = status && status.includes("(0.5 Day)");
 
-            // Middle lunch blocks handling
             let middleLunchCells = '';
             if (isHalfDay) {
-                // Extract clean label like "Annual Leave (0.5 Day)"
-                let halfDayLabel = status.includes("(") ? status : `${status} (0.5 Day)`;
+                // Extracts the clean title e.g. "Annual Leave (0.5 Day)"
+                let halfDayLabel = status.split(' (Missing')[0].trim();
                 middleLunchCells = `
-                    <td colspan="2" style="background: #fef3c7; color: #92400e; font-weight: 700; font-size: 11px; text-align: center; border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
-                        📌 ${halfDayLabel}
+                    <td colspan="2" style="background-color: #fde047; color: #854d0e; font-weight: 700; font-size: 11px; text-align: center; border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; vertical-align: middle;">
+                        ${halfDayLabel}
                     </td>
                 `;
             } else {
