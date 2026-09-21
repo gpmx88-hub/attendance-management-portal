@@ -215,11 +215,57 @@
             opacity: 0.9;
         }
 
+        /* Dynamic Tags Manager & Filter Styling */
+        .tags-manager {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .tags-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .filter-tab-btn {
+            background: #ffffff;
+            border: 1px solid var(--border-strong);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .filter-tab-btn:hover {
+            background: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        .filter-tab-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
         .holiday-tags-container {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            min-height: 28px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 8px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            min-height: 38px;
             align-items: center;
         }
 
@@ -835,8 +881,12 @@
                     <button type="button" class="btn-action" onclick="confirmSpecialDay()">+ Add Special Day</button>
                 </div>
 
-                <div id="holidayTags" class="holiday-tags-container">
-                    <span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="noHolidaysText">No custom holidays or leave days added.</span>
+                <!-- Dynamic Tags Manager with Category Filter Bar -->
+                <div class="tags-manager">
+                    <div id="tagsFilterBar" class="tags-filter-bar hidden"></div>
+                    <div id="holidayTags" class="holiday-tags-container">
+                        <span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="noHolidaysText">No custom holidays or leave days added.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -986,6 +1036,7 @@
     let createdBlockCounter = 0;
     let toastTimer = null;
     let hasUnsavedChanges = false;
+    let activeTagCategory = 'ALL';
 
     const OFF_DAY_TYPES = ["Holiday", "Public Holiday", "Annual Leave", "Replacement Leave", "MC", "Team A off day", "Team B off day"];
     const COLUMN_TIME_ORDER = ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out"];
@@ -1103,6 +1154,70 @@
         executeAnalysis(false);
     }
 
+    function setTagFilter(category) {
+        activeTagCategory = category;
+        renderSpecialTags();
+    }
+
+    function renderSpecialTags() {
+        const container = document.getElementById('holidayTags');
+        const filterBar = document.getElementById('tagsFilterBar');
+        container.innerHTML = '';
+
+        if (specialEntries.length === 0) {
+            filterBar.classList.add('hidden');
+            filterBar.innerHTML = '';
+            container.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="noHolidaysText">No custom holidays or leave days added.</span>';
+            return;
+        }
+
+        // Calculate counts dynamically based on active tags
+        const categoryCounts = { 'ALL': specialEntries.length };
+        specialEntries.forEach(entry => {
+            const cat = entry.type;
+            categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+        });
+
+        if (!categoryCounts[activeTagCategory]) {
+            activeTagCategory = 'ALL';
+        }
+
+        filterBar.classList.remove('hidden');
+        filterBar.innerHTML = '';
+        Object.keys(categoryCounts).forEach(cat => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `filter-tab-btn ${activeTagCategory === cat ? 'active' : ''}`;
+            btn.innerText = `${cat} (${categoryCounts[cat]})`;
+            btn.onclick = () => setTagFilter(cat);
+            filterBar.appendChild(btn);
+        });
+
+        const displayedEntries = specialEntries
+            .map((entry, originalIndex) => ({ entry, originalIndex }))
+            .filter(({ entry }) => activeTagCategory === 'ALL' || entry.type === activeTagCategory)
+            .sort((a, b) => a.entry.date.localeCompare(b.entry.date));
+
+        displayedEntries.forEach(({ entry, originalIndex }) => {
+            let tagClass = "holiday-tag";
+            let icon = "🏖️";
+            if (entry.type.includes("Annual Leave")) { tagClass += " tag-leave"; icon = "🌴"; }
+            else if (entry.type.includes("Replacement Leave")) { tagClass += " tag-leave"; icon = "🔄"; }
+            else if (entry.type.includes("MC")) { tagClass += " tag-mc"; icon = "🏥"; }
+            else if (entry.type.includes("Unpaid Leave")) { tagClass += " tag-mc"; icon = "⏳"; }
+            else if (entry.type === "Team A off day") { tagClass += " tag-teama"; icon = "🅰️"; }
+            else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️"; }
+
+            const targetLabel = (entry.target === 'ALL') ? 'All' : entry.target.split(' ')[0];
+            const labelContent = entry.remark ? `${entry.type}: ${entry.remark}` : entry.type;
+
+            const tag = document.createElement('span');
+            tag.className = tagClass;
+            tag.innerHTML = `${icon} <strong>${entry.date}</strong> [${labelContent}] (${targetLabel}) <span class="remove-btn" onclick="removeSpecialDay(${originalIndex})">&times;</span>`;
+            container.appendChild(tag);
+        });
+    }
+
     function applySpecialEntriesLocally() {
         if (!globalData || !globalData.length) return;
 
@@ -1204,34 +1319,6 @@
         renderSpecialTags();
         markChangesDirty();
         applySpecialEntriesLocally();
-    }
-
-    function renderSpecialTags() {
-        const container = document.getElementById('holidayTags');
-        container.innerHTML = '';
-
-        if (specialEntries.length === 0) {
-            container.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="noHolidaysText">No custom holidays or leave days added.</span>';
-            return;
-        }
-
-        specialEntries.forEach((entry, idx) => {
-            let tagClass = "holiday-tag";
-            let icon = "🏖️";
-            if (entry.type.includes("Annual Leave")) { tagClass += " tag-leave"; icon = "🌴"; }
-            else if (entry.type.includes("Replacement Leave")) { tagClass += " tag-leave"; icon = "🔄"; }
-            else if (entry.type.includes("MC")) { tagClass += " tag-mc"; icon = "🏥"; }
-            else if (entry.type.includes("Unpaid Leave")) { tagClass += " tag-mc"; icon = "⏳"; }
-            else if (entry.type === "Team A off day") { tagClass += " tag-teama"; icon = "🅰️"; }
-            else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️"; }
-
-            const targetLabel = (entry.target === 'ALL') ? 'All' : entry.target.split(' ')[0];
-            const labelContent = entry.remark ? `${entry.type}: ${entry.remark}` : entry.type;
-            const tag = document.createElement('span');
-            tag.className = tagClass;
-            tag.innerHTML = `${icon} ${entry.date} [${labelContent}] (${targetLabel}) <span class="remove-btn" onclick="removeSpecialDay(${idx})">&times;</span>`;
-            container.appendChild(tag);
-        });
     }
 
     async function executeAnalysis(isNewFile = false) {
@@ -2065,7 +2152,7 @@
                 middleLunchCells = `
                     <td colspan="2" style="background-color: #fffbeb; text-align: center; vertical-align: middle; padding: 6px 10px;">
                         <span style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; width: 92%; padding: 4px 10px; background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 6px; font-weight: 600; font-size: 11px; letter-spacing: -0.01em;">
-                            ${halfDayLabel}
+                            🌤️ ${halfDayLabel}
                         </span>
                     </td>
                 `;
