@@ -820,7 +820,12 @@
                                 <select id="specialTypeSelect">
                                     <option value="Holiday">Holiday</option>
                                     <option value="Annual Leave">Annual Leave</option>
+                                    <option value="Annual Leave (0.5 Day)">Annual Leave (0.5 Day)</option>
+                                    <option value="Replacement Leave">Replacement Leave</option>
+                                    <option value="Replacement Leave (0.5 Day)">Replacement Leave (0.5 Day)</option>
                                     <option value="MC">MC</option>
+                                    <option value="MC (0.5 Day)">MC (0.5 Day)</option>
+                                    <option value="Unpaid Leave (0.5 Day)">Unpaid Leave (0.5 Day)</option>
                                     <option value="Team A off day">Team A off day</option>
                                     <option value="Team B off day">Team B off day</option>
                                 </select>
@@ -1208,8 +1213,10 @@
         specialEntries.forEach((entry, idx) => {
             let tagClass = "holiday-tag";
             let icon = "🏖️";
-            if (entry.type === "Annual Leave") { tagClass += " tag-leave"; icon = "🌴"; }
-            else if (entry.type === "MC") { tagClass += " tag-mc"; icon = "🏥"; }
+            if (entry.type.includes("Annual Leave")) { tagClass += " tag-leave"; icon = "🌴"; }
+            else if (entry.type.includes("Replacement Leave")) { tagClass += " tag-leave"; icon = "🔄"; }
+            else if (entry.type.includes("MC")) { tagClass += " tag-mc"; icon = "🏥"; }
+            else if (entry.type.includes("Unpaid Leave")) { tagClass += " tag-mc"; icon = "⏳"; }
             else if (entry.type === "Team A off day") { tagClass += " tag-teama"; icon = "🅰️"; }
             else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️"; }
 
@@ -1357,6 +1364,7 @@
     function recalculateRow(record) {
         const isSat = record.Date.includes("(Sat)");
         const isOffday = isRowOffDay(record["Status / Alert"]);
+        const isHalfDay = record["Status / Alert"] && record["Status / Alert"].includes("(0.5 Day)");
 
         const allPunchesEmpty = 
             record["Clock In"] === "--" &&
@@ -1366,7 +1374,7 @@
             record["Multiple Punch (Earlier)"] === "--" &&
             record["Multiple Punch (Later)"] === "--";
 
-        if (allPunchesEmpty && !isOffday) {
+        if (allPunchesEmpty && !isOffday && !isHalfDay) {
             record._is_absent = 1;
             record["Status / Alert"] = "Absent";
             record["Lunch Duration"] = "--";
@@ -1402,7 +1410,8 @@
 
         let lunchMins = 0;
         let lateLunchMins = 0;
-        if (!isSat && secBout !== null && secBin !== null && secBin > secBout) {
+        // Half-day leaves only have Clock In & Out, so lunch break calculations are skipped
+        if (!isSat && !isHalfDay && secBout !== null && secBin !== null && secBin > secBout) {
             lunchMins = Math.round((secBin - secBout) / 60);
             if (lunchMins > 70) lateLunchMins = lunchMins - 70;
         }
@@ -1414,7 +1423,7 @@
         let earlyLeaveMins = 0;
         let earlyRemark = "";
         const targetEndSec = isSat ? 48600 : 64800;
-        if (secCout !== null && secCout < targetEndSec) {
+        if (!isHalfDay && secCout !== null && secCout < targetEndSec) {
             earlyLeaveMins = Math.round((targetEndSec - secCout) / 60);
             if (earlyLeaveMins > 0) {
                 const halfHourBlocks = Math.ceil(earlyLeaveMins / 30);
@@ -1449,13 +1458,23 @@
             record["Status / Alert"] = earlyRemark ? `${base} (${earlyRemark})` : base;
         } else if (!isOffday) {
             if (record["Clock In"] === "--") issues.push("Missing Clock In");
-            if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] !== "--") issues.push("Missing Break Out");
-            if (record["Break Out (Lunch)"] !== "--" && record["Break In (Back)"] === "--") issues.push("Missing Break In");
-            if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] === "--") issues.push("No Lunch Punched");
+            // If half-day leave, DO NOT require lunch breaks
+            if (!isHalfDay) {
+                if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] !== "--") issues.push("Missing Break Out");
+                if (record["Break Out (Lunch)"] !== "--" && record["Break In (Back)"] === "--") issues.push("Missing Break In");
+                if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] === "--") issues.push("No Lunch Punched");
+            }
             if (record["Clock Out"] === "--") issues.push("Missing Clock Out");
 
-            let baseStatus = issues.length ? issues.join(', ') : "Normal";
-            record["Status / Alert"] = earlyRemark ? ((baseStatus === "Normal") ? `Normal (${earlyRemark})` : `${baseStatus}, ${earlyRemark}`) : baseStatus;
+            let currentStatus = record["Status / Alert"] || "Normal";
+            if (isHalfDay) {
+                if (issues.length) {
+                    record["Status / Alert"] = `${currentStatus.split(' (')[0]} (${issues.join(', ')})`;
+                }
+            } else {
+                let baseStatus = issues.length ? issues.join(', ') : "Normal";
+                record["Status / Alert"] = earlyRemark ? ((baseStatus === "Normal") ? `Normal (${earlyRemark})` : `${baseStatus}, ${earlyRemark}`) : baseStatus;
+            }
         }
 
         markChangesDirty();
@@ -2027,12 +2046,30 @@
             const lateLunchCell = r["Late Time (Lunch)"] !== "--" ? `<span class="badge badge-late">${r["Late Time (Lunch)"]}</span>` : "--";
             const totalLateCell = r["Total Late Time"] !== "--" ? `<span class="badge badge-totallate">${r["Total Late Time"]}</span>` : "--";
             const earlyLeaveCell = r["Early Leave"] !== "--" ? `<span class="badge badge-early">${r["Early Leave"]}</span>` : "--";
+            
+            const isHalfDay = status && status.includes("(0.5 Day)");
+
+            // Middle lunch blocks handling
+            let middleLunchCells = '';
+            if (isHalfDay) {
+                // Extract clean label like "Annual Leave (0.5 Day)"
+                let halfDayLabel = status.includes("(") ? status : `${status} (0.5 Day)`;
+                middleLunchCells = `
+                    <td colspan="2" style="background: #fef3c7; color: #92400e; font-weight: 700; font-size: 11px; text-align: center; border-left: 1px solid var(--border); border-right: 1px solid var(--border);">
+                        📌 ${halfDayLabel}
+                    </td>
+                `;
+            } else {
+                middleLunchCells = `
+                    ${makeCell(r["Break Out (Lunch)"], idx, "Break Out (Lunch)")}
+                    ${makeCell(r["Break In (Back)"], idx, "Break In (Back)")}
+                `;
+            }
 
             tr.innerHTML = `
                 <td><strong>${r.Date}</strong></td>
                 ${makeCell(r["Clock In"], idx, "Clock In")}
-                ${makeCell(r["Break Out (Lunch)"], idx, "Break Out (Lunch)")}
-                ${makeCell(r["Break In (Back)"], idx, "Break In (Back)")}
+                ${middleLunchCells}
                 ${makeCell(r["Clock Out"], idx, "Clock Out")}
                 <td>${r["Lunch Duration"]}</td>
                 <td>${lateWorkCell}</td>
