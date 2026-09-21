@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Attendance Punch Card Portal</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-              rel="stylesheet">
-        <style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Punch Card Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
         :root {
             --primary: #0f2d59;
             --primary-light: #1e427b;
@@ -727,328 +726,259 @@
         .hidden {
             display: none !important;
         }
-        </style>
-    </head>
-    <body>
-        <div id="appToast" class="app-toast">
-            <span class="toast-icon">⚠️</span>
-            <span id="appToastMessage">Notification message</span>
-            <button type="button" class="toast-close" onclick="hideToast()">×</button>
-        </div>
-        <!-- Slide-Out Sidebar Drawer -->
-        <div id="sideDrawerBackdrop"
-             class="side-drawer-backdrop"
-             onclick="closeSideDrawer()"></div>
-        <div id="sideDrawer" class="side-drawer">
-            <div class="side-drawer-header">
-                <h3>⚡ Workspace Menu</h3>
-                <button type="button" class="modal-close-btn" onclick="closeSideDrawer()">×</button>
+    </style>
+</head>
+<body>
+
+<div id="appToast" class="app-toast">
+    <span class="toast-icon">⚠️</span>
+    <span id="appToastMessage">Notification message</span>
+    <button type="button" class="toast-close" onclick="hideToast()">&times;</button>
+</div>
+
+<!-- Slide-Out Sidebar Drawer -->
+<div id="sideDrawerBackdrop" class="side-drawer-backdrop" onclick="closeSideDrawer()"></div>
+<div id="sideDrawer" class="side-drawer">
+    <div class="side-drawer-header">
+        <h3>⚡ Workspace Menu</h3>
+        <button type="button" class="modal-close-btn" onclick="closeSideDrawer()">&times;</button>
+    </div>
+    <div class="side-drawer-body">
+        <button type="button" class="side-drawer-btn" onclick="openTutorialModal(); closeSideDrawer();">
+            <span style="font-size: 18px;">📖</span> User Guide & Tutorial
+        </button>
+        <button type="button" class="side-drawer-btn" onclick="openSaveModal(); closeSideDrawer();">
+            <span style="font-size: 18px;">💾</span> Save Progress Slot
+        </button>
+        <button type="button" class="side-drawer-btn" onclick="openRestoreModal(); closeSideDrawer();">
+            <span style="font-size: 18px;">📂</span> Load Saved Progress
+        </button>
+        
+        <a href="/logout" class="side-drawer-btn btn-signout" onclick="return handleSignOutClick(event)">
+            <span style="font-size: 18px;">🚪</span> Sign Out
+        </a>
+    </div>
+</div>
+
+<div class="container">
+    <header class="app-header">
+        <div class="header-title-group">
+            <h1>Attendance Punch Card Portal</h1>
+            <div class="header-meta">
+                <span>User: <strong style="color: #2563eb;">{{ current_user }}</strong></span>
+                <span>•</span>
+                <span>Start: <strong>09:00</strong></span>
+                <span>•</span>
+                <span>Weekday End: <strong>18:00</strong></span>
+                <span>•</span>
+                <span>Saturday End: <strong>13:30</strong></span>
+                <span>•</span>
+                <span>Lunch Limit: <strong>1h 10m</strong></span>
             </div>
-            <div class="side-drawer-body">
-                <button type="button"
-                        class="side-drawer-btn"
-                        onclick="openTutorialModal(); closeSideDrawer();">
-                    <span style="font-size: 18px;">📖</span> User Guide & Tutorial
-                </button>
-                <button type="button"
-                        class="side-drawer-btn"
-                        onclick="openSaveModal(); closeSideDrawer();">
-                    <span style="font-size: 18px;">💾</span> Save Progress Slot
-                </button>
-                <button type="button"
-                        class="side-drawer-btn"
-                        onclick="openRestoreModal(); closeSideDrawer();">
-                    <span style="font-size: 18px;">📂</span> Load Saved Progress
-                </button>
-                <a href="/logout"
-                   class="side-drawer-btn btn-signout"
-                   onclick="return handleSignOutClick(event)">
-                    <span style="font-size: 18px;">🚪</span> Sign Out
-                </a>
+        </div>
+        <button type="button" class="btn-menu-trigger" onclick="openSideDrawer()">
+            <span id="saveDirtyDot" class="dirty-indicator hidden" title="Unsaved modifications"></span>
+            ☰ Menu
+        </button>
+    </header>
+
+    <section class="section-card">
+        <div class="setup-grid">
+            <div class="file-drop-box">
+                <label for="fileInput">📁 Upload Biometric Punch File</label>
+                <input type="file" id="fileInput" accept=".xlsx, .xls" onchange="handleNewFileUpload()">
             </div>
-        </div>
-        <div class="container">
-            <header class="app-header">
-                <div class="header-title-group">
-                    <h1>Attendance Punch Card Portal</h1>
-                    <div class="header-meta">
-                        <span>User: <strong style="color: #2563eb;">{{ current_user }}</strong></span>
-                        <span>•</span>
-                        <span>Start: <strong>09:00</strong></span>
-                        <span>•</span>
-                        <span>Weekday End: <strong>18:00</strong></span>
-                        <span>•</span>
-                        <span>Saturday End: <strong>13:30</strong></span>
-                        <span>•</span>
-                        <span>Lunch Limit: <strong>1h 10m</strong></span>
+
+            <div class="config-controls">
+                <div class="date-range-row">
+                    <div class="field-group">
+                        <label>Start Date:</label>
+                        <input type="date" id="startDateInput" onchange="onDateRangeChange()">
+                    </div>
+                    <div class="field-group">
+                        <label>End Date:</label>
+                        <input type="date" id="endDateInput" onchange="onDateRangeChange()">
                     </div>
                 </div>
-                <button type="button" class="btn-menu-trigger" onclick="openSideDrawer()">
-                    <span id="saveDirtyDot"
-                          class="dirty-indicator hidden"
-                          title="Unsaved modifications"></span>
-                    ☰ Menu
-                </button>
-            </header>
-            <section class="section-card">
-                <div class="setup-grid">
-                    <div class="file-drop-box">
-                        <label for="fileInput">📁 Upload Biometric Punch File</label>
-                        <input type="file"
-                               id="fileInput"
-                               accept=".xlsx, .xls"
-                               onchange="handleNewFileUpload()">
+
+                <div class="special-day-toolbar">
+                    <div class="field-group">
+                        <label>Date:</label>
+                        <input type="date" id="specialDatePicker">
                     </div>
-                    <div class="config-controls">
-                        <div class="date-range-row">
-                            <div class="field-group">
-                                <label>Start Date:</label>
-                                <input type="date" id="startDateInput" onchange="onDateRangeChange()">
-                            </div>
-                            <div class="field-group">
-                                <label>End Date:</label>
-                                <input type="date" id="endDateInput" onchange="onDateRangeChange()">
-                            </div>
-                        </div>
-                        <div class="special-day-toolbar">
-                            <div class="field-group">
-                                <label>Date:</label>
-                                <input type="date" id="specialDatePicker">
-                            </div>
-                            <div class="field-group">
-                                <label>Type:</label>
-                                <select id="specialTypeSelect">
-                                    <option value="Holiday">Holiday</option>
-                                    <option value="Annual Leave">Annual Leave</option>
-                                    <option value="Annual Leave (0.5 Day)">Annual Leave (0.5 Day)</option>
-                                    <option value="Replacement Leave">Replacement Leave</option>
-                                    <option value="Replacement Leave (0.5 Day)">Replacement Leave (0.5 Day)</option>
-                                    <option value="MC">MC</option>
-                                    <option value="MC (0.5 Day)">MC (0.5 Day)</option>
-                                    <option value="Unpaid Leave (0.5 Day)">Unpaid Leave (0.5 Day)</option>
-                                    <option value="Team A off day">Team A off day</option>
-                                    <option value="Team B off day">Team B off day</option>
-                                </select>
-                            </div>
-                            <div class="field-group">
-                                <label>Remark / Name (Optional):</label>
-                                <input type="text"
-                                       id="customRemarkInput"
-                                       placeholder="e.g. Johor Sultan Birthday"
-                                       style="width: 190px">
-                            </div>
-                            <div class="field-group">
-                                <label>Target:</label>
-                                <select id="specialTargetSelect">
-                                    <option value="current">Current Employee</option>
-                                    <option value="all">Company-Wide (All)</option>
-                                </select>
-                            </div>
-                            <button type="button"
-                                    class="btn-action"
-                                    onclick="confirmSpecialDay()">+ Add Special Day</button>
-                        </div>
-                        <div id="holidayTags" class="holiday-tags-container">
-                            <span style="font-size: 12px;
-                                         color: var(--text-muted);
-                                         font-style: italic"
-                                  id="noHolidaysText">No custom holidays or leave days added.</span>
-                        </div>
+                    <div class="field-group">
+                        <label>Type:</label>
+                        <select id="specialTypeSelect">
+                            <option value="Holiday">Holiday</option>
+                            <option value="Annual Leave">Annual Leave</option>
+                            <option value="Annual Leave (0.5 Day)">Annual Leave (0.5 Day)</option>
+                            <option value="Replacement Leave">Replacement Leave</option>
+                            <option value="Replacement Leave (0.5 Day)">Replacement Leave (0.5 Day)</option>
+                            <option value="MC">MC</option>
+                            <option value="MC (0.5 Day)">MC (0.5 Day)</option>
+                            <option value="Unpaid Leave (0.5 Day)">Unpaid Leave (0.5 Day)</option>
+                            <option value="Team A off day">Team A off day</option>
+                            <option value="Team B off day">Team B off day</option>
+                        </select>
                     </div>
+                    <div class="field-group">
+                        <label>Remark / Name (Optional):</label>
+                        <input type="text" id="customRemarkInput" placeholder="e.g. Johor Sultan Birthday" style="width: 190px;">
+                    </div>
+                    <div class="field-group">
+                        <label>Target:</label>
+                        <select id="specialTargetSelect">
+                            <option value="current">Current Employee</option>
+                            <option value="all">Company-Wide (All)</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn-action" onclick="confirmSpecialDay()">+ Add Special Day</button>
                 </div>
-            </section>
-            <section id="resultsCard" class="section-card hidden">
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-val" id="statEmployees">0</div>
-                        <div class="stat-label">Total Employees</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-val" id="statWorkingDays">0</div>
-                        <div class="stat-label">Total Month Days</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
-                        <div class="stat-label">Total Absences</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-val" id="statAlerts" style="color: var(--danger);">0</div>
-                        <div class="stat-label">Punch Irregularities</div>
-                    </div>
-                </div>
-                <div class="workshop-panel">
-                    <div class="workshop-create">
-                        <div style="display: flex;
-                                    align-items: center;
-                                    gap: 10px;
-                                    flex-wrap: wrap">
-                            <span style="font-size: 13px; font-weight: 600;">✨ Custom Time Creator:</span>
-                            <input type="time" id="newTimePicker" step="1" value="09:00:00">
-                            <button type="button"
-                                    class="btn-action"
-                                    onclick="createNewTimeBlock()">+ Create Block</button>
-                        </div>
-                        <div id="createdBlocksTray" class="created-blocks-tray">
-                            <span style="font-size: 12px;
-                                         color: var(--text-muted);
-                                         font-style: italic"
-                                  id="trayPlaceholder">Newly created time blocks appear here. Drag them anywhere into the table.</span>
-                        </div>
-                    </div>
-                    <div id="trashZone"
-                         class="trash-dropzone"
-                         ondragover="handleTrashDragOver(event)"
-                         ondragleave="handleTrashDragLeave(event)"
-                         ondrop="handleTrashDrop(event)"
-                         onclick="handleTrashClick()"
-                         title="Drag any time block here to throw it away">
-                        <span style="font-size: 20px;">🗑️</span>
-                        <span>Dustbin (Throw Away)</span>
-                    </div>
-                </div>
-                <div class="employee-toolbar">
-                    <div class="filter-actions">
-                        <label for="searchInput" style="font-size: 13px; font-weight: 600;">Employee:</label>
-                        <input type="text"
-                               id="searchInput"
-                               placeholder="Search prefix (e.g. 'tan')..."
-                               oninput="onSearchType()"
-                               style="width: 190px">
-                        <select id="empDropdown"
-                                onchange="renderEmployeeTable()"
-                                style="min-width: 190px"></select>
-                    </div>
-                    <button type="button"
-                            class="btn-download"
-                            onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
-                </div>
-                <div class="table-viewport">
-                    <table id="attendanceTable">
-                        <thead>
-                            <tr>
-                                <th style="min-width: 120px;">Date</th>
-                                <th style="background-color: #1e3a8a;">Clock In ⇄</th>
-                                <th style="background-color: #1e3a8a;">Break Out ⇄</th>
-                                <th style="background-color: #1e3a8a;">Break In ⇄</th>
-                                <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
-                                <th>Lunch Duration</th>
-                                <th style="background-color: #274c77;">Late (Work)</th>
-                                <th>Late (Lunch)</th>
-                                <th style="background-color: #b91c1c;">Total Late</th>
-                                <th style="background-color: #831843;">Early Leave</th>
-                                <th>Work Hours</th>
-                                <th style="min-width: 130px;">Status / Alert</th>
-                                <th style="background-color: #475569;">Multiple (Earlier)</th>
-                                <th style="background-color: #475569;">Multiple (Later)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-        <!-- Tutorial Modal -->
-        <div id="tutorialModal"
-             class="modal-backdrop"
-             onclick="handleBackdropClick(event)">
-            <div class="modal-window">
-                <div class="modal-header">
-                    <h3>📖 Attendance Portal Instructions & Tutorial</h3>
-                    <div style="display: flex; align-items: center; gap: 14px;">
-                        <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
-                           target="_blank"
-                           style="color: #cbd5e1;
-                                  font-size: 13px;
-                                  text-decoration: underline">Open in New Tab ↗</a>
-                        <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">×</button>
-                    </div>
-                </div>
-                <div class="modal-body">
-                    <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
-                        <p style="padding: 20px; text-align: center;">
-                            Your browser does not support inline PDFs.
-                            <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
-                               target="_blank"
-                               style="color: #2563eb;
-                                      font-weight: bold">Click here to download and view the tutorial PDF</a>.
-                        </p>
-                    </iframe>
+
+                <div id="holidayTags" class="holiday-tags-container">
+                    <span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="noHolidaysText">No custom holidays or leave days added.</span>
                 </div>
             </div>
         </div>
-        <!-- Save Slot Modal -->
-        <div id="saveSlotModal"
-             class="modal-backdrop"
-             onclick="handleSlotBackdropClick(event)">
-            <div class="modal-window"
-                 style="max-width: 620px;
-                        height: auto;
-                        max-height: 80vh">
-                <div class="modal-header">
-                    <h3>💾 Save Progress Slot</h3>
-                    <button type="button" class="modal-close-btn" onclick="closeSaveModal()">×</button>
-                </div>
-                <div style="padding: 20px; overflow-y: auto;">
-                    <div style="background: #f8fafc;
-                                border: 1px solid #cbd5e1;
-                                padding: 14px;
-                                border-radius: 8px;
-                                margin-bottom: 16px">
-                        <label style="display: block;
-                                      font-size: 12px;
-                                      font-weight: 700;
-                                      color: #1e3a8a;
-                                      margin-bottom: 6px">SAVE AS NEW SLOT</label>
-                        <div style="display: flex; gap: 8px;">
-                            <input type="text"
-                                   id="newSlotTitleInput"
-                                   placeholder="e.g. June 2026 - Final Review"
-                                   style="flex: 1"
-                                   onkeydown="if(event.key === 'Enter'){ event.preventDefault(); executeSaveNewSlot(); }">
-                            <button type="button"
-                                    class="btn-action"
-                                    style="background: #059669"
-                                    onclick="executeSaveNewSlot()">Save New</button>
-                        </div>
-                    </div>
-                    <label style="display: block;
-                                  font-size: 12px;
-                                  font-weight: 700;
-                                  color: #64748b;
-                                  margin-bottom: 8px">OR OVERWRITE AN EXISTING SAVE</label>
-                    <div id="saveSlotsList"
-                         style="display: flex;
-                                flex-direction: column;
-                                gap: 8px;
-                                max-height: 280px;
-                                overflow-y: auto"></div>
-                </div>
+    </section>
+
+    <section id="resultsCard" class="section-card hidden">
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-val" id="statEmployees">0</div>
+                <div class="stat-label">Total Employees</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="statWorkingDays">0</div>
+                <div class="stat-label">Total Month Days</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="statAbsences" style="color: #ea580c;">0</div>
+                <div class="stat-label">Total Absences</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-val" id="statAlerts" style="color: var(--danger);">0</div>
+                <div class="stat-label">Punch Irregularities</div>
             </div>
         </div>
-        <!-- Restore Slot Modal -->
-        <div id="restoreSlotModal"
-             class="modal-backdrop"
-             onclick="handleSlotBackdropClick(event)">
-            <div class="modal-window"
-                 style="max-width: 620px;
-                        height: auto;
-                        max-height: 80vh">
-                <div class="modal-header" style="background: #1e293b;">
-                    <h3>📂 Load Saved Progress</h3>
-                    <button type="button" class="modal-close-btn" onclick="closeRestoreModal()">×</button>
+
+        <div class="workshop-panel">
+            <div class="workshop-create">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="font-size: 13px; font-weight: 600;">✨ Custom Time Creator:</span>
+                    <input type="time" id="newTimePicker" step="1" value="09:00:00">
+                    <button type="button" class="btn-action" onclick="createNewTimeBlock()">+ Create Block</button>
                 </div>
-                <div style="padding: 20px; overflow-y: auto;">
-                    <div id="restoreSlotsList"
-                         style="display: flex;
-                                flex-direction: column;
-                                gap: 8px;
-                                max-height: 380px;
-                                overflow-y: auto"></div>
+                <div id="createdBlocksTray" class="created-blocks-tray">
+                    <span style="font-size: 12px; color: var(--text-muted); font-style: italic;" id="trayPlaceholder">Newly created time blocks appear here. Drag them anywhere into the table.</span>
                 </div>
             </div>
+
+            <div id="trashZone" class="trash-dropzone" 
+                 ondragover="handleTrashDragOver(event)" 
+                 ondragleave="handleTrashDragLeave(event)" 
+                 ondrop="handleTrashDrop(event)"
+                 onclick="handleTrashClick()"
+                 title="Drag any time block here to throw it away">
+                <span style="font-size: 20px;">🗑️</span>
+                <span>Dustbin (Throw Away)</span>
+            </div>
         </div>
-        <script>
+
+        <div class="employee-toolbar">
+            <div class="filter-actions">
+                <label for="searchInput" style="font-size: 13px; font-weight: 600;">Employee:</label>
+                <input type="text" id="searchInput" placeholder="Search prefix (e.g. 'tan')..." oninput="onSearchType()" style="width: 190px;">
+                <select id="empDropdown" onchange="renderEmployeeTable()" style="min-width: 190px;"></select>
+            </div>
+            <button type="button" class="btn-download" onclick="downloadExcel()">
+                📥 Download Clean Excel (Multi-Sheet)
+            </button>
+        </div>
+
+        <div class="table-viewport">
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th style="min-width: 120px;">Date</th>
+                        <th style="background-color: #1e3a8a;">Clock In ⇄</th>
+                        <th style="background-color: #1e3a8a;">Break Out ⇄</th>
+                        <th style="background-color: #1e3a8a;">Break In ⇄</th>
+                        <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
+                        <th>Lunch Duration</th>
+                        <th style="background-color: #274c77;">Late (Work)</th>
+                        <th>Late (Lunch)</th>
+                        <th style="background-color: #b91c1c;">Total Late</th>
+                        <th style="background-color: #831843;">Early Leave</th>
+                        <th>Work Hours</th>
+                        <th style="min-width: 130px;">Status / Alert</th>
+                        <th style="background-color: #475569;">Multiple (Earlier)</th>
+                        <th style="background-color: #475569;">Multiple (Later)</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<!-- Tutorial Modal -->
+<div id="tutorialModal" class="modal-backdrop" onclick="handleBackdropClick(event)">
+    <div class="modal-window">
+        <div class="modal-header">
+            <h3>📖 Attendance Portal Instructions & Tutorial</h3>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf" target="_blank" style="color: #cbd5e1; font-size: 13px; text-decoration: underline;">Open in New Tab ↗</a>
+                <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">&times;</button>
+            </div>
+        </div>
+        <div class="modal-body">
+            <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
+                <p style="padding: 20px; text-align: center;">
+                    Your browser does not support inline PDFs. 
+                    <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf" target="_blank" style="color: #2563eb; font-weight: bold;">Click here to download and view the tutorial PDF</a>.
+                </p>
+            </iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Save Slot Modal -->
+<div id="saveSlotModal" class="modal-backdrop" onclick="handleSlotBackdropClick(event)">
+    <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh;">
+        <div class="modal-header">
+            <h3>💾 Save Progress Slot</h3>
+            <button type="button" class="modal-close-btn" onclick="closeSaveModal()">&times;</button>
+        </div>
+        <div style="padding: 20px; overflow-y: auto;">
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 14px; border-radius: 8px; margin-bottom: 16px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #1e3a8a; margin-bottom: 6px;">SAVE AS NEW SLOT</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="newSlotTitleInput" placeholder="e.g. June 2026 - Final Review" style="flex: 1;" onkeydown="if(event.key === 'Enter'){ event.preventDefault(); executeSaveNewSlot(); }">
+                    <button type="button" class="btn-action" style="background: #059669;" onclick="executeSaveNewSlot()">Save New</button>
+                </div>
+            </div>
+
+            <label style="display: block; font-size: 12px; font-weight: 700; color: #64748b; margin-bottom: 8px;">OR OVERWRITE AN EXISTING SAVE</label>
+            <div id="saveSlotsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Slot Modal -->
+<div id="restoreSlotModal" class="modal-backdrop" onclick="handleSlotBackdropClick(event)">
+    <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh;">
+        <div class="modal-header" style="background: #1e293b;">
+            <h3>📂 Load Saved Progress</h3>
+            <button type="button" class="modal-close-btn" onclick="closeRestoreModal()">&times;</button>
+        </div>
+        <div style="padding: 20px; overflow-y: auto;">
+            <div id="restoreSlotsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto;"></div>
+        </div>
+    </div>
+</div>
+
+<script>
     let globalData = [];
     let employeeNames = [];
     let specialEntries = [];
@@ -1057,7 +987,7 @@
     let toastTimer = null;
     let hasUnsavedChanges = false;
 
-    const OFF_DAY_TYPES = ["Holiday", "Public Holiday", "Annual Leave", "MC", "Team A off day", "Team B off day"];
+    const OFF_DAY_TYPES = ["Holiday", "Public Holiday", "Annual Leave", "Replacement Leave", "MC", "Team A off day", "Team B off day"];
     const COLUMN_TIME_ORDER = ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out"];
 
     function openSideDrawer() {
@@ -1101,8 +1031,20 @@
         }
     });
 
+    // Global ESC key listener to dismiss all modals & side drawers
+    window.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            closeSaveModal();
+            closeRestoreModal();
+            closeTutorialModal();
+            closeSideDrawer();
+            hideToast();
+        }
+    });
+
     function isRowOffDay(status) {
         if (!status) return false;
+        if (status.includes("(0.5 Day)")) return false;
         return OFF_DAY_TYPES.some(t => status.includes(t));
     }
 
@@ -1161,6 +1103,69 @@
         executeAnalysis(false);
     }
 
+    function applySpecialEntriesLocally() {
+        if (!globalData || !globalData.length) return;
+
+        globalData.forEach(r => {
+            const rawDate = r.Date.split(' ')[0]; // extracts "YYYY-MM-DD"
+
+            const match = specialEntries.find(e => 
+                e.date === rawDate && (e.target === 'ALL' || e.target === r.Name)
+            );
+
+            if (match) {
+                const label = match.remark ? `${match.type} (${match.remark})` : match.type;
+                r["Status / Alert"] = label;
+
+                // Half-day leave: Pair earliest punch as Clock In and latest punch as Clock Out
+                if (match.type.includes("(0.5 Day)")) {
+                    const currentPunches = [
+                        r["Clock In"],
+                        r["Break Out (Lunch)"],
+                        r["Break In (Back)"],
+                        r["Clock Out"],
+                        r["Multiple Punch (Earlier)"],
+                        r["Multiple Punch (Later)"]
+                    ].filter(p => p && p !== "--");
+
+                    if (currentPunches.length > 0) {
+                        currentPunches.sort((a, b) => (parseTimeSeconds(a) || 0) - (parseTimeSeconds(b) || 0));
+
+                        if (currentPunches.length >= 2) {
+                            r["Clock In"] = currentPunches[0];
+                            r["Clock Out"] = currentPunches[currentPunches.length - 1];
+                            const middlePunches = currentPunches.slice(1, -1);
+                            r["Multiple Punch (Earlier)"] = middlePunches[0] || "--";
+                            r["Multiple Punch (Later)"] = middlePunches.length > 1 ? middlePunches[middlePunches.length - 1] : "--";
+                        } else {
+                            const sec = parseTimeSeconds(currentPunches[0]) || 0;
+                            if (sec < 43200) { // before 12:00 PM
+                                r["Clock In"] = currentPunches[0];
+                                r["Clock Out"] = "--";
+                            } else {
+                                r["Clock In"] = "--";
+                                r["Clock Out"] = currentPunches[0];
+                            }
+                            r["Multiple Punch (Earlier)"] = "--";
+                            r["Multiple Punch (Later)"] = "--";
+                        }
+                    }
+
+                    r["Break Out (Lunch)"] = "--";
+                    r["Break In (Back)"] = "--";
+                }
+            } else if (isRowOffDay(r["Status / Alert"]) || (r["Status / Alert"] && r["Status / Alert"].includes("(0.5 Day)"))) {
+                r["Status / Alert"] = "Normal";
+            }
+
+            recalculateRow(r);
+        });
+
+        syncChangeToBackend(globalData);
+        refreshStats();
+        renderEmployeeTable();
+    }
+
     function confirmSpecialDay() {
         const picker = document.getElementById('specialDatePicker');
         const chosenDate = picker.value;
@@ -1191,14 +1196,14 @@
         document.getElementById('customRemarkInput').value = '';
         renderSpecialTags();
         markChangesDirty();
-        executeAnalysis(false);
+        applySpecialEntriesLocally();
     }
 
     function removeSpecialDay(index) {
         specialEntries.splice(index, 1);
         renderSpecialTags();
         markChangesDirty();
-        executeAnalysis(false);
+        applySpecialEntriesLocally();
     }
 
     function renderSpecialTags() {
@@ -1366,7 +1371,6 @@
         const isOffday = isRowOffDay(record["Status / Alert"]);
         const isHalfDay = record["Status / Alert"] && record["Status / Alert"].includes("(0.5 Day)");
 
-        // If it's a half-day leave, lock the middle lunch breaks out completely
         if (isHalfDay) {
             record["Break Out (Lunch)"] = "--";
             record["Break In (Back)"] = "--";
@@ -1409,13 +1413,11 @@
         const secBin = parseTimeSeconds(record["Break In (Back)"]);
         const secCout = parseTimeSeconds(record["Clock Out"]);
 
-        // Late to work
         let lateWorkMins = 0;
         if (secCin !== null && secCin > 32400) lateWorkMins = Math.round((secCin - 32400) / 60);
         record["Late to Work"] = lateWorkMins > 0 ? formatMinutesToTime(lateWorkMins) : "--";
         record._late_work_mins = lateWorkMins;
 
-        // Lunch Duration (Zero if half day)
         let lunchMins = 0;
         let lateLunchMins = 0;
         if (!isSat && !isHalfDay && secBout !== null && secBin !== null && secBin > secBout) {
@@ -1427,7 +1429,6 @@
         record._lunch_mins = lunchMins;
         record._late_lunch_mins = lateLunchMins;
 
-        // Early Leave (Half-day shifts shouldn't be penalized against 18:00)
         let earlyLeaveMins = 0;
         let earlyRemark = "";
         const targetEndSec = isSat ? 48600 : 64800;
@@ -1450,7 +1451,6 @@
         record["Total Late Time"] = totLate > 0 ? formatMinutesToTime(totLate) : "--";
         record._total_late_mins = totLate;
 
-        // Work Hours calculation
         let workMins = 0;
         if (secCin !== null && secCout !== null && secCout > secCin) {
             const gross = Math.round((secCout - secCin) / 60);
@@ -1459,7 +1459,6 @@
         record["Work Hours"] = workMins > 0 ? formatMinutesToTime(workMins) : "--";
         record._work_mins = workMins;
 
-        // Issues & alerts
         let issues = [];
         if (isSat) {
             if (record["Clock In"] === "--") issues.push("Missing Clock In");
@@ -1819,12 +1818,12 @@
         const endVal = document.getElementById('endDateInput').value;
         const myTimeStr = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' });
         const defaultTitle = startVal ? `Save: ${startVal} to ${endVal}` : `Save: ${myTimeStr}`;
-        document.getElementById('newSlotTitleInput').value = defaultTitle;
+        const inputEl = document.getElementById('newSlotTitleInput');
+        inputEl.value = defaultTitle;
 
         await renderSlotsForSave();
         document.getElementById('saveSlotModal').classList.add('active');
 
-        // Automatically focus the input field so user can press Enter immediately
         setTimeout(() => {
             inputEl.focus();
             inputEl.select();
@@ -1991,7 +1990,7 @@
 
         if (session.startDate) {
             document.getElementById('startDateInput').value = session.startDate;
-            document.getElementById('specialDatePicker').value = session.startDate; // 👈 Add this line 
+            document.getElementById('specialDatePicker').value = session.startDate;
         }
         if (session.endDate) document.getElementById('endDateInput').value = session.endDate;
 
@@ -2018,6 +2017,7 @@
             const status = r["Status / Alert"];
             const isSunday = (status === "Sunday");
             const isOffday = isRowOffDay(status) && (r["Clock In"] === "--" && r["Clock Out"] === "--");
+            const isHalfDay = status && status.includes("(0.5 Day)");
 
             if (isSunday || isOffday) {
                 tr.classList.add("row-merged-banner");
@@ -2037,7 +2037,11 @@
                 badge = `<span class="badge badge-holiday">${status}</span>`;
             } else if (status.includes("Annual Leave")) {
                 badge = `<span class="badge badge-leave">${status}</span>`;
+            } else if (status.includes("Replacement Leave")) {
+                badge = `<span class="badge badge-leave">${status}</span>`;
             } else if (status.includes("MC")) {
+                badge = `<span class="badge badge-mc">${status}</span>`;
+            } else if (status.includes("Unpaid Leave")) {
                 badge = `<span class="badge badge-mc">${status}</span>`;
             } else if (status.includes("Team A off day")) {
                 badge = `<span class="badge badge-teama">${status}</span>`;
@@ -2053,12 +2057,10 @@
             const lateLunchCell = r["Late Time (Lunch)"] !== "--" ? `<span class="badge badge-late">${r["Late Time (Lunch)"]}</span>` : "--";
             const totalLateCell = r["Total Late Time"] !== "--" ? `<span class="badge badge-totallate">${r["Total Late Time"]}</span>` : "--";
             const earlyLeaveCell = r["Early Leave"] !== "--" ? `<span class="badge badge-early">${r["Early Leave"]}</span>` : "--";
-            
-            const isHalfDay = status && status.includes("(0.5 Day)");
 
+            // Middle lunch blocks handling
             let middleLunchCells = '';
             if (isHalfDay) {
-                // Extracts the clean title e.g. "Annual Leave (0.5 Day)"
                 let halfDayLabel = status.split(' (Missing')[0].trim();
                 middleLunchCells = `
                     <td colspan="2" style="background-color: #fde047; color: #854d0e; font-weight: 700; font-size: 11px; text-align: center; border-left: 1px solid #cbd5e1; border-right: 1px solid #cbd5e1; vertical-align: middle;">
@@ -2120,17 +2122,7 @@
             showToast("Failed to download Excel file.");
         }
     }
+</script>
 
-    // Global ESC key handler to close any active modal or drawer
-    window.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' || e.key === 'Esc') {
-            closeSaveModal();
-            closeRestoreModal();
-            closeTutorialModal();
-            closeSideDrawer();
-            hideToast();
-        }
-    });
-        </script>
-    </body>
+</body>
 </html>
