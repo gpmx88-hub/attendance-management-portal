@@ -538,6 +538,13 @@ def process_time_card(
                 categorize_punches(punch_list, is_saturday)
             )
 
+            is_half_day = bool(special_type and "(0.5 Day)" in special_type)
+            if is_half_day:
+                for warn in ["Missing Break Out", "Missing Break In", "No Lunch Punched"]:
+                    status = status.replace(warn, "").strip().strip(",")
+                if not status:
+                    status = "Normal"
+
             if special_type:
                 status = (
                     f"{special_type} (Worked)"
@@ -564,7 +571,7 @@ def process_time_card(
                     if dt_cin > start_dt:
                         late_work_mins = round((dt_cin - start_dt).total_seconds() / 60)
 
-            if not is_saturday and b_out != "--" and b_in != "--":
+            if not is_saturday and not is_half_day and b_out != "--" and b_in != "--":
                 dt_bout = parse_time_str(b_out)
                 dt_bin = parse_time_str(b_in)
                 if dt_bout and dt_bin and dt_bin > dt_bout:
@@ -582,7 +589,7 @@ def process_time_card(
                         minute=target_end.minute,
                         second=target_end.second,
                     )
-                    if dt_cout < end_dt:
+                    if not is_half_day and dt_cout < end_dt:
                         early_leave_mins = round(
                             (end_dt - dt_cout).total_seconds() / 60
                         )
@@ -664,7 +671,7 @@ def process_time_card(
                     "_early_leave_mins": early_leave_mins,
                     "_is_absent": 0,
                     "_is_sunday": 0,
-                    "_is_offday": 1 if special_type else 0,
+                    "_is_offday": 1 if (special_type and not is_half_day) else 0,
                 }
             )
 
@@ -758,6 +765,7 @@ def build_excel_workbook(df):
                     ~emp_group["Status / Alert"].str.contains(
                         "|".join(non_work_categories)
                     )
+                    | emp_group["Status / Alert"].str.contains(r"\(0\.5 Day\)")
                 )
             ]
         )
@@ -777,6 +785,7 @@ def build_excel_workbook(df):
                     ~emp_group["Status / Alert"].str.contains(
                         "|".join(non_work_categories)
                     )
+                    | emp_group["Status / Alert"].str.contains(r"\(0\.5 Day\)")
                 )
             ]
         )
@@ -870,18 +879,24 @@ def build_excel_workbook(df):
         for r_offset, (_, row_data) in enumerate(emp_group.iterrows()):
             curr_row = start_row + r_offset
             status_val = str(row_data["Status / Alert"])
+            is_half_day = "(0.5 Day)" in status_val
             is_sunday = status_val == "Sunday"
-            is_offday = any(
-                cat in status_val
-                for cat in [
-                    "Holiday",
-                    "Public Holiday",
-                    "Annual Leave",
-                    "MC",
-                    "Team A off day",
-                    "Team B off day",
-                ]
-            ) and (row_data["Clock In"] == "--" and row_data["Clock Out"] == "--")
+            is_offday = (
+                not is_half_day
+                and any(
+                    cat in status_val
+                    for cat in [
+                        "Holiday",
+                        "Public Holiday",
+                        "Annual Leave",
+                        "Replacement Leave",
+                        "MC",
+                        "Team A off day",
+                        "Team B off day",
+                    ]
+                )
+                and (row_data["Clock In"] == "--" and row_data["Clock Out"] == "--")
+            )
 
             if is_sunday or is_offday:
                 banner_text = "Sunday" if is_sunday else status_val.upper()
@@ -906,15 +921,23 @@ def build_excel_workbook(df):
                 merged_cell.font = font_merged_banner
                 continue
 
-            is_half_day = "(0.5 Day)" in status_val
-
             row_vals = [
-                row_data["Date"], row_data["Clock In"], row_data["Break Out (Lunch)"], row_data["Break In (Back)"],
-                row_data["Clock Out"], row_data["Lunch Duration"], row_data["Late to Work"], row_data["Late Time (Lunch)"],
-                row_data["Total Late Time"], row_data["Early Leave"], row_data["Work Hours"], row_data["Status / Alert"],
-                row_data["Multiple Punch (Earlier)"], row_data["Multiple Punch (Later)"]
+                row_data["Date"],
+                row_data["Clock In"],
+                row_data["Break Out (Lunch)"],
+                row_data["Break In (Back)"],
+                row_data["Clock Out"],
+                row_data["Lunch Duration"],
+                row_data["Late to Work"],
+                row_data["Late Time (Lunch)"],
+                row_data["Total Late Time"],
+                row_data["Early Leave"],
+                row_data["Work Hours"],
+                row_data["Status / Alert"],
+                row_data["Multiple Punch (Earlier)"],
+                row_data["Multiple Punch (Later)"],
             ]
-            is_absent = (status_val == "Absent")
+            is_absent = status_val == "Absent"
 
             for col_idx, val in enumerate(row_vals, 1):
                 cell = ws_emp.cell(row=curr_row, column=col_idx, value=val)
@@ -924,12 +947,15 @@ def build_excel_workbook(df):
 
                 if is_absent:
                     cell.fill = absent_fill
-                    if col_idx == 12: cell.font = font_bold
+                    if col_idx == 12:
+                        cell.font = font_bold
                 else:
                     if col_idx in [7, 8, 9, 10] and val != "--":
                         cell.fill = late_fill
                         cell.font = font_bold
-                    if col_idx == 12 and ("Missing" in val or "No Lunch" in val or "Early" in val):
+                    if col_idx == 12 and (
+                        "Missing" in val or "No Lunch" in val or "Early" in val
+                    ):
                         cell.fill = alert_fill
                         cell.font = font_bold
                     if col_idx in [13, 14] and val != "--":
@@ -937,12 +963,21 @@ def build_excel_workbook(df):
 
             # Merge columns 3 & 4 (Break Out and Break In) for half day leaves
             if is_half_day:
-                ws_emp.merge_cells(start_row=curr_row, start_column=3, end_row=curr_row, end_column=4)
-                half_day_label = status_val.split("(")[0].strip() + " (Half Day)"
+                ws_emp.merge_cells(
+                    start_row=curr_row,
+                    start_column=3,
+                    end_row=curr_row,
+                    end_column=4,
+                )
+                half_day_label = (
+                    status_val if "(" in status_val else f"{status_val} (0.5 Day)"
+                )
                 hd_cell = ws_emp.cell(row=curr_row, column=3, value=half_day_label)
                 hd_cell.alignment = align_center
                 hd_cell.font = Font(name="Calibri", size=10, bold=True, color="92400E")
-                hd_cell.fill = PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="solid")
+                hd_cell.fill = PatternFill(
+                    start_color="FEF3C7", end_color="FEF3C7", fill_type="solid"
+                )
                 ws_emp.cell(row=curr_row, column=4).border = thin_border
 
         tot_row = start_row + len(emp_group)
@@ -1084,15 +1119,15 @@ def api_save_slot():
 
     username = session["user"]
     slot_id = data.get("slotId")
+    myt_now = datetime.now(ZoneInfo("Asia/Kuala_Lumpur"))
     title = (
         data.get("title", "").strip()
-        or f"Save {datetime.now().strftime('%d/%m/%Y %H:%M')}"
+        or f"Save {myt_now.strftime('%d/%m/%Y %H:%M')}"
     )
     unique_emps = len(set(r.get("Name") for r in data["records"]))
-    myt_now = datetime.now(ZoneInfo("Asia/Kuala_Lumpur"))
 
     new_slot_entry = {
-        "id": slot_id if slot_id else f"slot_{int(datetime.now().timestamp() * 1000)}",
+        "id": slot_id if slot_id else f"slot_{int(myt_now.timestamp() * 1000)}",
         "title": title,
         "updatedAt": myt_now.strftime("%Y-%m-%d %H:%M:%S"),
         "startDate": data.get("startDate", ""),
