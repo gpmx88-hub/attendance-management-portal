@@ -1005,11 +1005,11 @@ def build_excel_workbook(df):
                     end_column=4,
                 )
                 half_day_label = status_val.split(" (Missing")[0].strip()
-                hd_cell = ws_emp.cell(row=curr_row, column=3, value=half_day_label)
+                hd_cell = ws_emp.cell(row=curr_row, column=3, value=f"🌤 {half_day_label}")
                 hd_cell.alignment = align_center
-                hd_cell.font = Font(name="Calibri", size=10, bold=True, color="854D0E")
+                hd_cell.font = Font(name="Calibri", size=10, bold=True, color="92400E")
                 hd_cell.fill = PatternFill(
-                    start_color="FDE047", end_color="FDE047", fill_type="solid"
+                    start_color="FEF3C7", end_color="FEF3C7", fill_type="solid"
                 )
                 ws_emp.cell(row=curr_row, column=4).border = thin_border
 
