@@ -57,7 +57,7 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "prod-session-key-attendance
 DRAFTS_DIR = os.path.join(os.path.dirname(__file__), "user_drafts")
 os.makedirs(DRAFTS_DIR, exist_ok=True)
 
-# Admin & Staff Credentials Store
+# Admin Credentials Store
 USERS = {"admin": generate_password_hash("jiaen123")}
 
 USER_DATAFRAMES = {}
@@ -434,30 +434,7 @@ def process_time_card(
             is_saturday = w_date.weekday() == 5
             day_name = w_date.strftime("%a")
 
-            special_info = special_lookup.get((date_str, name)) or special_lookup.get(
-                (date_str, "ALL")
-            )
-            special_type = None
-
-            if special_info:
-                st_type, st_remark = special_info
-                if st_remark:
-                    special_type = (
-                        f"{st_type} ({st_remark})"
-                        if st_type not in st_remark
-                        else st_remark
-                    )
-                else:
-                    if st_type == "Holiday":
-                        h_name = get_malaysia_holiday_name(w_date)
-                        special_type = (
-                            f"Public Holiday ({h_name})" if h_name else "Public Holiday"
-                        )
-                    else:
-                        special_type = st_type
-
-            raw_times_str = raw_punches.get((emp_id, date_str))
-
+            # Sunday Protection: Always strictly Sunday
             if is_sunday:
                 records.append(
                     {
@@ -491,16 +468,44 @@ def process_time_card(
                 )
                 continue
 
+            special_info = special_lookup.get((date_str, name)) or special_lookup.get(
+                (date_str, "ALL")
+            )
+            special_type = None
+
+            if special_info:
+                st_type, st_remark = special_info
+                if st_remark:
+                    special_type = (
+                        f"{st_type} ({st_remark})"
+                        if st_type not in st_remark
+                        else st_remark
+                    )
+                else:
+                    if st_type == "Holiday":
+                        h_name = get_malaysia_holiday_name(w_date)
+                        special_type = (
+                            f"Public Holiday ({h_name})" if h_name else "Public Holiday"
+                        )
+                    else:
+                        special_type = st_type
+
+            raw_times_str = raw_punches.get((emp_id, date_str))
             is_half_day = bool(special_type and "(0.5 Day)" in special_type)
 
+            # Days without biometric punches
             if not raw_times_str:
                 if special_type and not is_half_day:
                     status_text = special_type
-                    is_absent_flag = 0
                     is_off = 1
                 else:
-                    status_text = special_type if is_half_day else "Absent"
-                    is_absent_flag = 1
+                    # Absence concept replaced with punch irregularity
+                    if is_half_day:
+                        status_text = f"{special_type} (Missing Clock In, Missing Clock Out)"
+                    elif is_saturday:
+                        status_text = "Saturday (Missing Clock In, Missing Clock Out)"
+                    else:
+                        status_text = "Missing Clock In, No Lunch Punched, Missing Clock Out"
                     is_off = 0
 
                 records.append(
@@ -518,7 +523,7 @@ def process_time_card(
                         "Late Time (Lunch)": "--",
                         "Total Late Time": "--",
                         "Early Leave": "--",
-                        "Work Hours": "0:00" if is_absent_flag else "--",
+                        "Work Hours": "0:00" if not is_off else "--",
                         "Status / Alert": status_text,
                         "Multiple Punch (Earlier)": "--",
                         "Multiple Punch (Later)": "--",
@@ -528,7 +533,7 @@ def process_time_card(
                         "_late_lunch_mins": 0,
                         "_total_late_mins": 0,
                         "_early_leave_mins": 0,
-                        "_is_absent": is_absent_flag,
+                        "_is_absent": 0,
                         "_is_sunday": 0,
                         "_is_offday": is_off,
                     }
@@ -726,9 +731,6 @@ def build_excel_workbook(df):
     offday_fill = PatternFill(
         start_color="FFF5F5", end_color="FFF5F5", fill_type="solid"
     )
-    absent_fill = PatternFill(
-        start_color="FCA5A5", end_color="FCA5A5", fill_type="solid"
-    )
     late_fill = PatternFill(start_color="FEF08A", end_color="FEF08A", fill_type="solid")
     alert_fill = PatternFill(
         start_color="FED7AA", end_color="FED7AA", fill_type="solid"
@@ -760,14 +762,13 @@ def build_excel_workbook(df):
         "Employee Name",
         "Department",
         "Total Days Worked",
-        "Total Absent Days",
         "Total Work Hours",
         "Total Lunch Time",
         "Total Late (Work)",
         "Total Late (Lunch)",
         "Total Late (Sum)",
         "Total Early Leave",
-        "Issues Count",
+        "Punch Irregularities Count",
     ]
     ws_summary.append(summary_headers)
 
@@ -796,16 +797,9 @@ def build_excel_workbook(df):
         dept = emp_group["Department"].iloc[0]
         days_present = len(
             emp_group[
-                (emp_group["_is_absent"] == 0)
-                & (
-                    ~emp_group["Status / Alert"].str.contains(
-                        "|".join(non_work_categories)
-                    )
-                    | emp_group["Status / Alert"].str.contains(r"\(0\.5 Day\)")
-                )
+                (emp_group["Clock In"] != "--") | (emp_group["Clock Out"] != "--")
             ]
         )
-        days_absent = len(emp_group[emp_group["_is_absent"] == 1])
         total_work_m = emp_group["_work_mins"].sum()
         total_lunch_m = emp_group["_lunch_mins"].sum()
         total_late_w_m = emp_group["_late_work_mins"].sum()
@@ -816,7 +810,7 @@ def build_excel_workbook(df):
             emp_group[
                 ~emp_group["Status / Alert"].str.startswith("Normal")
                 & ~emp_group["Status / Alert"].str.startswith("Saturday (Half Day)")
-                & (emp_group["Status / Alert"] != "Absent")
+                & (emp_group["Status / Alert"] != "Sunday")
                 & (
                     ~emp_group["Status / Alert"].str.contains(
                         "|".join(non_work_categories)
@@ -832,7 +826,6 @@ def build_excel_workbook(df):
                 emp_name,
                 dept,
                 days_present,
-                days_absent,
                 format_mins_to_time(total_work_m),
                 format_mins_to_time(total_lunch_m),
                 format_mins_to_time(total_late_w_m),
@@ -850,13 +843,10 @@ def build_excel_workbook(df):
             cell.border = thin_border
             cell.alignment = align_center if col_idx not in [2, 3] else align_left
 
-            if col_idx == 5 and val > 0:
-                cell.fill = absent_fill
-                cell.font = font_bold
-            elif col_idx in [8, 9, 10, 11] and str(val) != "0:00":
+            if col_idx in [7, 8, 9, 10] and str(val) != "0:00":
                 cell.fill = late_fill
                 cell.font = font_bold
-            elif col_idx == 12 and val > 0:
+            elif col_idx == 11 and val > 0:
                 cell.fill = alert_fill
                 cell.font = font_bold
 
@@ -974,7 +964,6 @@ def build_excel_workbook(df):
                 row_data["Multiple Punch (Earlier)"],
                 row_data["Multiple Punch (Later)"],
             ]
-            is_absent = status_val == "Absent"
 
             for col_idx, val in enumerate(row_vals, 1):
                 cell = ws_emp.cell(row=curr_row, column=col_idx, value=val)
@@ -982,23 +971,18 @@ def build_excel_workbook(df):
                 cell.border = thin_border
                 cell.alignment = align_center if col_idx != 12 else align_left
 
-                if is_absent:
-                    cell.fill = absent_fill
-                    if col_idx == 12:
-                        cell.font = font_bold
-                else:
-                    if col_idx in [7, 8, 9, 10] and val != "--":
-                        cell.fill = late_fill
-                        cell.font = font_bold
-                    if col_idx == 12 and (
-                        "Missing" in val or "No Lunch" in val or "Early" in val
-                    ):
-                        cell.fill = alert_fill
-                        cell.font = font_bold
-                    if col_idx in [13, 14] and val != "--":
-                        cell.fill = multi_fill
+                if col_idx in [7, 8, 9, 10] and val != "--":
+                    cell.fill = late_fill
+                    cell.font = font_bold
+                if col_idx == 12 and (
+                    "Missing" in val or "No Lunch" in val or "Early" in val
+                ):
+                    cell.fill = alert_fill
+                    cell.font = font_bold
+                if col_idx in [13, 14] and val != "--":
+                    cell.fill = multi_fill
 
-            # Merge columns 3 & 4 (Break Out and Break In) into the yellow block
+            # Merge columns 3 & 4 (Break Out and Break In) into the soft amber block
             if is_half_day:
                 ws_emp.merge_cells(
                     start_row=curr_row,

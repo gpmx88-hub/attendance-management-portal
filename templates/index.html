@@ -1389,18 +1389,17 @@
 
     function refreshStats() {
         const uniqueDates = [...new Set(globalData.map(r => r.Date))].length;
-        const totalAbsences = globalData.filter(r => r["Status / Alert"] === "Absent").length;
         const alertsCount = globalData.filter(r => 
             !r["Status / Alert"].startsWith("Normal") && 
-            !r["Status / Alert"].startsWith("Saturday (Half Day)") && 
-            r["Status / Alert"] !== "Absent" &&
+            r["Status / Alert"] !== "Saturday (Half Day)" && 
             r["Status / Alert"] !== "Sunday" &&
             !isRowOffDay(r["Status / Alert"])
         ).length;
 
         document.getElementById('statEmployees').innerText = employeeNames.length;
         document.getElementById('statWorkingDays').innerText = uniqueDates;
-        document.getElementById('statAbsences').innerText = totalAbsences;
+        const absBox = document.getElementById('statAbsences');
+        if (absBox) absBox.innerText = "0";
         document.getElementById('statAlerts').innerText = alertsCount;
     }
 
@@ -1504,8 +1503,10 @@
             record["Multiple Punch (Later)"] === "--";
 
         if (allPunchesEmpty && !isOffday && !isHalfDay) {
-            record._is_absent = 1;
-            record["Status / Alert"] = "Absent";
+            record._is_absent = 0; // No longer flagged as absent
+            record["Status / Alert"] = isSat 
+                ? "Saturday (Missing Clock In, Missing Clock Out)" 
+                : "Missing Clock In, No Lunch Punched, Missing Clock Out";
             record["Lunch Duration"] = "--";
             record["Late to Work"] = "--";
             record["Late Time (Lunch)"] = "--";
@@ -2150,9 +2151,7 @@
             }
 
             let badge = `<span class="badge-ok">Normal</span>`;
-            if (status === "Absent") {
-                badge = `<span class="badge badge-absent">Absent</span>`;
-            } else if (status.includes("Holiday") || status.includes("Public Holiday")) {
+            if (status.includes("Holiday") || status.includes("Public Holiday")) {
                 badge = `<span class="badge badge-holiday">${status}</span>`;
             } else if (status.includes("Annual Leave")) {
                 badge = `<span class="badge badge-leave">${status}</span>`;
