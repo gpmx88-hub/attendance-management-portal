@@ -215,7 +215,6 @@
             opacity: 0.9;
         }
 
-        /* Dynamic Tags Manager & Filter Styling */
         .tags-manager {
             display: flex;
             flex-direction: column;
@@ -1039,7 +1038,16 @@
     let hasUnsavedChanges = false;
     let activeTagCategory = 'ALL';
 
-    const OFF_DAY_TYPES = ["Holiday", "Public Holiday", "Annual Leave", "Replacement Leave", "MC", "Unpaid Leave", "Team A off day", "Team B off day"];
+    const OFF_DAY_TYPES = [
+        "Holiday", 
+        "Public Holiday", 
+        "Annual Leave", 
+        "Replacement Leave", 
+        "MC", 
+        "Unpaid Leave", 
+        "Team A off day", 
+        "Team B off day"
+    ];
     const COLUMN_TIME_ORDER = ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out"];
 
     function openSideDrawer() {
@@ -1223,6 +1231,14 @@
         if (!globalData || !globalData.length) return;
 
         globalData.forEach(r => {
+            // Strictly protect Sunday rows from being altered or overwritten
+            if (r.Date.includes("(Sun)") || r._is_sunday === 1) {
+                r["Status / Alert"] = "Sunday";
+                r._is_absent = 0;
+                r._is_offday = 1;
+                return;
+            }
+
             const rawDate = r.Date.split(' ')[0]; // extracts "YYYY-MM-DD"
 
             const match = specialEntries.find(e => 
@@ -1292,6 +1308,13 @@
 
         if (!chosenDate) {
             showToast('Please select a date first.');
+            return;
+        }
+
+        // Sunday Protection: Strictly reject assigning tags on Sundays
+        const selectedDayOfWeek = new Date(chosenDate + 'T00:00:00').getDay();
+        if (selectedDayOfWeek === 0) {
+            showToast('Sunday is strictly an off-day and cannot have leave or special tags assigned.');
             return;
         }
 
@@ -1455,6 +1478,14 @@
     }
 
     function recalculateRow(record) {
+        // Sunday Protection: Never recalculate or alter Sunday rows
+        if (record.Date.includes("(Sun)") || record._is_sunday === 1) {
+            record["Status / Alert"] = "Sunday";
+            record._is_absent = 0;
+            record._is_offday = 1;
+            return;
+        }
+
         const isSat = record.Date.includes("(Sat)");
         const isOffday = isRowOffDay(record["Status / Alert"]);
         const isHalfDay = record["Status / Alert"] && record["Status / Alert"].includes("(0.5 Day)");
