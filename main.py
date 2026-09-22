@@ -783,6 +783,7 @@ def build_excel_workbook(df):
         "Annual Leave",
         "Replacement Leave",
         "MC",
+        "Unpaid Leave",
         "Team A off day",
         "Team B off day",
         "Sunday",
@@ -926,6 +927,7 @@ def build_excel_workbook(df):
                         "Annual Leave",
                         "Replacement Leave",
                         "MC",
+                        "Unpaid Leave",
                         "Team A off day",
                         "Team B off day",
                     ]
