@@ -274,7 +274,7 @@
             background: var(--bg);
             border: 1px solid var(--border);
             color: var(--navy);
-            padding: 8px 14px;
+            padding: 7px 14px;
             border-radius: 7px;
             font-weight: 600;
             font-size: 12.5px;
@@ -346,76 +346,170 @@
             color: var(--t2);
         }
 
-        /* Rev 2 Workshop Bar */
-        .workshop-bar {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        /* Split Management Grid (Left: Workshop, Right: Special Days) */
+        .workspace-split-row {
+            display: grid;
+            grid-template-columns: 1fr 1.15fr;
+            gap: 16px;
+            margin-bottom: 16px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 1100px) {
+            .workspace-split-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .side-card {
             background: var(--surface);
             border: 1.5px solid var(--border);
-            border-bottom: none;
-            border-radius: 10px 10px 0 0;
-            padding: 10px 16px;
-            flex-wrap: wrap;
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
-        .wb-label {
-            font-size: 11px;
+
+        .side-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-lite);
+            padding-bottom: 8px;
+        }
+
+        .side-card-title {
+            font-size: 12px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: .08em;
+            letter-spacing: .06em;
             color: var(--navy);
-            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .wb-sep {
-            width: 1px;
-            height: 20px;
-            background: var(--border);
-            flex-shrink: 0;
-        }
-        .wb-create {
+
+        /* Workshop Card elements */
+        .workshop-controls-row {
             display: flex;
             align-items: center;
             gap: 8px;
-            flex-shrink: 0;
+            flex-wrap: wrap;
         }
+
         .wb-tray {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
             flex: 1;
-            min-height: 36px;
-            min-width: 120px;
-            padding: 4px 10px;
+            min-height: 38px;
+            min-width: 100px;
+            padding: 6px 10px;
             background: var(--bg);
             border: 1.5px dashed var(--border);
             border-radius: 7px;
             align-items: center;
         }
+
         .wb-trash {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             background: var(--danger-bg);
             color: var(--danger);
             border: 1.5px dashed #FCA5A5;
             border-radius: 7px;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
             cursor: pointer;
-            padding: 6px 14px;
+            padding: 6px 12px;
             user-select: none;
             white-space: nowrap;
-            flex-shrink: 0;
             transition: all .15s;
         }
         .wb-trash:hover { background: #FEE2E2; border-color: var(--danger); }
         .wb-trash.drag-hover { background: var(--danger) !important; color: #fff !important; }
 
-        /* Rev 2 Table Fused with Workshop Bar */
+        /* Special Days Card elements */
+        .special-form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .special-form-row input, .special-form-row select {
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: inherit;
+        }
+
+        .tags-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+        .filter-tab-btn {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            padding: 3px 10px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--t2);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .filter-tab-btn:hover { background: #F1F5F9; color: var(--navy); }
+        .filter-tab-btn.active {
+            background: var(--navy);
+            color: #FFFFFF;
+            border-color: var(--navy);
+        }
+
+        .holiday-tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-height: 95px;
+            overflow-y: auto;
+            min-height: 34px;
+            padding: 4px 6px;
+            background: var(--bg);
+            border: 1px solid var(--border-lite);
+            border-radius: 6px;
+            align-items: center;
+        }
+
+        .holiday-tag {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid #B8E8D4;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .holiday-tag.tag-leave { background: #EEF2FF; color: #4338CA; border-color: #C7D2FE; }
+        .holiday-tag.tag-mc { background: #FFE4E6; color: #BE123C; border-color: #FECDD3; }
+        .holiday-tag.tag-teama { background: #E0F2FE; color: #0369A1; border-color: #BAE6FD; }
+        .holiday-tag.tag-teamb { background: #F3E8FF; color: #6D28D9; border-color: #DDD6FE; }
+        .holiday-tag .remove-btn { cursor: pointer; color: #EF4444; font-weight: bold; font-size: 13px; }
+
+        /* Attendance Table */
         .table-wrap {
             background: var(--surface);
             border: 1.5px solid var(--border);
-            border-radius: 0 0 10px 10px;
+            border-radius: 10px;
             overflow: hidden;
             margin-bottom: 16px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
@@ -545,103 +639,6 @@
         .badge-late { background: var(--warning-bg); color: var(--warning); font-weight: 700; }
         .badge-totallate { background: var(--danger-bg); color: var(--danger); font-weight: 700; }
         .badge-early { background: #FCE7F3; color: #9D174D; font-weight: 700; }
-
-        .panel-details {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            margin-bottom: 14px;
-            overflow: hidden;
-        }
-        .panel-details summary {
-            padding: 14px 20px;
-            font-weight: 600;
-            font-size: 13.5px;
-            color: var(--navy);
-            cursor: pointer;
-            list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #FAFBFD;
-            border-bottom: 1px solid transparent;
-            user-select: none;
-        }
-        .panel-details[open] summary { border-bottom-color: var(--border-lite); }
-        .panel-details summary::-webkit-details-marker { display: none; }
-        .panel-details summary::after {
-            content: '›';
-            font-size: 18px;
-            color: var(--t3);
-            transition: transform 0.2s;
-        }
-        .panel-details[open] summary::after { transform: rotate(90deg); }
-        .panel-body { padding: 18px 20px; }
-
-        .inline-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        .inline-form input, .inline-form select {
-            padding: 7px 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 12.5px;
-            font-family: inherit;
-        }
-
-        .tags-filter-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .filter-tab-btn {
-            background: #FFFFFF;
-            border: 1px solid var(--border);
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--t2);
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .filter-tab-btn:hover { background: #F1F5F9; color: var(--navy); }
-        .filter-tab-btn.active {
-            background: var(--navy);
-            color: #FFFFFF;
-            border-color: var(--navy);
-        }
-
-        .holiday-tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            min-height: 38px;
-            align-items: center;
-        }
-        .holiday-tag {
-            background: var(--success-bg);
-            color: var(--success);
-            border: 1px solid #B8E8D4;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .holiday-tag.tag-leave { background: #EEF2FF; color: #4338CA; border-color: #C7D2FE; }
-        .holiday-tag.tag-mc { background: #FFE4E6; color: #BE123C; border-color: #FECDD3; }
-        .holiday-tag.tag-teama { background: #E0F2FE; color: #0369A1; border-color: #BAE6FD; }
-        .holiday-tag.tag-teamb { background: #F3E8FF; color: #6D28D9; border-color: #DDD6FE; }
-        .holiday-tag .remove-btn { cursor: pointer; color: #EF4444; font-weight: bold; font-size: 14px; }
 
         /* Side Drawer */
         .side-drawer-backdrop {
@@ -901,30 +898,72 @@
                 </div>
             </div>
 
-            <!-- Rev 2 Workshop Bar (Top-Fused to Table) -->
-            <div class="workshop-bar">
-                <span class="wb-label">Punch Workshop</span>
-                <div class="wb-sep"></div>
-                <div class="wb-create">
-                    <input type="time" id="newTimePicker" step="1" value="09:00:00" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;">
-                    <button type="button" class="btn-secondary" onclick="createNewTimeBlock()">+ Create Block</button>
+            <!-- Side-by-Side Strip: Left = Punch Workshop, Right = Special Days & Leave -->
+            <div class="workspace-split-row">
+                
+                <!-- Left Card: Custom Punch Workshop -->
+                <div class="side-card">
+                    <div class="side-card-header">
+                        <span class="side-card-title">✨ Custom Punch Workshop</span>
+                        <span style="font-size: 11px; color: var(--t3);">Drag pills into table</span>
+                    </div>
+
+                    <div class="workshop-controls-row">
+                        <input type="time" id="newTimePicker" step="1" value="09:00:00" style="padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px;">
+                        <button type="button" class="btn-secondary" onclick="createNewTimeBlock()">+ Create Block</button>
+                        <div id="trashZone" class="wb-trash"
+                             ondragover="handleTrashDragOver(event)"
+                             ondragleave="handleTrashDragLeave(event)"
+                             ondrop="handleTrashDrop(event)"
+                             onclick="handleTrashClick()"
+                             title="Drag any time block here or select and click to delete">
+                            <span>🗑️</span>
+                            <span>Dustbin</span>
+                        </div>
+                    </div>
+
+                    <div id="createdBlocksTray" class="wb-tray">
+                        <span style="font-size: 11.5px; color: var(--t3); font-style: italic;" id="trayPlaceholder">New time blocks appear here...</span>
+                    </div>
                 </div>
-                <div class="wb-sep"></div>
-                <div id="createdBlocksTray" class="wb-tray">
-                    <span style="font-size: 12px; color: var(--t3); font-style: italic;" id="trayPlaceholder">Created blocks appear here. Drag them directly into table cells.</span>
+
+                <!-- Right Card: Special Days & Leave Manager -->
+                <div class="side-card">
+                    <div class="side-card-header">
+                        <span class="side-card-title">🗓️ Special Days & Leave</span>
+                        <div id="tagsFilterBar" class="tags-filter-bar hidden" style="margin-bottom: 0;"></div>
+                    </div>
+
+                    <div class="special-form-row">
+                        <input type="date" id="specialDatePicker" style="flex: 1; min-width: 120px;">
+                        <select id="specialTypeSelect" style="flex: 1.2; min-width: 140px;">
+                            <option value="Annual Leave">Annual Leave</option>
+                            <option value="Annual Leave (0.5 Day)">Annual Leave (0.5 Day)</option>
+                            <option value="Replacement Leave">Replacement Leave</option>
+                            <option value="Replacement Leave (0.5 Day)">Replacement Leave (0.5 Day)</option>
+                            <option value="MC">MC</option>
+                            <option value="MC (0.5 Day)">MC (0.5 Day)</option>
+                            <option value="Unpaid Leave">Unpaid Leave</option>
+                            <option value="Unpaid Leave (0.5 Day)">Unpaid Leave (0.5 Day)</option>
+                            <option value="Team A off day">Team A off day</option>
+                            <option value="Team B off day">Team B off day</option>
+                        </select>
+                        <input type="text" id="customRemarkInput" placeholder="Remark / Name" style="flex: 1.1; min-width: 110px;">
+                        <select id="specialTargetSelect" style="flex: 0.9; min-width: 100px;">
+                            <option value="current">Current</option>
+                            <option value="all">Company (All)</option>
+                        </select>
+                        <button type="button" class="btn-secondary" onclick="confirmSpecialDay()">+ Add</button>
+                    </div>
+
+                    <div id="holidayTags" class="holiday-tags-container">
+                        <span style="font-size: 11.5px; color: var(--t3); font-style: italic;" id="noHolidaysText">No custom leave days added.</span>
+                    </div>
                 </div>
-                <div id="trashZone" class="wb-trash"
-                     ondragover="handleTrashDragOver(event)"
-                     ondragleave="handleTrashDragLeave(event)"
-                     ondrop="handleTrashDrop(event)"
-                     onclick="handleTrashClick()"
-                     title="Drag any time block here to throw it away">
-                    <span style="font-size: 16px;">🗑️</span>
-                    <span>Dustbin (Delete)</span>
-                </div>
+
             </div>
 
-            <!-- Attendance Table (Shares Border with Workshop Bar) -->
+            <!-- Attendance Table -->
             <div class="table-wrap">
                 <div class="table-viewport">
                     <table id="attendanceTable">
@@ -950,38 +989,6 @@
                     </table>
                 </div>
             </div>
-
-            <!-- Expandable: Special Days & Leave (Kept Below Table) -->
-            <details class="panel-details" id="specialDaysPanel">
-                <summary>🗓️ Special Days & Leave</summary>
-                <div class="panel-body">
-                    <div class="inline-form">
-                        <input type="date" id="specialDatePicker">
-                        <select id="specialTypeSelect">
-                            <option value="Annual Leave">Annual Leave</option>
-                            <option value="Annual Leave (0.5 Day)">Annual Leave (0.5 Day)</option>
-                            <option value="Replacement Leave">Replacement Leave</option>
-                            <option value="Replacement Leave (0.5 Day)">Replacement Leave (0.5 Day)</option>
-                            <option value="MC">MC</option>
-                            <option value="MC (0.5 Day)">MC (0.5 Day)</option>
-                            <option value="Unpaid Leave">Unpaid Leave</option>
-                            <option value="Unpaid Leave (0.5 Day)">Unpaid Leave (0.5 Day)</option>
-                            <option value="Team A off day">Team A off day</option>
-                            <option value="Team B off day">Team B off day</option>
-                        </select>
-                        <input type="text" id="customRemarkInput" placeholder="Remark / Name (Optional)" style="width: 200px;">
-                        <select id="specialTargetSelect">
-                            <option value="current">Current Employee</option>
-                            <option value="all">Company-Wide (All)</option>
-                        </select>
-                        <button type="button" class="btn-secondary" onclick="confirmSpecialDay()">+ Add Special Day</button>
-                    </div>
-                    <div id="tagsFilterBar" class="tags-filter-bar hidden"></div>
-                    <div id="holidayTags" class="holiday-tags-container">
-                        <span style="font-size: 12px; color: var(--t3); font-style: italic;" id="noHolidaysText">No custom leave days added.</span>
-                    </div>
-                </div>
-            </details>
         </div>
     </main>
 
@@ -1247,7 +1254,7 @@
         if (specialEntries.length === 0) {
             filterBar.classList.add('hidden');
             filterBar.innerHTML = '';
-            container.innerHTML = '<span style="font-size: 12px; color: var(--t3); font-style: italic;" id="noHolidaysText">No custom leave days added.</span>';
+            container.innerHTML = '<span style="font-size: 11.5px; color: var(--t3); font-style: italic;" id="noHolidaysText">No custom leave days added.</span>';
             return;
         }
 
