@@ -1,302 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | Lazior Attendance Portal</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --navy: #162E4D;
-      --navy-mid: #1E4070;
-      --teal: #0DA5C0;
-      --teal-pale: #DFF5FA;
-      --bg: #F1F5FB;
-      --surface: #FFFFFF;
-      --border: #D2DFED;
-      --border-lite: #E4EEF7;
-      --t1: #0D1B2E;
-      --t2: #4F6070;
-      --t3: #8AA0B2;
-      --danger: #C22B21;
-      --danger-bg: #FAE8E7;
-      --font-main: 'DM Sans', 'Inter', system-ui, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Lazior Attendance Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy:         #162E4D;
+            --navy-mid:     #1E4070;
+            --teal:         #0DA5C0;
+            --teal-pale:    #DFF5FA;
+            --bg:           #F1F5FB;
+            --surface:      #FFFFFF;
+            --border:       #D2DFED;
+            --border-lite:  #E4EEF7;
+            --t1:           #0D1B2E;
+            --t2:           #4F6070;
+            --t3:           #8AA0B2;
+            --danger:       #C22B21;
+            --danger-bg:    #FAE8E7;
+            --font-main:    'DM Sans', 'Inter', system-ui, sans-serif;
+        }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font-main);
-      background-color: var(--bg);
-      color: var(--t1);
-      min-height: 100vh;
-      display: flex;
-      align-items: stretch;
-    }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg);
+            color: var(--t1);
+            min-height: 100vh;
+            display: flex;
+            align-items: stretch;
+        }
 
-    .login-container {
-      display: flex;
-      width: 100vw;
-      min-height: 100vh;
-    }
+        .login-container {
+            display: flex;
+            width: 100vw;
+            min-height: 100vh;
+        }
 
-    /* Left Brand Panel (42%) */
-    .l-panel {
-      flex: 0 0 42%;
-      background: linear-gradient(155deg, var(--navy) 0%, #0E1F36 100%);
-      color: #FFFFFF;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 48px 56px;
-    }
+        /* Left Brand Panel (42%) */
+        .l-panel {
+            flex: 0 0 42%;
+            background: linear-gradient(155deg, var(--navy) 0%, #0E1F36 100%);
+            color: #FFFFFF;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 48px 56px;
+        }
 
-    /* Subtle teal decorative rings */
-    .l-panel::before {
-      content: '';
-      position: absolute;
-      width: 440px;
-      height: 440px;
-      border: 1px solid rgba(13, 165, 192, 0.18);
-      border-radius: 50%;
-      top: -120px;
-      right: -120px;
-      pointer-events: none;
-    }
-    .l-panel::after {
-      content: '';
-      position: absolute;
-      width: 620px;
-      height: 620px;
-      border: 1px solid rgba(13, 165, 192, 0.08);
-      border-radius: 50%;
-      bottom: -180px;
-      left: -200px;
-      pointer-events: none;
-    }
+        .l-panel::before {
+            content: '';
+            position: absolute;
+            width: 440px;
+            height: 440px;
+            border: 1px solid rgba(13, 165, 192, 0.18);
+            border-radius: 50%;
+            top: -120px;
+            right: -120px;
+            pointer-events: none;
+        }
+        .l-panel::after {
+            content: '';
+            position: absolute;
+            width: 620px;
+            height: 620px;
+            border: 1px solid rgba(13, 165, 192, 0.08);
+            border-radius: 50%;
+            bottom: -180px;
+            left: -200px;
+            pointer-events: none;
+        }
 
-    .brand-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      z-index: 2;
-    }
-    .brand-logo-sq {
-      width: 38px;
-      height: 38px;
-      background-color: var(--teal);
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 20px;
-      color: #FFFFFF;
-      box-shadow: 0 4px 12px rgba(13, 165, 192, 0.3);
-    }
-    .brand-name {
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 2;
+        }
+        .brand-logo-sq {
+            width: 38px;
+            height: 38px;
+            background-color: var(--teal);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            color: #FFFFFF;
+            box-shadow: 0 4px 12px rgba(13, 165, 192, 0.3);
+        }
+        .brand-name {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
 
-    .brand-center-copy {
-      z-index: 2;
-      margin: 40px 0;
-    }
-    .brand-headline {
-      font-size: 34px;
-      font-weight: 700;
-      line-height: 1.25;
-      margin-bottom: 14px;
-      letter-spacing: -0.02em;
-    }
-    .brand-headline span {
-      color: var(--teal);
-    }
-    .brand-tagline {
-      font-size: 15px;
-      color: #B2C6DC;
-      line-height: 1.6;
-      max-width: 420px;
-    }
+        .brand-center-copy {
+            z-index: 2;
+            margin: 40px 0;
+        }
+        .brand-headline {
+            font-size: 34px;
+            font-weight: 700;
+            line-height: 1.25;
+            margin-bottom: 14px;
+            letter-spacing: -0.02em;
+        }
+        .brand-headline span {
+            color: var(--teal);
+        }
+        .brand-tagline {
+            font-size: 14.5px;
+            color: #B2C6DC;
+            line-height: 1.6;
+            max-width: 420px;
+        }
 
-    .brand-stats {
-      z-index: 2;
-      display: flex;
-      gap: 28px;
-      border-top: 1px solid rgba(255, 255, 255, 0.12);
-      padding-top: 28px;
-    }
-    .brand-stat-item {
-      display: flex;
-      flex-direction: column;
-    }
-    .stat-val {
-      font-size: 24px;
-      font-weight: 700;
-      color: #FFFFFF;
-    }
-    .stat-lbl {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #8AA0B2;
-      margin-top: 4px;
-    }
+        .brand-stats {
+            z-index: 2;
+            display: flex;
+            gap: 28px;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            padding-top: 28px;
+        }
+        .brand-stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .stat-val {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FFFFFF;
+        }
+        .stat-lbl {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #8AA0B2;
+            margin-top: 4px;
+        }
 
-    /* Right Form Panel (58%) */
-    .r-panel {
-      flex: 1;
-      background: var(--surface);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
-    }
-    .form-wrapper {
-      width: 100%;
-      max-width: 390px;
-    }
-    .form-header {
-      margin-bottom: 30px;
-    }
-    .form-title {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--t1);
-      margin-bottom: 8px;
-    }
-    .form-sub {
-      font-size: 13px;
-      color: var(--t2);
-    }
+        /* Right Form Panel (58%) */
+        .r-panel {
+            flex: 1;
+            background: var(--surface);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        .form-wrapper {
+            width: 100%;
+            max-width: 390px;
+        }
+        .form-header {
+            margin-bottom: 28px;
+        }
+        .form-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--t1);
+            margin-bottom: 6px;
+        }
+        .form-sub {
+            font-size: 13px;
+            color: var(--t2);
+        }
 
-    .error-message {
-      background: var(--danger-bg);
-      border-left: 4px solid var(--danger);
-      color: var(--danger);
-      padding: 10px 14px;
-      border-radius: 6px;
-      font-size: 12.5px;
-      margin-bottom: 22px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .error-message {
+            background: var(--danger-bg);
+            border-left: 4px solid var(--danger);
+            color: var(--danger);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 12.5px;
+            margin-bottom: 20px;
+        }
 
-    .field-group {
-      margin-bottom: 18px;
-    }
-    .field-label {
-      display: block;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: var(--t2);
-      margin-bottom: 6px;
-    }
-    .field-input {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 13.5px;
-      color: var(--t1);
-      outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .field-input:focus {
-      border-color: var(--teal);
-      box-shadow: 0 0 0 3px rgba(13, 165, 192, 0.15);
-    }
+        .field-group {
+            margin-bottom: 18px;
+        }
+        .field-label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--t2);
+            margin-bottom: 6px;
+        }
+        .field-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 13.5px;
+            color: var(--t1);
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .field-input:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(13, 165, 192, 0.15);
+        }
 
-    .submit-btn {
-      width: 100%;
-      background: var(--navy);
-      color: #FFFFFF;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: background-color 0.15s;
-    }
-    .submit-btn:hover {
-      background: var(--navy-mid);
-    }
+        .btn-submit {
+            width: 100%;
+            background: var(--navy);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.15s;
+        }
+        .btn-submit:hover {
+            background: var(--navy-mid);
+        }
 
-    @media (max-width: 900px) {
-      .l-panel { display: none; }
-      .r-panel { padding: 24px; }
-    }
-  </style>
+        @media (max-width: 900px) {
+            .l-panel { display: none; }
+            .r-panel { padding: 24px; }
+        }
+    </style>
 </head>
 <body>
-  <div class="login-container">
-    <!-- Brand Panel (Left 42%) -->
-    <div class="l-panel">
-      <div class="brand-header">
-        <div class="brand-logo-sq">L</div>
-        <div class="brand-name">Lazior Sdn. Bhd.</div>
-      </div>
+    <div class="login-container">
+        <!-- Brand Panel (Left 42%) -->
+        <div class="l-panel">
+            <div class="brand-header">
+                <div class="brand-logo-sq">L</div>
+                <div class="brand-name">Lazior Sdn. Bhd.</div>
+            </div>
 
-      <div class="brand-center-copy">
-        <h1 class="brand-headline">Track time,<br><span>build accountability.</span></h1>
-        <p class="brand-tagline">Automated biometric punch card analytics, timetable auditing, and compliant monthly payroll reports.</p>
-      </div>
+            <div class="brand-center-copy">
+                <h1 class="brand-headline">Track time,<br><span>build accountability.</span></h1>
+                <p class="brand-tagline">Automated biometric punch card analytics, timetable auditing, and compliant monthly payroll reports.</p>
+            </div>
 
-      <div class="brand-stats">
-        <div class="brand-stat-item">
-          <span class="stat-val">15</span>
-          <span class="stat-lbl">Active Staff</span>
+            <div class="brand-stats">
+                <div class="brand-stat-item">
+                    <span class="stat-val">15</span>
+                    <span class="stat-lbl">Active Staff</span>
+                </div>
+                <div class="brand-stat-item">
+                    <span class="stat-val">98%</span>
+                    <span class="stat-lbl">Accuracy</span>
+                </div>
+                <div class="brand-stat-item">
+                    <span class="stat-val">Auto</span>
+                    <span class="stat-lbl">Disambiguation</span>
+                </div>
+            </div>
         </div>
-        <div class="brand-stat-item">
-          <span class="stat-val">98%</span>
-          <span class="stat-lbl">Accuracy</span>
+
+        <!-- Sign In Panel (Right 58%) -->
+        <div class="r-panel">
+            <div class="form-wrapper">
+                <div class="form-header">
+                    <h2 class="form-title">Attendance Portal</h2>
+                    <p class="form-sub">Sign in to access your employee reports</p>
+                </div>
+
+                {% if error %}
+                <div class="error-message">{{ error }}</div>
+                {% endif %}
+
+                <form method="POST" action="/login">
+                    <div class="field-group">
+                        <label class="field-label" for="username">Username</label>
+                        <input class="field-input" type="text" id="username" name="username" required autofocus placeholder="Enter your username">
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label" for="password">Password</label>
+                        <input class="field-input" type="password" id="password" name="password" required placeholder="Enter your password">
+                    </div>
+
+                    <button type="submit" class="btn-submit">Sign In</button>
+                </form>
+            </div>
         </div>
-        <div class="brand-stat-item">
-          <span class="stat-val">Auto</span>
-          <span class="stat-lbl">Disambiguation</span>
-        </div>
-      </div>
     </div>
-
-    <!-- Sign In Panel (Right 58%) -->
-    <div class="r-panel">
-      <div class="form-wrapper">
-        <div class="form-header">
-          <h2 class="form-title">Welcome back</h2>
-          <p class="form-sub">Sign in to Lazior Attendance & Punch Portal</p>
-        </div>
-
-        {% if error %}
-        <div class="error-message">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <span>{{ error }}</span>
-        </div>
-        {% endif %}
-
-        <form action="/login" method="POST">
-          <div class="field-group">
-            <label class="field-label" for="username">Username</label>
-            <input class="field-input" type="text" id="username" name="username" placeholder="Enter your username" required autofocus>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label" for="password">Password</label>
-            <input class="field-input" type="password" id="password" name="password" placeholder="••••••••" required>
-          </div>
-
-          <button type="submit" class="submit-btn">Sign In to Dashboard</button>
-        </form>
-      </div>
-    </div>
-  </div>
 </body>
 </html>
