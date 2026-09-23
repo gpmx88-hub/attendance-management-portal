@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Design Tokens */
             --navy:         #162E4D;
             --navy-mid:     #1E4070;
             --teal:         #0DA5C0;
@@ -45,7 +44,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Top Sticky Header */
         .portal-header {
             background: var(--navy);
             color: #FFFFFF;
@@ -120,14 +118,12 @@
         }
         .btn-menu-trigger:hover { background: rgba(255, 255, 255, 0.18); }
 
-        /* Main Container */
         .portal-main {
             max-width: 1440px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* State A: Centered Upload Screen */
         #uploadScreen {
             min-height: calc(100vh - 130px);
             display: flex;
@@ -215,7 +211,6 @@
             outline: none;
         }
 
-        /* State B: Dashboard */
         .hidden { display: none !important; }
 
         .control-bar {
@@ -305,7 +300,19 @@
         }
         .btn-download:hover { background: #066746; }
 
-        /* Stats Strip */
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .btn-action:hover { opacity: 0.85; }
+
         .stats-row {
             display: flex;
             background: var(--surface);
@@ -339,11 +346,76 @@
             color: var(--t2);
         }
 
-        /* Attendance Table */
+        /* Rev 2 Workshop Bar */
+        .workshop-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-bottom: none;
+            border-radius: 10px 10px 0 0;
+            padding: 10px 16px;
+            flex-wrap: wrap;
+        }
+        .wb-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--navy);
+            white-space: nowrap;
+        }
+        .wb-sep {
+            width: 1px;
+            height: 20px;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+        .wb-create {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .wb-tray {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            flex: 1;
+            min-height: 36px;
+            min-width: 120px;
+            padding: 4px 10px;
+            background: var(--bg);
+            border: 1.5px dashed var(--border);
+            border-radius: 7px;
+            align-items: center;
+        }
+        .wb-trash {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1.5px dashed #FCA5A5;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 14px;
+            user-select: none;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: all .15s;
+        }
+        .wb-trash:hover { background: #FEE2E2; border-color: var(--danger); }
+        .wb-trash.drag-hover { background: var(--danger) !important; color: #fff !important; }
+
+        /* Rev 2 Table Fused with Workshop Bar */
         .table-wrap {
             background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            border-radius: 0 0 10px 10px;
             overflow: hidden;
             margin-bottom: 16px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
@@ -463,7 +535,6 @@
             font-size: 10.5px;
         }
         .badge-ok { color: var(--success); font-weight: 600; }
-        .badge-absent { background: #EA580C; color: #FFFFFF; }
         .badge-holiday { background: var(--success); color: #FFFFFF; }
         .badge-leave { background: #4F46E5; color: #FFFFFF; }
         .badge-mc { background: #E11D48; color: #FFFFFF; }
@@ -475,7 +546,6 @@
         .badge-totallate { background: var(--danger-bg); color: var(--danger); font-weight: 700; }
         .badge-early { background: #FCE7F3; color: #9D174D; font-weight: 700; }
 
-        /* Expandable Accordions (<details>) */
         .panel-details {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -572,43 +642,6 @@
         .holiday-tag.tag-teama { background: #E0F2FE; color: #0369A1; border-color: #BAE6FD; }
         .holiday-tag.tag-teamb { background: #F3E8FF; color: #6D28D9; border-color: #DDD6FE; }
         .holiday-tag .remove-btn { cursor: pointer; color: #EF4444; font-weight: bold; font-size: 14px; }
-
-        .workshop-wrap {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-        }
-        .created-blocks-tray {
-            flex: 1;
-            min-height: 48px;
-            border: 2px dashed var(--border);
-            border-radius: 8px;
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #FAFCFF;
-        }
-        .trash-dropzone {
-            width: 170px;
-            min-height: 48px;
-            border: 2px dashed #FCA5A5;
-            background: var(--danger-bg);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: var(--danger);
-            font-weight: 600;
-            cursor: pointer;
-            gap: 6px;
-            transition: all 0.15s;
-        }
-        .trash-dropzone:hover, .trash-dropzone.drag-hover {
-            background: #FEE2E2;
-            border-color: var(--danger);
-        }
 
         /* Side Drawer */
         .side-drawer-backdrop {
@@ -786,8 +819,8 @@
     <!-- Top Sticky Header -->
     <header class="portal-header">
         <div class="header-left">
-            <div class="header-logo-sq">L</div>
-            <div class="header-title">Lazior Attendance Portal</div>
+            <div class="header-logo-sq">A</div>
+            <div class="header-title">Attendance Punch Card Portal</div>
         </div>
         <div class="header-center-meta">
             <span>User: <strong>{{ current_user }}</strong></span>
@@ -816,7 +849,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                     </svg>
                     <div class="dropzone-text">Click to upload Time Card (.xlsx)</div>
-                    <div class="dropzone-hint">Compatible with raw Lazior multi-punch machine files</div>
+                    <div class="dropzone-hint">Compatible with raw biometric multi-punch files</div>
                 </label>
                 <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none;" onchange="handleNewFileUpload()">
 
@@ -852,7 +885,7 @@
                 </div>
             </div>
 
-            <!-- Stats Strip -->
+            <!-- Stats Strip (3-Cell Layout) -->
             <div class="stats-row">
                 <div class="stat-cell">
                     <span class="stat-num" id="statEmployees">0</span>
@@ -868,7 +901,30 @@
                 </div>
             </div>
 
-            <!-- Attendance Table -->
+            <!-- Rev 2 Workshop Bar (Top-Fused to Table) -->
+            <div class="workshop-bar">
+                <span class="wb-label">Punch Workshop</span>
+                <div class="wb-sep"></div>
+                <div class="wb-create">
+                    <input type="time" id="newTimePicker" step="1" value="09:00:00" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;">
+                    <button type="button" class="btn-secondary" onclick="createNewTimeBlock()">+ Create Block</button>
+                </div>
+                <div class="wb-sep"></div>
+                <div id="createdBlocksTray" class="wb-tray">
+                    <span style="font-size: 12px; color: var(--t3); font-style: italic;" id="trayPlaceholder">Created blocks appear here. Drag them directly into table cells.</span>
+                </div>
+                <div id="trashZone" class="wb-trash"
+                     ondragover="handleTrashDragOver(event)"
+                     ondragleave="handleTrashDragLeave(event)"
+                     ondrop="handleTrashDrop(event)"
+                     onclick="handleTrashClick()"
+                     title="Drag any time block here to throw it away">
+                    <span style="font-size: 16px;">🗑️</span>
+                    <span>Dustbin (Delete)</span>
+                </div>
+            </div>
+
+            <!-- Attendance Table (Shares Border with Workshop Bar) -->
             <div class="table-wrap">
                 <div class="table-viewport">
                     <table id="attendanceTable">
@@ -895,7 +951,7 @@
                 </div>
             </div>
 
-            <!-- Expandable: Special Days & Leave -->
+            <!-- Expandable: Special Days & Leave (Kept Below Table) -->
             <details class="panel-details" id="specialDaysPanel">
                 <summary>🗓️ Special Days & Leave</summary>
                 <div class="panel-body">
@@ -922,30 +978,7 @@
                     </div>
                     <div id="tagsFilterBar" class="tags-filter-bar hidden"></div>
                     <div id="holidayTags" class="holiday-tags-container">
-                        <span style="font-size: 12px; color: var(--t3); font-style: italic;" id="noHolidaysText">No custom holidays or leave days added.</span>
-                    </div>
-                </div>
-            </details>
-
-            <!-- Expandable: Edit Punch Times -->
-            <details class="panel-details" id="workshopPanel">
-                <summary>✎ Edit Punch Times <span>(Drag & drop blocks into table cells)</span></summary>
-                <div class="panel-body">
-                    <div class="workshop-wrap">
-                        <input type="time" id="newTimePicker" step="1" value="09:00:00" style="padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px;">
-                        <button type="button" class="btn-secondary" onclick="createNewTimeBlock()">+ Create Block</button>
-                        <div id="createdBlocksTray" class="created-blocks-tray">
-                            <span style="font-size: 12px; color: var(--t3); font-style: italic;" id="trayPlaceholder">Newly created time blocks appear here. Drag them anywhere into the table.</span>
-                        </div>
-                        <div id="trashZone" class="trash-dropzone"
-                             ondragover="handleTrashDragOver(event)"
-                             ondragleave="handleTrashDragLeave(event)"
-                             ondrop="handleTrashDrop(event)"
-                             onclick="handleTrashClick()"
-                             title="Drag any time block here to throw it away">
-                            <span style="font-size: 16px;">🗑️</span>
-                            <span>Dustbin (Delete)</span>
-                        </div>
+                        <span style="font-size: 12px; color: var(--t3); font-style: italic;" id="noHolidaysText">No custom leave days added.</span>
                     </div>
                 </div>
             </details>
@@ -1023,7 +1056,6 @@
         </div>
     </div>
 
-    <!-- COMPLETE CLIENT LOGIC (Original business functions preserved 100%) -->
     <script>
     let globalData = [];
     let employeeNames = [];
@@ -1058,7 +1090,6 @@
         sync();
     })();
 
-    // Employee ‹ › navigation helper
     function navEmployee(dir) {
         const sel = document.getElementById('empDropdown');
         if (!sel || !sel.options.length) return;
@@ -1069,7 +1100,6 @@
         }
     }
 
-    // Auto-update period text
     document.addEventListener('DOMContentLoaded', function() {
         const sd = document.getElementById('startDateInput');
         const ed = document.getElementById('endDateInput');
@@ -1217,7 +1247,7 @@
         if (specialEntries.length === 0) {
             filterBar.classList.add('hidden');
             filterBar.innerHTML = '';
-            container.innerHTML = '<span style="font-size: 12px; color: var(--t3); font-style: italic;" id="noHolidaysText">No custom holidays or leave days added.</span>';
+            container.innerHTML = '<span style="font-size: 12px; color: var(--t3); font-style: italic;" id="noHolidaysText">No custom leave days added.</span>';
             return;
         }
 
@@ -1415,6 +1445,7 @@
 
             refreshStats();
             document.getElementById('resultsCard').classList.remove('hidden');
+            document.getElementById('uploadScreen').style.display = 'none';
             populateDropdown(employeeNames);
             renderEmployeeTable();
         } catch (e) {
@@ -1958,9 +1989,6 @@
         }
     }
 
-    // -----------------------------------------------------------------
-    // SAVE SLOT & RESTORE SYSTEM
-    // -----------------------------------------------------------------
     async function openSaveModal() {
         if (!globalData || !globalData.length) {
             showToast("Please upload and analyze a report before saving.");
@@ -2151,6 +2179,7 @@
         refreshStats();
         populateDropdown(employeeNames);
         document.getElementById('resultsCard').classList.remove('hidden');
+        document.getElementById('uploadScreen').style.display = 'none';
         renderEmployeeTable();
         syncChangeToBackend(globalData);
     }
