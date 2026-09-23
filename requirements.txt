@@ -6,3 +6,8 @@ holidays
 werkzeug
 psycopg2-binary
 sqlalchemy
+
+#postgress db
+#flask
+#phython
+#html
