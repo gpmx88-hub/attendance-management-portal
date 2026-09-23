@@ -530,12 +530,6 @@ def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_en
                         else st_remark
                     )
                 else:
-                    if st_type == "Holiday":
-                        h_name = get_malaysia_holiday_name(w_date, db_holidays)
-                        special_type = (
-                            f"Public Holiday ({h_name})" if h_name else "Public Holiday"
-                        )
-                    else:
                         special_type = st_type
 
             raw_times_str = raw_punches.get((emp_id, date_str))
