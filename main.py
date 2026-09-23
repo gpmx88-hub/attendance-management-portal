@@ -46,11 +46,17 @@ if engine:
                     total_employees INT,
                     payload JSONB NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS company_holidays (
+                    id SERIAL PRIMARY KEY,
+                    holiday_date VARCHAR(10) UNIQUE NOT NULL,
+                    holiday_name VARCHAR(255) NOT NULL,
+                    created_at VARCHAR(50) NOT NULL
+                );
             """))
-            print("save_slots table initialized successfully in database.")
+            print("Database tables initialized successfully.")
     except Exception as e:
         print("Database initialization error:", e)
-
+        
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "prod-session-key-attendance-2026")
 
@@ -88,6 +94,45 @@ HOLIDAY_EN_MAP = {
     "Thaipusam": "Thaipusam",
 }
 
+def load_db_holidays():
+    if not engine:
+        return {}
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT holiday_date, holiday_name FROM company_holidays ORDER BY holiday_date ASC"))
+            return {row[0]: row[1] for row in result.fetchall()}
+    except Exception as e:
+        print("Error loading company holidays:", e)
+        return {}
+
+def save_db_holiday(h_date, h_name):
+    if not engine:
+        return False
+    try:
+        myt_now = datetime.now(ZoneInfo("Asia/Kuala_Lumpur")).strftime("%Y-%m-%d %H:%M:%S")
+        with engine.begin() as conn:
+            conn.execute(text("""
+                INSERT INTO company_holidays (holiday_date, holiday_name, created_at)
+                VALUES (:d, :n, :c)
+                ON CONFLICT (holiday_date) DO UPDATE
+                SET holiday_name = EXCLUDED.holiday_name,
+                    created_at = EXCLUDED.created_at;
+            """), {"d": h_date, "n": h_name, "c": myt_now})
+        return True
+    except Exception as e:
+        print("Error saving company holiday:", e)
+        return False
+
+def delete_db_holiday(h_date):
+    if not engine:
+        return False
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("DELETE FROM company_holidays WHERE holiday_date = :d"), {"d": h_date})
+        return True
+    except Exception as e:
+        print("Error deleting company holiday:", e)
+        return False
 
 def login_required(f):
     @wraps(f)
@@ -163,7 +208,11 @@ def delete_user_slot(username, slot_id):
         print("Error deleting slot from DB:", e)
 
 
-def get_malaysia_holiday_name(d_obj):
+def get_malaysia_holiday_name(d_obj, db_holidays_map=None):
+    d_str = d_obj.strftime("%Y-%m-%d")
+    if db_holidays_map and d_str in db_holidays_map:
+        return db_holidays_map[d_str]
+
     raw_name = MY_HOLIDAYS.get(d_obj)
     if not raw_name:
         return None
@@ -341,12 +390,11 @@ def categorize_punches(raw_punch_list, is_saturday):
     return c_in, b_out, b_in, c_out, status, multi_earlier, multi_later
 
 
-def process_time_card(
-    df_raw, start_date_str=None, end_date_str=None, special_entries=None
-):
+def process_time_card(df_raw, start_date_str=None, end_date_str=None, special_entries=None):
     if special_entries is None:
         special_entries = []
 
+    db_holidays = load_db_holidays()
     special_lookup = {}
     for entry in special_entries:
         special_lookup[(entry["date"], entry["target"])] = (
@@ -483,7 +531,7 @@ def process_time_card(
                     )
                 else:
                     if st_type == "Holiday":
-                        h_name = get_malaysia_holiday_name(w_date)
+                        h_name = get_malaysia_holiday_name(w_date, db_holidays)
                         special_type = (
                             f"Public Holiday ({h_name})" if h_name else "Public Holiday"
                         )
@@ -492,6 +540,9 @@ def process_time_card(
 
             raw_times_str = raw_punches.get((emp_id, date_str))
             is_half_day = bool(special_type and "(0.5 Day)" in special_type)
+            
+            if not special_type and date_str in db_holidays:
+                special_type = f"Public Holiday ({db_holidays[date_str]})"
 
             # Days without biometric punches
             if not raw_times_str:
@@ -1195,6 +1246,45 @@ def api_download():
         download_name=f"Monthly_Attendance_Summary_{current_user}.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
+    
+@app.route("/api/holidays", methods=["GET"])
+@login_required
+def api_get_holidays():
+    holidays_dict = load_db_holidays()
+    holiday_list = [{"date": d, "name": n} for d, n in holidays_dict.items()]
+    return jsonify({"holidays": holiday_list})
+
+@app.route("/api/holidays/save", methods=["POST"])
+@login_required
+def api_save_holiday():
+    data = request.get_json() or {}
+    h_date = data.get("date", "").strip()
+    h_name = data.get("name", "").strip()
+    if not h_date or not h_name:
+        return jsonify({"error": "Date and Holiday Name are required"}), 400
+    
+    # Reject Sunday
+    try:
+        dt = datetime.strptime(h_date, "%Y-%m-%d").date()
+        if dt.weekday() == 6:
+            return jsonify({"error": "Cannot assign a holiday on Sunday"}), 400
+    except Exception:
+        return jsonify({"error": "Invalid date format"}), 400
+
+    if save_db_holiday(h_date, h_name):
+        return jsonify({"status": "success"})
+    return jsonify({"error": "Failed to save holiday to database"}), 500
+
+@app.route("/api/holidays/delete", methods=["POST"])
+@login_required
+def api_delete_holiday():
+    data = request.get_json() or {}
+    h_date = data.get("date", "").strip()
+    if not h_date:
+        return jsonify({"error": "Date is required"}), 400
+    if delete_db_holiday(h_date):
+        return jsonify({"status": "success"})
+    return jsonify({"error": "Failed to delete holiday"}), 500
 
 
 if __name__ == "__main__":

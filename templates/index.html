@@ -805,6 +805,11 @@
                         onclick="openRestoreModal(); closeSideDrawer();">
                     <span style="font-size: 18px;">📂</span> Load Saved Progress
                 </button>
+                <button type="button"
+                        class="side-drawer-btn"
+                        onclick="openHolidayModal(); closeSideDrawer();">
+                    <span style="font-size: 18px;">🗓️</span> Manage Annual Holidays
+                </button>
                 <a href="/logout"
                    class="side-drawer-btn btn-signout"
                    onclick="return handleSignOutClick(event)">
@@ -922,176 +927,179 @@
                         <div class="stat-label">Punch Irregularities</div>
                     </div>
                 </div>
-
-            <div class="workshop-panel">
-                <div class="workshop-create">
-                    <div style="display: flex;
-                                align-items: center;
-                                gap: 10px;
-                                flex-wrap: wrap">
-                        <span style="font-size: 13px; font-weight: 600;">✨ Custom Time Creator:</span>
-                        <input type="time" id="newTimePicker" step="1" value="09:00:00">
-                        <button type="button" class="btn-action" onclick="createNewTimeBlock()">+ Create Block</button>
+                <div class="workshop-panel">
+                    <div class="workshop-create">
+                        <div style="display: flex;
+                                    align-items: center;
+                                    gap: 10px;
+                                    flex-wrap: wrap">
+                            <span style="font-size: 13px; font-weight: 600;">✨ Custom Time Creator:</span>
+                            <input type="time" id="newTimePicker" step="1" value="09:00:00">
+                            <button type="button"
+                                    class="btn-action"
+                                    onclick="createNewTimeBlock()">+ Create Block</button>
+                        </div>
+                        <div id="createdBlocksTray" class="created-blocks-tray">
+                            <span style="font-size: 12px;
+                                         color: var(--text-muted);
+                                         font-style: italic"
+                                  id="trayPlaceholder">Newly created time blocks appear here. Drag them anywhere into the table.</span>
+                        </div>
                     </div>
-                    <div id="createdBlocksTray" class="created-blocks-tray">
-                        <span style="font-size: 12px;
-                                     color: var(--text-muted);
-                                     font-style: italic"
-                              id="trayPlaceholder">Newly created time blocks appear here. Drag them anywhere into the table.</span>
+                    <div id="trashZone"
+                         class="trash-dropzone"
+                         ondragover="handleTrashDragOver(event)"
+                         ondragleave="handleTrashDragLeave(event)"
+                         ondrop="handleTrashDrop(event)"
+                         onclick="handleTrashClick()"
+                         title="Drag any time block here to throw it away">
+                        <span style="font-size: 20px;">🗑️</span>
+                        <span>Dustbin (Throw Away)</span>
                     </div>
                 </div>
-                <div id="trashZone"
-                     class="trash-dropzone"
-                     ondragover="handleTrashDragOver(event)"
-                     ondragleave="handleTrashDragLeave(event)"
-                     ondrop="handleTrashDrop(event)"
-                     onclick="handleTrashClick()"
-                     title="Drag any time block here to throw it away">
-                    <span style="font-size: 20px;">🗑️</span>
-                    <span>Dustbin (Throw Away)</span>
+                <div class="employee-toolbar">
+                    <div class="filter-actions">
+                        <label for="searchInput" style="font-size: 13px; font-weight: 600;">Employee:</label>
+                        <input type="text"
+                               id="searchInput"
+                               placeholder="Search prefix (e.g. 'tan')..."
+                               oninput="onSearchType()"
+                               style="width: 190px">
+                        <select id="empDropdown"
+                                onchange="renderEmployeeTable()"
+                                style="min-width: 190px"></select>
+                    </div>
+                    <button type="button"
+                            class="btn-download"
+                            onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
                 </div>
-            </div>
-            <div class="employee-toolbar">
-                <div class="filter-actions">
-                    <label for="searchInput" style="font-size: 13px; font-weight: 600;">Employee:</label>
-                    <input type="text"
-                           id="searchInput"
-                           placeholder="Search prefix (e.g. 'tan')..."
-                           oninput="onSearchType()"
-                           style="width: 190px">
-                    <select id="empDropdown"
-                            onchange="renderEmployeeTable()"
-                            style="min-width: 190px"></select>
+                <div class="table-viewport">
+                    <table id="attendanceTable">
+                        <thead>
+                            <tr>
+                                <th style="min-width: 120px;">Date</th>
+                                <th style="background-color: #1e3a8a;">Clock In ⇄</th>
+                                <th style="background-color: #1e3a8a;">Break Out ⇄</th>
+                                <th style="background-color: #1e3a8a;">Break In ⇄</th>
+                                <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
+                                <th>Lunch Duration</th>
+                                <th style="background-color: #274c77;">Late (Work)</th>
+                                <th>Late (Lunch)</th>
+                                <th style="background-color: #b91c1c;">Total Late</th>
+                                <th style="background-color: #831843;">Early Leave</th>
+                                <th>Work Hours</th>
+                                <th style="min-width: 130px;">Status / Alert</th>
+                                <th style="background-color: #475569;">Multiple (Earlier)</th>
+                                <th style="background-color: #475569;">Multiple (Later)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
                 </div>
-                <button type="button" class="btn-download" onclick="downloadExcel()">📥 Download Clean Excel (Multi-Sheet)</button>
-            </div>
-            <div class="table-viewport">
-                <table id="attendanceTable">
-                    <thead>
-                        <tr>
-                            <th style="min-width: 120px;">Date</th>
-                            <th style="background-color: #1e3a8a;">Clock In ⇄</th>
-                            <th style="background-color: #1e3a8a;">Break Out ⇄</th>
-                            <th style="background-color: #1e3a8a;">Break In ⇄</th>
-                            <th style="background-color: #1e3a8a;">Clock Out ⇄</th>
-                            <th>Lunch Duration</th>
-                            <th style="background-color: #274c77;">Late (Work)</th>
-                            <th>Late (Lunch)</th>
-                            <th style="background-color: #b91c1c;">Total Late</th>
-                            <th style="background-color: #831843;">Early Leave</th>
-                            <th>Work Hours</th>
-                            <th style="min-width: 130px;">Status / Alert</th>
-                            <th style="background-color: #475569;">Multiple (Earlier)</th>
-                            <th style="background-color: #475569;">Multiple (Later)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </div>
-    <!-- Tutorial Modal -->
-    <div id="tutorialModal"
-         class="modal-backdrop"
-         onclick="handleBackdropClick(event)">
-        <div class="modal-window">
-            <div class="modal-header">
-                <h3>📖 Attendance Portal Instructions & Tutorial</h3>
-                <div style="display: flex; align-items: center; gap: 14px;">
-                    <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
-                       target="_blank"
-                       style="color: #cbd5e1;
-                              font-size: 13px;
-                              text-decoration: underline">Open in New Tab ↗</a>
-                    <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">×</button>
-                </div>
-            </div>
-            <div class="modal-body">
-                <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
-                    <p style="padding: 20px; text-align: center;">
-                        Your browser does not support inline PDFs.
+            </section>
+        </div>
+        <!-- Tutorial Modal -->
+        <div id="tutorialModal"
+             class="modal-backdrop"
+             onclick="handleBackdropClick(event)">
+            <div class="modal-window">
+                <div class="modal-header">
+                    <h3>📖 Attendance Portal Instructions & Tutorial</h3>
+                    <div style="display: flex; align-items: center; gap: 14px;">
                         <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
                            target="_blank"
-                           style="color: #2563eb;
-                                  font-weight: bold">Click here to download and view the tutorial PDF</a>.
-                    </p>
-                </iframe>
+                           style="color: #cbd5e1;
+                                  font-size: 13px;
+                                  text-decoration: underline">Open in New Tab ↗</a>
+                        <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">×</button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <iframe src="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf#toolbar=1">
+                        <p style="padding: 20px; text-align: center;">
+                            Your browser does not support inline PDFs.
+                            <a href="/static/Tutorial%20Attendance%20Punch%20Card%20Portal.pdf"
+                               target="_blank"
+                               style="color: #2563eb;
+                                      font-weight: bold">Click here to download and view the tutorial PDF</a>.
+                        </p>
+                    </iframe>
+                </div>
             </div>
         </div>
-    </div>
-    <!-- Save Slot Modal -->
-    <div id="saveSlotModal"
-         class="modal-backdrop"
-         onclick="handleSlotBackdropClick(event)">
-        <div class="modal-window"
-             style="max-width: 620px;
-                    height: auto;
-                    max-height: 80vh">
-            <div class="modal-header">
-                <h3>💾 Save Progress Slot</h3>
-                <button type="button" class="modal-close-btn" onclick="closeSaveModal()">×</button>
-            </div>
-            <div style="padding: 20px; overflow-y: auto;">
-                <div style="background: #f8fafc;
-                            border: 1px solid #cbd5e1;
-                            padding: 14px;
-                            border-radius: 8px;
-                            margin-bottom: 16px">
+        <!-- Save Slot Modal -->
+        <div id="saveSlotModal"
+             class="modal-backdrop"
+             onclick="handleSlotBackdropClick(event)">
+            <div class="modal-window"
+                 style="max-width: 620px;
+                        height: auto;
+                        max-height: 80vh">
+                <div class="modal-header">
+                    <h3>💾 Save Progress Slot</h3>
+                    <button type="button" class="modal-close-btn" onclick="closeSaveModal()">×</button>
+                </div>
+                <div style="padding: 20px; overflow-y: auto;">
+                    <div style="background: #f8fafc;
+                                border: 1px solid #cbd5e1;
+                                padding: 14px;
+                                border-radius: 8px;
+                                margin-bottom: 16px">
+                        <label style="display: block;
+                                      font-size: 12px;
+                                      font-weight: 700;
+                                      color: #1e3a8a;
+                                      margin-bottom: 6px">SAVE AS NEW SLOT</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text"
+                                   id="newSlotTitleInput"
+                                   placeholder="e.g. June 2026 - Final Review"
+                                   style="flex: 1"
+                                   onkeydown="if(event.key === 'Enter'){ event.preventDefault(); executeSaveNewSlot(); }">
+                            <button type="button"
+                                    class="btn-action"
+                                    style="background: #059669"
+                                    onclick="executeSaveNewSlot()">Save New</button>
+                        </div>
+                    </div>
                     <label style="display: block;
                                   font-size: 12px;
                                   font-weight: 700;
-                                  color: #1e3a8a;
-                                  margin-bottom: 6px">SAVE AS NEW SLOT</label>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text"
-                               id="newSlotTitleInput"
-                               placeholder="e.g. June 2026 - Final Review"
-                               style="flex: 1"
-                               onkeydown="if(event.key === 'Enter'){ event.preventDefault(); executeSaveNewSlot(); }">
-                        <button type="button"
-                                class="btn-action"
-                                style="background: #059669"
-                                onclick="executeSaveNewSlot()">Save New</button>
-                    </div>
+                                  color: #64748b;
+                                  margin-bottom: 8px">OR OVERWRITE AN EXISTING SAVE</label>
+                    <div id="saveSlotsList"
+                         style="display: flex;
+                                flex-direction: column;
+                                gap: 8px;
+                                max-height: 280px;
+                                overflow-y: auto"></div>
                 </div>
-                <label style="display: block;
-                              font-size: 12px;
-                              font-weight: 700;
-                              color: #64748b;
-                              margin-bottom: 8px">OR OVERWRITE AN EXISTING SAVE</label>
-                <div id="saveSlotsList"
-                     style="display: flex;
-                            flex-direction: column;
-                            gap: 8px;
-                            max-height: 280px;
-                            overflow-y: auto"></div>
             </div>
         </div>
-    </div>
-    <!-- Restore Slot Modal -->
-    <div id="restoreSlotModal"
-         class="modal-backdrop"
-         onclick="handleSlotBackdropClick(event)">
-        <div class="modal-window"
-             style="max-width: 620px;
-                    height: auto;
-                    max-height: 80vh">
-            <div class="modal-header" style="background: #1e293b;">
-                <h3>📂 Load Saved Progress</h3>
-                <button type="button" class="modal-close-btn" onclick="closeRestoreModal()">×</button>
-            </div>
-            <div style="padding: 20px; overflow-y: auto;">
-                <div id="restoreSlotsList"
-                     style="display: flex;
-                            flex-direction: column;
-                            gap: 8px;
-                            max-height: 380px;
-                            overflow-y: auto"></div>
+        <!-- Restore Slot Modal -->
+        <div id="restoreSlotModal"
+             class="modal-backdrop"
+             onclick="handleSlotBackdropClick(event)">
+            <div class="modal-window"
+                 style="max-width: 620px;
+                        height: auto;
+                        max-height: 80vh">
+                <div class="modal-header" style="background: #1e293b;">
+                    <h3>📂 Load Saved Progress</h3>
+                    <button type="button" class="modal-close-btn" onclick="closeRestoreModal()">×</button>
+                </div>
+                <div style="padding: 20px; overflow-y: auto;">
+                    <div id="restoreSlotsList"
+                         style="display: flex;
+                                flex-direction: column;
+                                gap: 8px;
+                                max-height: 380px;
+                                overflow-y: auto"></div>
+                </div>
             </div>
         </div>
-    </div>
-    <script>
+        <script>
     let globalData = [];
     let employeeNames = [];
     let specialEntries = [];
@@ -1160,6 +1168,7 @@
             closeSaveModal();
             closeRestoreModal();
             closeTutorialModal();
+            closeHolidayModal();
             closeSideDrawer();
             hideToast();
         }
@@ -2305,6 +2314,166 @@
             showToast("Failed to download Excel file.");
         }
     }
-    </script>
-</body>
+
+    function openHolidayModal() {
+        document.getElementById('holidayModal').classList.add('active');
+        fetchAndRenderDbHolidays();
+    }
+
+    function closeHolidayModal() {
+        document.getElementById('holidayModal').classList.remove('active');
+    }
+
+    function handleHolidayBackdropClick(e) {
+        if (e.target.id === 'holidayModal') closeHolidayModal();
+    }
+
+    async function fetchAndRenderDbHolidays() {
+        const listContainer = document.getElementById('dbHolidaysList');
+        try {
+            const res = await fetch('/api/holidays');
+            const data = await res.json();
+            const holidays = data.holidays || [];
+            listContainer.innerHTML = '';
+
+            if (holidays.length === 0) {
+                listContainer.innerHTML = '<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">No custom holidays stored in database yet.</span>';
+                return;
+            }
+
+            holidays.forEach(h => {
+                const row = document.createElement('div');
+                row.style = "display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px;";
+                row.innerHTML = `
+                    <div>
+                        <strong style="color: var(--primary); font-size: 13px;">${h.date}</strong>
+                        <span style="margin-left: 10px; font-size: 13px; color: var(--text-main);">${h.name}</span>
+                    </div>
+                    <button type="button" class="btn-action" style="background: #ef4444; font-size: 11px; padding: 4px 8px;" onclick="executeDeleteDbHoliday('${h.date}')">🗑️</button>
+                `;
+                listContainer.appendChild(row);
+            });
+        } catch (e) {
+            listContainer.innerHTML = '<span style="color: var(--danger); font-size: 12px;">Failed to load holidays from database.</span>';
+        }
+    }
+
+    async function executeAddDbHoliday() {
+        const dateInput = document.getElementById('dbHolidayDateInput').value;
+        const nameInput = document.getElementById('dbHolidayNameInput').value.trim();
+
+        if (!dateInput || !nameInput) {
+            showToast("Please enter both the date and holiday name.");
+            return;
+        }
+
+        // Sunday protection check
+        const dayOfWeek = new Date(dateInput + 'T00:00:00').getDay();
+        if (dayOfWeek === 0) {
+            showToast("Sunday is strictly an off-day and cannot be set as a holiday.");
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/holidays/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date: dateInput, name: nameInput })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('dbHolidayNameInput').value = '';
+                showToast(`Holiday "${nameInput}" saved to database!`, false);
+                fetchAndRenderDbHolidays();
+                // If a report is currently active on screen, re-evaluate to show the new holiday immediately
+                if (globalData && globalData.length > 0) {
+                    executeAnalysis(false);
+                }
+            } else {
+                showToast(data.error || "Failed to save holiday.");
+            }
+        } catch (e) {
+            showToast("Server error saving holiday.");
+        }
+    }
+
+    async function executeDeleteDbHoliday(hDate) {
+        if (!confirm(`Are you sure you want to remove the holiday on ${hDate}?`)) return;
+
+        try {
+            const res = await fetch('/api/holidays/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date: hDate })
+            });
+            if (res.ok) {
+                showToast("Holiday removed from database.", false);
+                fetchAndRenderDbHolidays();
+                if (globalData && globalData.length > 0) {
+                    executeAnalysis(false);
+                }
+            } else {
+                showToast("Failed to remove holiday.");
+            }
+        } catch (e) {
+            showToast("Server error removing holiday.");
+        }
+    }
+        </script>
+
+        <!-- Manage Annual Holidays Modal -->
+        <div id="holidayModal"
+             class="modal-backdrop"
+             onclick="handleHolidayBackdropClick(event)">
+            <div class="modal-window"
+                 style="max-width: 600px;
+                        height: auto;
+                        max-height: 85vh">
+                <div class="modal-header" style="background: var(--primary);">
+                    <h3>🗓️ Manage Annual Holidays (Database)</h3>
+                    <button type="button" class="modal-close-btn" onclick="closeHolidayModal()">×</button>
+                </div>
+                <div style="padding: 20px; overflow-y: auto;">
+                    <div style="background: #f8fafc;
+                                border: 1px solid #cbd5e1;
+                                padding: 14px;
+                                border-radius: 8px;
+                                margin-bottom: 16px">
+                        <label style="display: block;
+                                      font-size: 12px;
+                                      font-weight: 700;
+                                      color: #1e3a8a;
+                                      margin-bottom: 8px">ADD ANNUAL HOLIDAY</label>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <input type="date" id="dbHolidayDateInput" style="flex: 1; min-width: 140px">
+                            <input type="text"
+                                   id="dbHolidayNameInput"
+                                   placeholder="e.g. Johor Sultan Birthday"
+                                   style="flex: 2;
+                                          min-width: 180px">
+                            <button type="button"
+                                    class="btn-action"
+                                    style="background: #059669"
+                                    onclick="executeAddDbHoliday()">+ Add</button>
+                        </div>
+                    </div>
+                    <label style="display: block;
+                                  font-size: 12px;
+                                  font-weight: 700;
+                                  color: #64748b;
+                                  margin-bottom: 8px">CONFIGURED DATABASE HOLIDAYS</label>
+                    <div id="dbHolidaysList"
+                         style="display: flex;
+                                flex-direction: column;
+                                gap: 8px;
+                                max-height: 320px;
+                                overflow-y: auto">
+                        <span style="font-size: 12px;
+                                     color: var(--text-muted);
+                                     font-style: italic">Loading holidays...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>
