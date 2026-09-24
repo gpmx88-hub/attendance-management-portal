@@ -817,7 +817,6 @@
             <span id="appToastMessage">Notification message</span>
             <button type="button" class="toast-close" onclick="hideToast()">×</button>
         </div>
-
         <!-- Slide-Out Sidebar Drawer -->
         <div id="sideDrawerBackdrop"
              class="side-drawer-backdrop"
@@ -855,7 +854,6 @@
                 </a>
             </div>
         </div>
-
         <!-- Top Sticky Header -->
         <header class="portal-header">
             <div class="header-left">
@@ -878,7 +876,6 @@
                 <button type="button" class="btn-menu-trigger" onclick="openSideDrawer()">☰ Menu</button>
             </div>
         </header>
-
         <main class="portal-main">
             <!-- State A: Upload Screen -->
             <div id="uploadScreen">
@@ -907,7 +904,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- State B: Dashboard View -->
             <div id="resultsCard" class="hidden">
                 <!-- 1. Control Bar -->
@@ -916,7 +912,8 @@
                         <div class="cb-period" id="cbPeriodText">Period: Loading...</div>
                     </div>
                     <div class="cb-center">
-                        <button class="emp-nav-btn"
+                        <button type="button"
+                                class="emp-nav-btn"
                                 onclick="navEmployee(-1)"
                                 title="Previous Employee">‹</button>
                         <input type="text"
@@ -925,7 +922,10 @@
                                placeholder="Search prefix (e.g. 'tan')..."
                                oninput="onSearchType()">
                         <select id="empDropdown" class="emp-select" onchange="renderEmployeeTable()"></select>
-                        <button class="emp-nav-btn" onclick="navEmployee(1)" title="Next Employee">›</button>
+                        <button type="button"
+                                class="emp-nav-btn"
+                                onclick="navEmployee(1)"
+                                title="Next Employee">›</button>
                     </div>
                     <div class="cb-right">
                         <label for="fileInput" class="btn-secondary" style="cursor: pointer;">📁 Change file</label>
@@ -935,7 +935,6 @@
                                 onclick="downloadExcel()">📥 Download Clean Excel</button>
                     </div>
                 </div>
-
                 <!-- 2. Stats Strip (3-Cell Layout) -->
                 <div class="stats-row">
                     <div class="stat-cell">
@@ -951,7 +950,6 @@
                         <span class="stat-label">Punch Irregularities</span>
                     </div>
                 </div>
-
                 <!-- 3. Punch Workshop Bar (Full Width, directly above Table) -->
                 <div class="workshop-bar">
                     <span class="wb-label">Punch Workshop</span>
@@ -988,7 +986,6 @@
                         <span>Dustbin</span>
                     </div>
                 </div>
-
                 <!-- 4. Attendance Table (Full Width) -->
                 <div class="table-wrap">
                     <div class="table-viewport">
@@ -1011,11 +1008,11 @@
                                     <th style="background-color: var(--col-multi);">Multiple (Later)</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody"></tbody>
+                            <tbody id="tableBody">
+                            </tbody>
                         </table>
                     </div>
                 </div>
-
                 <!-- 5. Special Days & Leave (Full Width, Below Table) -->
                 <details class="panel-details" id="specialDaysPanel">
                     <summary>🗓️ Special Days & Leave</summary>
@@ -1037,22 +1034,26 @@
                             <input type="text"
                                    id="customRemarkInput"
                                    placeholder="Remark / Name"
-                                   style="width: 200px;">
+                                   style="width: 200px">
                             <select id="specialTargetSelect">
                                 <option value="current">Current Employee</option>
                                 <option value="all">Company-Wide (All)</option>
                             </select>
-                            <button type="button" class="btn-secondary" onclick="confirmSpecialDay()">+ Add Special Day</button>
+                            <button type="button"
+                                    class="btn-secondary"
+                                    onclick="confirmSpecialDay()">+ Add Special Day</button>
                         </div>
                         <div id="tagsFilterBar" class="tags-filter-bar hidden"></div>
                         <div id="holidayTags" class="holiday-tags-container">
-                            <span style="font-size: 11.5px; color: var(--t3); font-style: italic" id="noHolidaysText">No custom leave days added.</span>
+                            <span style="font-size: 11.5px;
+                                         color: var(--t3);
+                                         font-style: italic"
+                                  id="noHolidaysText">No custom leave days added.</span>
                         </div>
                     </div>
                 </details>
             </div>
         </main>
-
         <!-- Modals -->
         <div id="tutorialModal"
              class="modal-backdrop"
@@ -1074,7 +1075,6 @@
                 </div>
             </div>
         </div>
-
         <div id="saveSlotModal"
              class="modal-backdrop"
              onclick="handleSlotBackdropClick(event)">
@@ -1123,7 +1123,6 @@
                 </div>
             </div>
         </div>
-
         <div id="restoreSlotModal"
              class="modal-backdrop"
              onclick="handleSlotBackdropClick(event)">
@@ -1145,7 +1144,6 @@
                 </div>
             </div>
         </div>
-
         <div id="holidayModal"
              class="modal-backdrop"
              onclick="handleHolidayBackdropClick(event)">
@@ -1203,7 +1201,6 @@
                 </div>
             </div>
         </div>
-
         <script>
     let globalData = [];
     let employeeNames = [];
@@ -1240,11 +1237,28 @@
     function navEmployee(dir) {
         const sel = document.getElementById('empDropdown');
         if (!sel || !sel.options.length) return;
-        const newIdx = sel.selectedIndex + dir;
-        if (newIdx >= 0 && newIdx < sel.options.length) {
-            sel.selectedIndex = newIdx;
-            renderEmployeeTable();
+        if (sel.value === 'No matching employees') return;
+
+        let newIdx = sel.selectedIndex + dir;
+
+        // Wrap around seamlessly so clicking left on the first person goes to the last person
+        if (newIdx < 0) {
+            newIdx = sel.options.length - 1;
+        } else if (newIdx >= sel.options.length) {
+            newIdx = 0;
         }
+
+        sel.selectedIndex = newIdx;
+
+        // Clear the search filter text so all employees remain accessible when browsing
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput && searchInput.value.trim() !== '') {
+            searchInput.value = '';
+            populateDropdown(employeeNames);
+            sel.value = employeeNames[newIdx];
+        }
+
+        renderEmployeeTable();
     }
 
     document.addEventListener('DOMContentLoaded', function() {
