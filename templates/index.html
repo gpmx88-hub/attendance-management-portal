@@ -298,8 +298,32 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            transition: all 0.2s ease;
         }
         .btn-download:hover { background: #066746; }
+
+        /* Animation & Loading State */
+        .btn-download:disabled,
+        .btn-download.loading {
+            background-color: #0d9488 !important;
+            cursor: not-allowed;
+            opacity: 0.85;
+            pointer-events: none;
+        }
+
+        .btn-spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin 0.65s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
         .btn-action {
             display: inline-flex;
@@ -912,6 +936,7 @@
                     <div class="cb-right">
                         <label for="fileInput" class="btn-secondary" style="cursor: pointer;">📁 Change file</label>
                         <button type="button"
+                                id="btnDownloadExcel"
                                 class="btn-download"
                                 onclick="downloadExcel()">📥 Download Clean Excel</button>
                     </div>
@@ -2431,8 +2456,19 @@
             return;
         }
 
+        const btn = document.getElementById('btnDownloadExcel');
+        const origContent = btn.innerHTML;
+
+        // 1. Activate loading animation & disable button to prevent double clicks
+        btn.disabled = true;
+        btn.classList.add('loading');
+        btn.innerHTML = '<span class="btn-spinner"></span> Compiling Excel...';
+        showToast("Generating multi-sheet Excel file, please wait...", false);
+
         try {
+            // Sync current in-memory edits to backend session
             await syncChangeToBackend(globalData);
+
             const res = await fetch('/api/download');
             if (!res.ok) {
                 showToast("Server failed to generate the Excel file.");
@@ -2449,9 +2485,16 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(downloadUrl);
+
+            showToast("Download completed successfully!", false);
         } catch (err) {
             console.error(err);
             showToast("Failed to download Excel file.");
+        } finally {
+            // 2. Restore button state
+            btn.disabled = false;
+            btn.classList.remove('loading');
+            btn.innerHTML = origContent;
         }
     }
 
