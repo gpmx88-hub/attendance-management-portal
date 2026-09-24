@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Lazior Attendance Portal</title>
+    <title>Login | Attendance Punch Card Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -41,9 +41,9 @@
             min-height: 100vh;
         }
 
-        /* Left Brand Panel (42%) */
+        /* Left Information Panel (44%) */
         .l-panel {
-            flex: 0 0 42%;
+            flex: 0 0 44%;
             background: linear-gradient(155deg, var(--navy) 0%, #0E1F36 100%);
             color: #FFFFFF;
             position: relative;
@@ -97,57 +97,65 @@
             box-shadow: 0 4px 12px rgba(13, 165, 192, 0.3);
         }
         .brand-name {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 600;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.01em;
         }
 
-        .brand-center-copy {
+        .info-center-copy {
             z-index: 2;
-            margin: 40px 0;
-        }
-        .brand-headline {
-            font-size: 34px;
-            font-weight: 700;
-            line-height: 1.25;
-            margin-bottom: 14px;
-            letter-spacing: -0.02em;
-        }
-        .brand-headline span {
-            color: var(--teal);
-        }
-        .brand-tagline {
-            font-size: 14.5px;
-            color: #B2C6DC;
-            line-height: 1.6;
-            max-width: 420px;
-        }
-
-        .brand-stats {
-            z-index: 2;
-            display: flex;
-            gap: 28px;
-            border-top: 1px solid rgba(255, 255, 255, 0.12);
-            padding-top: 28px;
-        }
-        .brand-stat-item {
+            margin: auto 0;
             display: flex;
             flex-direction: column;
+            gap: 20px;
         }
-        .stat-val {
-            font-size: 24px;
+        .info-headline {
+            font-size: 30px;
             font-weight: 700;
-            color: #FFFFFF;
+            line-height: 1.25;
+            letter-spacing: -0.02em;
         }
-        .stat-lbl {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #8AA0B2;
-            margin-top: 4px;
+        .info-headline span {
+            color: var(--teal);
+        }
+        .info-sub {
+            font-size: 13.5px;
+            color: #B2C6DC;
+            line-height: 1.5;
+            max-width: 440px;
         }
 
-        /* Right Form Panel (58%) */
+        /* Attendance Shift Reference Card */
+        .shift-info-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 440px;
+            backdrop-filter: blur(4px);
+        }
+        .shift-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12.5px;
+            color: #CBD5E1;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .shift-info-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .shift-info-row strong {
+            color: #FFFFFF;
+            font-weight: 600;
+        }
+
+        /* Right Form Panel (56%) */
         .r-panel {
             flex: 1;
             background: var(--surface);
@@ -235,40 +243,52 @@
 </head>
 <body>
     <div class="login-container">
-        <!-- Brand Panel (Left 42%) -->
+        <!-- Left Panel: Shift & Attendance Information -->
         <div class="l-panel">
             <div class="brand-header">
-                <div class="brand-logo-sq">L</div>
-                <div class="brand-name">Lazior Sdn. Bhd.</div>
+                <div class="brand-logo-sq">A</div>
+                <div class="brand-name">Attendance Punch Card Portal</div>
             </div>
 
-            <div class="brand-center-copy">
-                <h1 class="brand-headline">Track time,<br><span>build accountability.</span></h1>
-                <p class="brand-tagline">Automated biometric punch card analytics, timetable auditing, and compliant monthly payroll reports.</p>
+            <div class="info-center-copy">
+                <h1 class="info-headline">Standardized Shifts &amp;<br><span>Attendance Rules.</span></h1>
+                <p class="info-sub">Automatic biometric punch card alignment, de-duplication, and compliance tracking.</p>
+
+                <!-- Shift Policy Breakdown -->
+                <div class="shift-info-card">
+                    <div class="shift-info-row">
+                        <span>Work Shift Starts</span>
+                        <strong>09:00:00</strong>
+                    </div>
+                    <div class="shift-info-row">
+                        <span>Weekday Shift Ends (Mon–Fri)</span>
+                        <strong>18:00:00</strong>
+                    </div>
+                    <div class="shift-info-row">
+                        <span>Saturday Shift Ends</span>
+                        <strong>13:30:00</strong>
+                    </div>
+                    <div class="shift-info-row">
+                        <span>Standard Lunch Allowance</span>
+                        <strong>1h 10m (70 mins)</strong>
+                    </div>
+                    <div class="shift-info-row">
+                        <span>Sundays</span>
+                        <strong style="color: #6ee7b7;">Strict Off-Day</strong>
+                    </div>
+                </div>
             </div>
 
-            <div class="brand-stats">
-                <div class="brand-stat-item">
-                    <span class="stat-val">15</span>
-                    <span class="stat-lbl">Active Staff</span>
-                </div>
-                <div class="brand-stat-item">
-                    <span class="stat-val">98%</span>
-                    <span class="stat-lbl">Accuracy</span>
-                </div>
-                <div class="brand-stat-item">
-                    <span class="stat-val">Auto</span>
-                    <span class="stat-lbl">Disambiguation</span>
-                </div>
-            </div>
+            <!-- Empty spacer element keeps layout perfectly balanced -->
+            <div></div>
         </div>
 
-        <!-- Sign In Panel (Right 58%) -->
+        <!-- Right Panel: Sign In Form -->
         <div class="r-panel">
             <div class="form-wrapper">
                 <div class="form-header">
                     <h2 class="form-title">Attendance Portal</h2>
-                    <p class="form-sub">Sign in to access your employee reports</p>
+                    <p class="form-sub">Sign in to access and manage employee punch records</p>
                 </div>
 
                 {% if error %}
