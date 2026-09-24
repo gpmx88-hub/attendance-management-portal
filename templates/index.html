@@ -901,15 +901,9 @@
                            accept=".xlsx, .xls"
                            style="display: none"
                            onchange="handleNewFileUpload()">
-                    <div class="upload-dates">
-                        <div class="date-field">
-                            <label for="startDateInput">Start Date:</label>
-                            <input type="date" id="startDateInput" onchange="onDateRangeChange()">
-                        </div>
-                        <div class="date-field">
-                            <label for="endDateInput">End Date:</label>
-                            <input type="date" id="endDateInput" onchange="onDateRangeChange()">
-                        </div>
+                    <div style="display: none;">
+                        <input type="date" id="startDateInput" onchange="onDateRangeChange()">
+                        <input type="date" id="endDateInput" onchange="onDateRangeChange()">
                     </div>
                 </div>
             </div>
