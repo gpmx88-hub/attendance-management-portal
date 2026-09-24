@@ -546,9 +546,8 @@
         .badge-lunch-over {
             color: var(--danger);
             font-weight: 700;
-            background-color: var(--danger-bg);
-            padding: 2px 7px;
-            border-radius: 4px;
+            background: none !important;
+            padding: 0 !important;
         }
 
         /* Expandable Accordions for Special Days */
@@ -1687,7 +1686,7 @@
     // IGNORE SECONDS: 09:51:40 is converted strictly to 09:51:00
     function parseTimeSeconds(tStr) {
         if (!tStr || tStr === "--") return null;
-        const parts = tStr.split(":").map(Number);
+        const parts = tStr.trim().split(":").map(Number);
         if (parts.length >= 2) {
             return parts[0] * 3600 + parts[1] * 60;
         }
@@ -1857,10 +1856,9 @@
         const picker = document.getElementById('newTimePicker');
         let timeVal = picker.value.trim();
         if (!timeVal) return;
-        // Truncate to HH:MM format
-        if (timeVal.split(":").length === 3) {
-            timeVal = timeVal.substring(0, 5);
-        }
+        
+        // Ensure strictly HH:MM format (strip seconds if present)
+        timeVal = timeVal.substring(0, 5);
 
         const tray = document.getElementById('createdBlocksTray');
         const placeholder = document.getElementById('trayPlaceholder');
