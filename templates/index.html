@@ -1324,6 +1324,7 @@
     });
 
     window.addEventListener('keydown', function (e) {
+        // 1. Close all modals and drawers when hitting Escape
         if (e.key === 'Escape' || e.key === 'Esc') {
             closeSaveModal();
             closeRestoreModal();
@@ -1331,6 +1332,32 @@
             closeHolidayModal();
             closeSideDrawer();
             hideToast();
+            return;
+        }
+
+        // 2. Keyboard Navigation: ArrowLeft / ArrowRight to cycle employees
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            // Do not trigger if any modal or side drawer is currently open
+            const anyModalActive = document.querySelector('.modal-backdrop.active, .side-drawer.active');
+            if (anyModalActive) return;
+
+            // Do not trigger if dashboard results are not visible yet
+            const resultsCard = document.getElementById('resultsCard');
+            if (!resultsCard || resultsCard.classList.contains('hidden')) return;
+
+            // Do not interfere if user is typing in a text field, date picker, or time input
+            const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+            const activeType = document.activeElement ? (document.activeElement.type || '').toLowerCase() : '';
+            const isEditingText = activeTag === 'textarea' || (activeTag === 'input' && ['text', 'search', 'date', 'time', 'password'].includes(activeType));
+            
+            if (isEditingText) return;
+
+            e.preventDefault();
+            if (e.key === 'ArrowLeft') {
+                navEmployee(-1);
+            } else if (e.key === 'ArrowRight') {
+                navEmployee(1);
+            }
         }
     });
 
