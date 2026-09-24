@@ -224,9 +224,15 @@ def get_malaysia_holiday_name(d_obj, db_holidays_map=None):
 
 def parse_time_str(t_str):
     try:
-        return datetime.strptime(t_str.strip(), "%H:%M:%S")
+        dt = datetime.strptime(t_str.strip(), "%H:%M:%S")
+        # Ignore seconds: 09:51:40 -> 09:51:00
+        return dt.replace(second=0)
     except Exception:
-        return None
+        try:
+            # Fallback in case time is provided as HH:MM
+            return datetime.strptime(t_str.strip(), "%H:%M").replace(second=0)
+        except Exception:
+            return None
 
 
 def format_mins_to_time(minutes):
@@ -1015,6 +1021,11 @@ def build_excel_workbook(df):
                 cell.font = font_regular
                 cell.border = thin_border
                 cell.alignment = align_center if col_idx != 12 else align_left
+
+                # Highlight Lunch Duration in RED/Alert if > 70 mins (1h 10m)
+                if col_idx == 6 and row_data["_lunch_mins"] > 70:
+                    cell.fill = PatternFill(start_color="FEE2E2", end_color="FEE2E2", fill_type="solid")
+                    cell.font = Font(name="Calibri", size=11, bold=True, color="B91C1C")
 
                 if col_idx in [7, 8, 9, 10] and val != "--":
                     cell.fill = late_fill

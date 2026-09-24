@@ -543,6 +543,13 @@
         .badge-late { background: var(--warning-bg); color: var(--warning); font-weight: 700; }
         .badge-totallate { background: var(--danger-bg); color: var(--danger); font-weight: 700; }
         .badge-early { background: #FCE7F3; color: #9D174D; font-weight: 700; }
+        .badge-lunch-over {
+            color: var(--danger);
+            font-weight: 700;
+            background-color: var(--danger-bg);
+            padding: 2px 7px;
+            border-radius: 4px;
+        }
 
         /* Expandable Accordions for Special Days */
         .panel-details {
@@ -873,7 +880,7 @@
                            style="display: none"
                            onchange="handleNewFileUpload()">
 
-                    <!-- Hidden inputs keep JavaScript functional without cluttering the UI -->
+                    <!-- Hidden inputs keep JavaScript functional without taking up UI space -->
                     <div style="display: none;">
                         <input type="date" id="startDateInput" onchange="onDateRangeChange()">
                         <input type="date" id="endDateInput" onchange="onDateRangeChange()">
@@ -936,8 +943,8 @@
                     <div class="wb-create">
                         <input type="time"
                                id="newTimePicker"
-                               step="1"
-                               value="09:00:00"
+                               step="60"
+                               value="09:00"
                                style="padding: 5px 8px;
                                       border: 1px solid var(--border);
                                       border-radius: 6px;
@@ -1677,11 +1684,13 @@
         if (list.includes(prevSelected)) dropdown.value = prevSelected;
     }
 
+    // IGNORE SECONDS: 09:51:40 is converted strictly to 09:51:00
     function parseTimeSeconds(tStr) {
         if (!tStr || tStr === "--") return null;
         const parts = tStr.split(":").map(Number);
-        if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
-        if (parts.length === 2) return parts[0] * 3600 + parts[1] * 60;
+        if (parts.length >= 2) {
+            return parts[0] * 3600 + parts[1] * 60;
+        }
         return null;
     }
 
@@ -1848,7 +1857,10 @@
         const picker = document.getElementById('newTimePicker');
         let timeVal = picker.value.trim();
         if (!timeVal) return;
-        if (timeVal.split(":").length === 2) timeVal += ":00";
+        // Truncate to HH:MM format
+        if (timeVal.split(":").length === 3) {
+            timeVal = timeVal.substring(0, 5);
+        }
 
         const tray = document.getElementById('createdBlocksTray');
         const placeholder = document.getElementById('trayPlaceholder');
@@ -2452,12 +2464,18 @@
                 `;
             }
 
+            // RED TEXT/BADGE FOR LUNCH DURATION > 1 HOUR 10 MINS (70 MINS)
+            const isLunchOver = (r._lunch_mins > 70);
+            const lunchDurationDisplay = (r["Lunch Duration"] !== "--")
+                ? (isLunchOver ? `<span class="badge-lunch-over">${r["Lunch Duration"]}</span>` : r["Lunch Duration"])
+                : "--";
+
             tr.innerHTML = `
                 <td><strong>${r.Date}</strong></td>
                 ${makeCell(r["Clock In"], idx, "Clock In")}
                 ${middleLunchCells}
                 ${makeCell(r["Clock Out"], idx, "Clock Out")}
-                <td>${r["Lunch Duration"]}</td>
+                <td>${lunchDurationDisplay}</td>
                 <td>${lateWorkCell}</td>
                 <td>${lateLunchCell}</td>
                 <td>${totalLateCell}</td>
