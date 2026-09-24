@@ -978,8 +978,8 @@
                                     <th>Lunch Duration</th>
                                     <th style="background-color: var(--col-late-work);">Late (Work)</th>
                                     <th>Late (Lunch)</th>
-                                    <th style="background-color: var(--col-total-late);">Total Late</th>
                                     <th style="background-color: var(--col-early);">Early Leave</th>
+                                    <th style="background-color: var(--col-total-late);">Total Deduct</th>
                                     <th>Work Hours</th>
                                     <th style="min-width: 130px;">Status / Alert</th>
                                     <th style="background-color: var(--col-multi);">Multiple (Earlier)</th>
@@ -1822,9 +1822,9 @@
         record["Early Leave"] = earlyLeaveMins > 0 ? formatMinutesToTime(earlyLeaveMins) : "--";
         record._early_leave_mins = earlyLeaveMins;
 
-        const totLate = lateWorkMins + lateLunchMins;
-        record["Total Late Time"] = totLate > 0 ? formatMinutesToTime(totLate) : "--";
-        record._total_late_mins = totLate;
+        const totDeduct = lateWorkMins + lateLunchMins + earlyLeaveMins;
+        record["Total Deduct"] = totDeduct > 0 ? formatMinutesToTime(totDeduct) : "--";
+        record._total_deduct_mins = totDeduct;
 
         let workMins = 0;
         if (secCin !== null && secCout !== null && secCout > secCin) {
@@ -2461,8 +2461,9 @@
 
             const lateWorkCell = r["Late to Work"] !== "--" ? `<span class="badge badge-late">${r["Late to Work"]}</span>` : "--";
             const lateLunchCell = r["Late Time (Lunch)"] !== "--" ? `<span class="badge badge-late">${r["Late Time (Lunch)"]}</span>` : "--";
-            const totalLateCell = r["Total Late Time"] !== "--" ? `<span class="badge badge-totallate">${r["Total Late Time"]}</span>` : "--";
-            const earlyLeaveCell = r["Early Leave"] !== "--" ? `<span class="badge badge-early">${r["Early Leave"]}</span>` : "--";
+            const earlyLeaveCell = (r["Early Leave"] && r["Early Leave"] !== "--") ? `<span class="badge badge-early">${r["Early Leave"]}</span>` : "--";
+            const totalDeductVal = r["Total Deduct"] || r["Total Late Time"] || "--";
+            const totalDeductCell = totalDeductVal !== "--" ? `<span class="badge badge-totallate">${totalDeductVal}</span>` : "--";
 
             let middleLunchCells = '';
             if (isHalfDay) {
@@ -2495,8 +2496,8 @@
                 <td>${lunchDurationDisplay}</td>
                 <td>${lateWorkCell}</td>
                 <td>${lateLunchCell}</td>
-                <td>${totalLateCell}</td>
                 <td>${earlyLeaveCell}</td>
+                <td>${totalDeductCell}</td>
                 <td><strong>${r["Work Hours"]}</strong></td>
                 <td>${badge}</td>
                 ${makeCell(r["Multiple Punch (Earlier)"], idx, "Multiple Punch (Earlier)")}

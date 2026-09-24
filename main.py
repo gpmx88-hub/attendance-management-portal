@@ -523,8 +523,8 @@ def process_time_card(
                         "Lunch Duration": "--",
                         "Late to Work": "--",
                         "Late Time (Lunch)": "--",
-                        "Total Late Time": "--",
                         "Early Leave": "--",
+                        "Total Deduct": "--",
                         "Work Hours": "--",
                         "Status / Alert": "Sunday",
                         "Multiple Punch (Earlier)": "--",
@@ -533,8 +533,8 @@ def process_time_card(
                         "_lunch_mins": 0,
                         "_late_work_mins": 0,
                         "_late_lunch_mins": 0,
-                        "_total_late_mins": 0,
                         "_early_leave_mins": 0,
+                        "_total_deduct_mins": 0,
                         "_is_absent": 0,
                         "_is_sunday": 1,
                         "_is_offday": 1,
@@ -593,8 +593,8 @@ def process_time_card(
                         "Lunch Duration": "--",
                         "Late to Work": "--",
                         "Late Time (Lunch)": "--",
-                        "Total Late Time": "--",
                         "Early Leave": "--",
+                        "Total Deduct": "--",
                         "Work Hours": "0:00" if not is_off else "--",
                         "Status / Alert": status_text,
                         "Multiple Punch (Earlier)": "--",
@@ -603,8 +603,8 @@ def process_time_card(
                         "_lunch_mins": 0,
                         "_late_work_mins": 0,
                         "_late_lunch_mins": 0,
-                        "_total_late_mins": 0,
                         "_early_leave_mins": 0,
+                        "_total_deduct_mins": 0,
                         "_is_absent": 0,
                         "_is_sunday": 0,
                         "_is_offday": is_off,
@@ -725,7 +725,8 @@ def process_time_card(
                 else:
                     status = f"{status}, {early_remark}"
 
-            total_late_mins = late_work_mins + late_lunch_mins
+            # Total Deduct = Late to Work + Late Lunch + Early Leave
+            total_deduct_mins = late_work_mins + late_lunch_mins + early_leave_mins
 
             if c_in != "--" and c_out != "--":
                 dt_cin = parse_time_str(c_in)
@@ -757,14 +758,14 @@ def process_time_card(
                         if late_lunch_mins > 0
                         else "--"
                     ),
-                    "Total Late Time": (
-                        format_mins_to_time(total_late_mins)
-                        if total_late_mins > 0
-                        else "--"
-                    ),
                     "Early Leave": (
                         format_mins_to_time(early_leave_mins)
                         if early_leave_mins > 0
+                        else "--"
+                    ),
+                    "Total Deduct": (
+                        format_mins_to_time(total_deduct_mins)
+                        if total_deduct_mins > 0
                         else "--"
                     ),
                     "Work Hours": (
@@ -777,8 +778,8 @@ def process_time_card(
                     "_lunch_mins": lunch_mins,
                     "_late_work_mins": late_work_mins,
                     "_late_lunch_mins": late_lunch_mins,
-                    "_total_late_mins": total_late_mins,
                     "_early_leave_mins": early_leave_mins,
+                    "_total_deduct_mins": total_deduct_mins,
                     "_is_absent": 0,
                     "_is_sunday": 0,
                     "_is_offday": 1 if (special_type and not is_half_day) else 0,
@@ -836,8 +837,8 @@ def build_excel_workbook(df):
         "Total Lunch Time",
         "Total Late (Work)",
         "Total Late (Lunch)",
-        "Total Late (Sum)",
         "Total Early Leave",
+        "Total Deduct",
         "Punch Irregularities Count",
     ]
     ws_summary.append(summary_headers)
@@ -874,8 +875,9 @@ def build_excel_workbook(df):
         total_lunch_m = emp_group["_lunch_mins"].sum()
         total_late_w_m = emp_group["_late_work_mins"].sum()
         total_late_l_m = emp_group["_late_lunch_mins"].sum()
-        grand_total_late_m = emp_group["_total_late_mins"].sum()
         total_early_m = emp_group["_early_leave_mins"].sum()
+        grand_total_deduct_m = total_late_w_m + total_late_l_m + total_early_m
+
         anomalies = len(
             emp_group[
                 ~emp_group["Status / Alert"].str.startswith("Normal")
@@ -900,8 +902,8 @@ def build_excel_workbook(df):
                 format_mins_to_time(total_lunch_m),
                 format_mins_to_time(total_late_w_m),
                 format_mins_to_time(total_late_l_m),
-                format_mins_to_time(grand_total_late_m),
                 format_mins_to_time(total_early_m),
+                format_mins_to_time(grand_total_deduct_m),
                 anomalies,
             ]
         )
@@ -925,7 +927,7 @@ def build_excel_workbook(df):
         col_letter = get_column_letter(col[0].column)
         ws_summary.column_dimensions[col_letter].width = max(max_len + 4, 14)
 
-    # 2. Individual Sheets
+    # 2. Individual Sheets (Swapped: Early Leave first, then Total Deduct)
     employee_cols = [
         "Date",
         "Clock In",
@@ -935,8 +937,8 @@ def build_excel_workbook(df):
         "Lunch Duration",
         "Late to Work",
         "Late Time (Lunch)",
-        "Total Late Time",
         "Early Leave",
+        "Total Deduct",
         "Work Hours",
         "Status / Alert",
         "Multiple Punch (Earlier)",
@@ -1018,6 +1020,8 @@ def build_excel_workbook(df):
                 merged_cell.font = font_merged_banner
                 continue
 
+            total_deduct_val = row_data.get("Total Deduct") or row_data.get("Total Late Time", "--")
+
             row_vals = [
                 row_data["Date"],
                 row_data["Clock In"],
@@ -1027,8 +1031,8 @@ def build_excel_workbook(df):
                 row_data["Lunch Duration"],
                 row_data["Late to Work"],
                 row_data["Late Time (Lunch)"],
-                row_data["Total Late Time"],
-                row_data["Early Leave"],
+                row_data.get("Early Leave", "--"),
+                total_deduct_val,
                 row_data["Work Hours"],
                 row_data["Status / Alert"],
                 row_data["Multiple Punch (Earlier)"],
@@ -1077,8 +1081,10 @@ def build_excel_workbook(df):
         tot_lunch = format_mins_to_time(emp_group["_lunch_mins"].sum())
         tot_late_w = format_mins_to_time(emp_group["_late_work_mins"].sum())
         tot_late_l = format_mins_to_time(emp_group["_late_lunch_mins"].sum())
-        tot_late_all = format_mins_to_time(emp_group["_total_late_mins"].sum())
         tot_early = format_mins_to_time(emp_group["_early_leave_mins"].sum())
+        tot_deduct_all = format_mins_to_time(
+            (emp_group["_late_work_mins"] + emp_group["_late_lunch_mins"] + emp_group["_early_leave_mins"]).sum()
+        )
         tot_work = format_mins_to_time(emp_group["_work_mins"].sum())
 
         ws_emp.cell(row=tot_row, column=1, value="MONTHLY TOTAL").font = font_bold
@@ -1086,8 +1092,8 @@ def build_excel_workbook(df):
         ws_emp.cell(row=tot_row, column=6, value=tot_lunch).alignment = align_center
         ws_emp.cell(row=tot_row, column=7, value=tot_late_w).alignment = align_center
         ws_emp.cell(row=tot_row, column=8, value=tot_late_l).alignment = align_center
-        ws_emp.cell(row=tot_row, column=9, value=tot_late_all).alignment = align_center
-        ws_emp.cell(row=tot_row, column=10, value=tot_early).alignment = align_center
+        ws_emp.cell(row=tot_row, column=9, value=tot_early).alignment = align_center
+        ws_emp.cell(row=tot_row, column=10, value=tot_deduct_all).alignment = align_center
         ws_emp.cell(row=tot_row, column=11, value=tot_work).alignment = align_center
 
         for col_idx in range(1, len(employee_cols) + 1):
