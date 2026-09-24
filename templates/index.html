@@ -794,7 +794,6 @@
             <span id="appToastMessage">Notification message</span>
             <button type="button" class="toast-close" onclick="hideToast()">×</button>
         </div>
-
         <!-- Slide-Out Sidebar Drawer -->
         <div id="sideDrawerBackdrop"
              class="side-drawer-backdrop"
@@ -832,7 +831,6 @@
                 </a>
             </div>
         </div>
-
         <!-- Top Sticky Header -->
         <header class="portal-header">
             <div class="header-left">
@@ -855,7 +853,6 @@
                 <button type="button" class="btn-menu-trigger" onclick="openSideDrawer()">☰ Menu</button>
             </div>
         </header>
-
         <main class="portal-main">
             <!-- State A: Upload Screen -->
             <div id="uploadScreen">
@@ -878,7 +875,6 @@
                            accept=".xlsx, .xls"
                            style="display: none"
                            onchange="handleNewFileUpload()">
-
                     <!-- Hidden inputs keep JavaScript functional without taking up UI space -->
                     <div style="display: none;">
                         <input type="date" id="startDateInput" onchange="onDateRangeChange()">
@@ -886,7 +882,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- State B: Dashboard View -->
             <div id="resultsCard" class="hidden">
                 <!-- 1. Control Bar -->
@@ -918,7 +913,6 @@
                                 onclick="downloadExcel()">📥 Download Clean Excel</button>
                     </div>
                 </div>
-
                 <!-- 2. Stats Strip (3-Cell Layout) -->
                 <div class="stats-row">
                     <div class="stat-cell">
@@ -934,7 +928,6 @@
                         <span class="stat-label">Punch Irregularities</span>
                     </div>
                 </div>
-
                 <!-- 3. Punch Workshop Bar (Full Width, directly above Table) -->
                 <div class="workshop-bar">
                     <span class="wb-label">Punch Workshop</span>
@@ -971,7 +964,6 @@
                         <span>Dustbin</span>
                     </div>
                 </div>
-
                 <!-- 4. Attendance Table (Full Width) -->
                 <div class="table-wrap">
                     <div class="table-viewport">
@@ -994,11 +986,11 @@
                                     <th style="background-color: var(--col-multi);">Multiple (Later)</th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody"></tbody>
+                            <tbody id="tableBody">
+                            </tbody>
                         </table>
                     </div>
                 </div>
-
                 <!-- 5. Special Days & Leave (Full Width, Below Table) -->
                 <details class="panel-details" id="specialDaysPanel">
                     <summary>🗓️ Special Days & Leave</summary>
@@ -1020,22 +1012,26 @@
                             <input type="text"
                                    id="customRemarkInput"
                                    placeholder="Remark / Name"
-                                   style="width: 200px;">
+                                   style="width: 200px">
                             <select id="specialTargetSelect">
                                 <option value="current">Current Employee</option>
                                 <option value="all">Company-Wide (All)</option>
                             </select>
-                            <button type="button" class="btn-secondary" onclick="confirmSpecialDay()">+ Add Special Day</button>
+                            <button type="button"
+                                    class="btn-secondary"
+                                    onclick="confirmSpecialDay()">+ Add Special Day</button>
                         </div>
                         <div id="tagsFilterBar" class="tags-filter-bar hidden"></div>
                         <div id="holidayTags" class="holiday-tags-container">
-                            <span style="font-size: 11.5px; color: var(--t3); font-style: italic" id="noHolidaysText">No custom leave days added.</span>
+                            <span style="font-size: 11.5px;
+                                         color: var(--t3);
+                                         font-style: italic"
+                                  id="noHolidaysText">No custom leave days added.</span>
                         </div>
                     </div>
                 </details>
             </div>
         </main>
-
         <!-- Modals -->
         <div id="tutorialModal"
              class="modal-backdrop"
@@ -1057,7 +1053,6 @@
                 </div>
             </div>
         </div>
-
         <div id="saveSlotModal"
              class="modal-backdrop"
              onclick="handleSlotBackdropClick(event)">
@@ -1106,7 +1101,6 @@
                 </div>
             </div>
         </div>
-
         <div id="restoreSlotModal"
              class="modal-backdrop"
              onclick="handleSlotBackdropClick(event)">
@@ -1128,7 +1122,6 @@
                 </div>
             </div>
         </div>
-
         <div id="holidayModal"
              class="modal-backdrop"
              onclick="handleHolidayBackdropClick(event)">
@@ -1174,7 +1167,8 @@
                             <button type="button"
                                     id="btnAddDbHoliday"
                                     class="btn-download"
-                                    style="opacity: 0.5; cursor: not-allowed;"
+                                    style="opacity: 0.5;
+                                           cursor: not-allowed"
                                     disabled
                                     onclick="executeAddDbHoliday()">+ Add</button>
                         </div>
@@ -1195,7 +1189,6 @@
                 </div>
             </div>
         </div>
-
         <script>
     let globalData = [];
     let employeeNames = [];
@@ -1610,7 +1603,14 @@
             }
 
             const data = await res.json();
-            globalData = data.records;
+            globalData = data.records.map(r => {
+                ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out", "Multiple Punch (Earlier)", "Multiple Punch (Later)"].forEach(col => {
+                    if (r[col] && r[col] !== "--") {
+                        r[col] = stripSeconds(r[col]);
+                    }
+                });
+                return r;
+            });
             employeeNames = [...new Set(globalData.map(r => r.Name))].sort();
 
             if (isNewFile || !document.getElementById('startDateInput').value) {
@@ -1682,6 +1682,15 @@
 
         if (list.includes(prevSelected)) dropdown.value = prevSelected;
     }
+
+    function stripSeconds(timeStr) {
+    if (!timeStr || timeStr === "--") return "--";
+    const parts = String(timeStr).trim().split(":");
+    if (parts.length >= 2) {
+        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+    }
+    return timeStr;
+}
 
     // IGNORE SECONDS: 09:51:40 is converted strictly to 09:51:00
     function parseTimeSeconds(tStr) {
@@ -1915,7 +1924,7 @@
                 let peerOptions = '';
                 globalData.forEach(peer => {
                     if (peer.Date === currentDate && peer.Name !== activeEmp) {
-                        const peerTime = peer[colKey];
+                        const peerTime = stripSeconds(peer[colKey]);
                         if (peerTime && peerTime !== "--") {
                             peerOptions += `<option value="${peerTime}">${peer.Name}: ${peerTime}</option>`;
                         }
@@ -1937,8 +1946,11 @@
                     </td>`;
         }
 
+        // Strip seconds so time block strictly displays as HH:MM
+        const cleanTime = stripSeconds(timeVal);
+
         return `<td class="droppable-cell" data-row="${rowIdx}" data-col="${colKey}" ondragover="handleCellDragOver(event)" ondragleave="handleCellDragLeave(event)" ondrop="handleCellDrop(event)" onclick="handleCellClick(this)">
-                    <span class="time-pill" draggable="true" data-row="${rowIdx}" data-col="${colKey}" ondragstart="handleDragStart(event)">${timeVal}</span>
+                    <span class="time-pill" draggable="true" data-row="${rowIdx}" data-col="${colKey}" ondragstart="handleDragStart(event)">${cleanTime}</span>
                 </td>`;
     }
 
@@ -2372,7 +2384,14 @@
     }
 
     function restoreSession(session) {
-        globalData = session.records;
+        globalData = (session.records || []).map(r => {
+        ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out", "Multiple Punch (Earlier)", "Multiple Punch (Later)"].forEach(col => {
+            if (r[col] && r[col] !== "--") {
+                r[col] = stripSeconds(r[col]);
+            }
+        });
+        return r;
+    });
         specialEntries = session.specialEntries || [];
         employeeNames = [...new Set(globalData.map(r => r.Name))].sort();
 
