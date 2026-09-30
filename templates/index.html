@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -785,15 +785,44 @@
             color: var(--t3);
             margin-left: auto;
         }
+
+        /* Quick-Save Bottom Toast */
+        #quickSaveToast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #0F172A;
+            color: #38BDF8;
+            border: 1px solid #1E293B;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+            padding: 11px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            transform: translateY(10px);
+            z-index: 99999;
+        }
+        #quickSaveToast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
         </style>
     </head>
     <body>
-        <!-- Toast Notification -->
+        <!-- Global Toasts -->
         <div id="appToast" class="app-toast">
             <span class="toast-icon">⚠️</span>
             <span id="appToastMessage">Notification message</span>
             <button type="button" class="toast-close" onclick="hideToast()">×</button>
         </div>
+        <div id="quickSaveToast"></div>
+
         <!-- Slide-Out Sidebar Drawer -->
         <div id="sideDrawerBackdrop"
              class="side-drawer-backdrop"
@@ -935,6 +964,7 @@
                     <div class="wb-create">
                         <input type="time"
                                id="newTimePicker"
+                               lang="en-GB"
                                step="60"
                                value="09:00"
                                style="padding: 5px 8px;
@@ -996,7 +1026,7 @@
                     <summary>🗓️ Special Days & Leave</summary>
                     <div class="panel-body">
                         <div class="inline-form">
-                            <input type="date" id="specialDatePicker">
+                            <input type="date" id="specialDatePicker" lang="en-GB">
                             <select id="specialTypeSelect">
                                 <option value="Annual Leave">Annual Leave</option>
                                 <option value="Annual Leave (0.5 Day)">Annual Leave (0.5 Day)</option>
@@ -1149,6 +1179,7 @@
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                             <input type="date"
                                    id="dbHolidayDateInput"
+                                   lang="en-GB"
                                    style="flex: 1;
                                           min-width: 140px;
                                           padding: 7px 10px;
@@ -1201,6 +1232,10 @@
     let hasUnsavedChanges = false;
     let activeTagCategory = 'ALL';
 
+    // State tracking for Quick Save (Ctrl+S)
+    let currentActiveSlotId = null;
+    let currentActiveSlotTitle = null;
+
     const OFF_DAY_TYPES = [
         "Holiday", 
         "Public Holiday", 
@@ -1251,14 +1286,26 @@
         renderEmployeeTable();
     }
 
+    const EN_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    function formatToEnglishDate(dStr) {
+        if (!dStr) return "";
+        const parts = dStr.split("-");
+        if (parts.length === 3) {
+            const year = parts[0];
+            const month = EN_MONTHS[parseInt(parts[1], 10) - 1] || parts[1];
+            const day = parseInt(parts[2], 10);
+            return `${day} ${month} ${year}`;
+        }
+        return dStr;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const sd = document.getElementById('startDateInput');
         const ed = document.getElementById('endDateInput');
         function updatePeriod() {
             const el = document.getElementById('cbPeriodText');
             if (el && sd && ed && sd.value && ed.value) {
-                const fmt = d => new Date(d + 'T00:00:00').toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' });
-                el.textContent = 'Period: ' + fmt(sd.value) + ' – ' + fmt(ed.value);
+                el.textContent = 'Period: ' + formatToEnglishDate(sd.value) + ' – ' + formatToEnglishDate(ed.value);
             }
         }
         if (sd && ed) {
@@ -1313,8 +1360,16 @@
         }
     });
 
+    // Keyboard Shortcuts (Ctrl+S for Quick Save, Esc for Modals, Left/Right for Nav)
     window.addEventListener('keydown', function (e) {
-        // 1. Close modals or drawers on Escape
+        // 1. Quick Save (Ctrl+S or Cmd+S)
+        if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+            e.preventDefault();
+            quickSaveCurrentProgress();
+            return;
+        }
+
+        // 2. Close modals or drawers on Escape
         if (e.key === 'Escape' || e.key === 'Esc') {
             closeSaveModal();
             closeRestoreModal();
@@ -1325,7 +1380,7 @@
             return;
         }
 
-        // 2. Keyboard Arrow Left/Right to change employees
+        // 3. Keyboard Arrow Left/Right to change employees
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
             const anyModalActive = document.querySelector('.modal-backdrop.active, .side-drawer.active');
             if (anyModalActive) return;
@@ -1348,6 +1403,33 @@
         }
     });
 
+    async function quickSaveCurrentProgress() {
+        if (!globalData || !globalData.length) {
+            showToast("No active attendance data to save.");
+            return;
+        }
+
+        // Case A: Editing a previously loaded slot -> Save directly in background
+        if (currentActiveSlotId) {
+            await sendSavePayload(currentActiveSlotId, currentActiveSlotTitle);
+            showQuickToast(`✓ Saved directly to "${currentActiveSlotTitle}"`);
+        } else {
+            // Case B: Brand new file -> Prompt Save Progress Slot modal
+            openSaveModal();
+        }
+    }
+
+    function showQuickToast(msg) {
+        const toast = document.getElementById('quickSaveToast');
+        if (!toast) return;
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(window._quickSaveTimer);
+        window._quickSaveTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2400);
+    }
+
     function isRowOffDay(status) {
         if (!status) return false;
         if (status.includes("(0.5 Day)")) return false;
@@ -1359,7 +1441,7 @@
         const msgEl = document.getElementById('appToastMessage');
         msgEl.innerText = message;
         toast.style.borderLeftColor = isError ? '#C22B21' : '#077A54';
-        toast.querySelector('.toast-icon').innerText = isError ? '⚠️' : '✅';
+        toast.querySelector('.toast-icon').innerText = isError ? '⚠️️' : '✅';
         toast.classList.add('show');
 
         if (toastTimer) clearTimeout(toastTimer);
@@ -1394,6 +1476,8 @@
             document.getElementById('startDateInput').value = '';
             document.getElementById('endDateInput').value = '';
             specialEntries = [];
+            currentActiveSlotId = null;
+            currentActiveSlotTitle = null;
             renderSpecialTags();
             markChangesSaved();
             executeAnalysis(true);
@@ -1686,13 +1770,13 @@
     }
 
     function stripSeconds(timeStr) {
-    if (!timeStr || timeStr === "--") return "--";
-    const parts = String(timeStr).trim().split(":");
-    if (parts.length >= 2) {
-        return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+        if (!timeStr || timeStr === "--") return "--";
+        const parts = String(timeStr).trim().split(":");
+        if (parts.length >= 2) {
+            return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+        }
+        return timeStr;
     }
-    return timeStr;
-}
 
     // IGNORE SECONDS: 09:51:40 is converted strictly to 09:51:00
     function parseTimeSeconds(tStr) {
@@ -2219,7 +2303,7 @@
         const startVal = document.getElementById('startDateInput').value;
         const endVal = document.getElementById('endDateInput').value;
         const myTimeStr = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' });
-        const defaultTitle = startVal ? `Save: ${startVal} to ${endVal}` : `Save: ${myTimeStr}`;
+        const defaultTitle = currentActiveSlotTitle || (startVal ? `Save: ${startVal} to ${endVal}` : `Save: ${myTimeStr}`);
         const inputEl = document.getElementById('newSlotTitleInput');
         inputEl.value = defaultTitle;
 
@@ -2310,7 +2394,7 @@
                         ▶ Load
                     </button>
                     <button type="button" class="btn-action" style="background: #ef4444; color: #fff; border:none; border-radius:6px; font-size: 12px; padding: 6px 10px; cursor:pointer;" onclick="executeDeleteSlot('${slot.id}')" title="Delete slot">
-                        🗑️
+                        🗑️️
                     </button>
                 </div>
             `;
@@ -2345,12 +2429,19 @@
         };
 
         try {
-            await fetch('/api/slots/save', {
+            const res = await fetch('/api/slots/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
-            markChangesSaved();
+            const data = await res.json();
+            if (data.status === 'success') {
+                currentActiveSlotId = data.slotId || slotId;
+                currentActiveSlotTitle = title;
+                markChangesSaved();
+            } else {
+                showToast("Failed to save progress: " + (data.error || "Unknown"));
+            }
         } catch (e) {
             console.error("Save slot failed", e);
             showToast("Failed to save progress.");
@@ -2362,6 +2453,8 @@
             const res = await fetch(`/api/slots/load/${slotId}`);
             const data = await res.json();
             if (data.status === 'success' && data.slot) {
+                currentActiveSlotId = data.slot.id;
+                currentActiveSlotTitle = data.slot.title;
                 restoreSession(data.slot);
                 markChangesSaved();
                 closeRestoreModal();
@@ -2378,6 +2471,10 @@
         if (!confirm("Are you sure you want to permanently delete this save slot?")) return;
         try {
             await fetch(`/api/slots/delete/${slotId}`, { method: 'POST' });
+            if (currentActiveSlotId === slotId) {
+                currentActiveSlotId = null;
+                currentActiveSlotTitle = null;
+            }
             await renderSlotsForRestore();
             showToast("Save slot deleted.", false);
         } catch (e) {
@@ -2387,13 +2484,13 @@
 
     function restoreSession(session) {
         globalData = (session.records || []).map(r => {
-        ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out", "Multiple Punch (Earlier)", "Multiple Punch (Later)"].forEach(col => {
-            if (r[col] && r[col] !== "--") {
-                r[col] = stripSeconds(r[col]);
-            }
+            ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out", "Multiple Punch (Earlier)", "Multiple Punch (Later)"].forEach(col => {
+                if (r[col] && r[col] !== "--") {
+                    r[col] = stripSeconds(r[col]);
+                }
+            });
+            return r;
         });
-        return r;
-    });
         specialEntries = session.specialEntries || [];
         employeeNames = [...new Set(globalData.map(r => r.Name))].sort();
 
