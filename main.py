@@ -913,11 +913,11 @@ def process_time_card(
                 "_is_offday": 1 if (special_type and not is_half_day) else 0,
             })
 
-  return (
-      pd.DataFrame(records),
-      min_d.strftime("%Y-%m-%d"),
-      max_d.strftime("%Y-%m-%d"),
-  )
+    return (
+        pd.DataFrame(records),
+        min_d.strftime("%Y-%m-%d"),
+        max_d.strftime("%Y-%m-%d"),
+    )
 
 
 def build_excel_workbook(df):
