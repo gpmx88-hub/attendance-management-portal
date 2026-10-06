@@ -2014,12 +2014,15 @@
         record._work_mins = workMins;
 
         let issues = [];
-        if (isSat) {
+        if (isOffday) {
+            // Keep the special off-day status intact (Team A/B off day, Holiday, Leave, MC, etc.)
+            return;
+        } else if (isSat) {
             if (record["Clock In"] === "--") issues.push("Missing Clock In");
             if (record["Clock Out"] === "--") issues.push("Missing Clock Out");
             let base = issues.length ? `Saturday (${issues.join(', ')})` : "Saturday (Half Day)";
             record["Status / Alert"] = earlyRemark ? `${base} (${earlyRemark})` : base;
-        } else if (!isOffday) {
+        } else {
             if (record["Clock In"] === "--") issues.push("Missing Clock In");
             if (!isHalfDay) {
                 if (record["Break Out (Lunch)"] === "--" && record["Break In (Back)"] !== "--") issues.push("Missing Break Out");
