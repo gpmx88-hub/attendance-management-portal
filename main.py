@@ -143,6 +143,13 @@ HOLIDAY_EN_MAP = {
 }
 
 
+def normalize_name(name):
+    """Normalizes string by stripping edges, collapsing multiple internal spaces, and lowercase."""
+    if not name:
+        return ""
+    return " ".join(str(name).strip().split()).casefold()
+
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -298,7 +305,7 @@ def save_db_team(name, team):
                 ON CONFLICT (emp_name) DO UPDATE
                 SET team_group = EXCLUDED.team_group,
                     created_at = EXCLUDED.created_at;
-            """), {"name": name, "team": team, "created_at": myt_now})
+            """), {"name": name.strip(), "team": team.strip(), "created_at": myt_now})
         return True
     except Exception as e:
         print("Error saving employee team:", e)
@@ -310,7 +317,7 @@ def delete_db_team(name):
         return False
     try:
         with engine.begin() as conn:
-            conn.execute(text("DELETE FROM employee_teams WHERE emp_name = :name"), {"name": name})
+            conn.execute(text("DELETE FROM employee_teams WHERE emp_name = :name"), {"name": name.strip()})
         return True
     except Exception as e:
         print("Error deleting employee team:", e)
@@ -523,10 +530,14 @@ def process_time_card(
         special_entries = []
 
     db_holidays = load_db_holidays()
+    db_teams = load_db_teams()
 
+    # Build case-insensitive normalized lookups
     special_lookup = {}
     for entry in special_entries:
-        special_lookup[(entry["date"], entry["target"])] = (
+        target = entry.get("target", "ALL")
+        norm_target = "ALL" if target == "ALL" else normalize_name(target)
+        special_lookup[(entry["date"], norm_target)] = (
             entry["type"],
             entry.get("remark", "").strip(),
         )
@@ -610,6 +621,7 @@ def process_time_card(
     for emp_id, meta in sorted(emp_meta.items()):
         name = meta["name"]
         dept = meta["dept"]
+        norm_name = normalize_name(name)
 
         for w_date in calendar_dates:
             date_str = w_date.strftime("%Y-%m-%d")
@@ -650,7 +662,7 @@ def process_time_card(
                 continue
 
             special_info = special_lookup.get(
-                (date_str, name)
+                (date_str, norm_name)
             ) or special_lookup.get((date_str, "ALL"))
             special_type = None
 

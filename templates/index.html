@@ -1334,6 +1334,11 @@
     ];
     const COLUMN_TIME_ORDER = ["Clock In", "Break Out (Lunch)", "Break In (Back)", "Clock Out"];
 
+    function normalizeName(name) {
+        if (!name) return "";
+        return name.trim().replace(/\s+/g, ' ').toLowerCase();
+    }
+
     (function() {
         const rc = document.getElementById('resultsCard');
         const us = document.getElementById('uploadScreen');
@@ -1631,7 +1636,7 @@
             else if (entry.type.includes("MC")) { tagClass += " tag-mc"; icon = "🏥"; }
             else if (entry.type.includes("Unpaid Leave")) { tagClass += " tag-mc"; icon = "⏳"; }
             else if (entry.type === "Team A off day") { tagClass += " tag-teama"; icon = "🅰️"; }
-            else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️"; }
+            else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️️"; }
 
             const targetLabel = (entry.target === 'ALL') ? 'All' : entry.target.split(' ')[0];
             const labelContent = entry.remark ? `${entry.type}: ${entry.remark}` : entry.type;
@@ -1655,8 +1660,9 @@
             }
 
             const rawDate = r.Date.split(' ')[0];
+            const rNorm = normalizeName(r.Name);
             const match = specialEntries.find(e => 
-                e.date === rawDate && (e.target === 'ALL' || e.target === r.Name)
+                e.date === rawDate && (e.target === 'ALL' || normalizeName(e.target) === rNorm)
             );
 
             if (match) {
@@ -1736,7 +1742,7 @@
             return;
         }
 
-        specialEntries = specialEntries.filter(e => !(e.date === chosenDate && e.target === targetName));
+        specialEntries = specialEntries.filter(e => !(e.date === chosenDate && normalizeName(e.target) === normalizeName(targetName)));
         specialEntries.push({
             date: chosenDate,
             type: chosenType,
@@ -3032,6 +3038,7 @@
         } finally {
             addBtn.innerText = "+ Assign";
             validateTeamForm();
+            document.getElementById('dbTeamEmpNameInput').focus();
         }
     }
 
