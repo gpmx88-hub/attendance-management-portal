@@ -28,6 +28,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 # --- Database Setup (Neon PostgreSQL) ---
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
+    # Explicitly enforce psycopg2 dialect driver
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
     elif DATABASE_URL.startswith("postgresql://") and not DATABASE_URL.startswith("postgresql+psycopg2://"):
@@ -41,7 +42,7 @@ engine = (
     create_engine(
         DATABASE_URL,
         pool_pre_ping=True,
-        connect_args={"connect_timeout": 10},
+        connect_args={"connect_timeout": 5},
     )
     if DATABASE_URL
     else None
@@ -73,6 +74,12 @@ def ensure_db_tables():
                     id SERIAL PRIMARY KEY,
                     holiday_date VARCHAR(10) UNIQUE NOT NULL,
                     holiday_name VARCHAR(255) NOT NULL,
+                    created_at VARCHAR(50) NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS employee_teams (
+                    id SERIAL PRIMARY KEY,
+                    emp_name VARCHAR(100) UNIQUE NOT NULL,
+                    team_group VARCHAR(20) NOT NULL,
                     created_at VARCHAR(50) NOT NULL
                 );
             """)
@@ -264,6 +271,49 @@ def delete_db_holiday(h_date):
         return True
     except Exception as e:
         print("Error deleting company holiday:", e)
+        return False
+
+
+def load_db_teams():
+    if not engine:
+        return {}
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT emp_name, team_group FROM employee_teams ORDER BY emp_name ASC"))
+            return {row[0]: row[1] for row in result.fetchall()}
+    except Exception as e:
+        print("Error loading employee teams:", e)
+        return {}
+
+
+def save_db_team(name, team):
+    if not engine:
+        return False
+    try:
+        myt_now = datetime.now(ZoneInfo("Asia/Kuala_Lumpur")).strftime("%Y-%m-%d %H:%M:%S")
+        with engine.begin() as conn:
+            conn.execute(text("""
+                INSERT INTO employee_teams (emp_name, team_group, created_at)
+                VALUES (:name, :team, :created_at)
+                ON CONFLICT (emp_name) DO UPDATE
+                SET team_group = EXCLUDED.team_group,
+                    created_at = EXCLUDED.created_at;
+            """), {"name": name, "team": team, "created_at": myt_now})
+        return True
+    except Exception as e:
+        print("Error saving employee team:", e)
+        return False
+
+
+def delete_db_team(name):
+    if not engine:
+        return False
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("DELETE FROM employee_teams WHERE emp_name = :name"), {"name": name})
+        return True
+    except Exception as e:
+        print("Error deleting employee team:", e)
         return False
 
 
@@ -863,11 +913,11 @@ def process_time_card(
                 "_is_offday": 1 if (special_type and not is_half_day) else 0,
             })
 
-    return (
-        pd.DataFrame(records),
-        min_d.strftime("%Y-%m-%d"),
-        max_d.strftime("%Y-%m-%d"),
-    )
+  return (
+      pd.DataFrame(records),
+      min_d.strftime("%Y-%m-%d"),
+      max_d.strftime("%Y-%m-%d"),
+  )
 
 
 def build_excel_workbook(df):
@@ -1419,6 +1469,43 @@ def api_delete_holiday():
     if delete_db_holiday(h_date):
         return jsonify({"status": "success"})
     return jsonify({"error": "Failed to delete holiday"}), 500
+
+
+# --- Database Employee Teams Endpoints ---
+@app.route("/api/teams", methods=["GET"])
+@login_required
+def api_get_teams():
+    teams_dict = load_db_teams()
+    team_list = [{"name": name, "group": group} for name, group in teams_dict.items()]
+    return jsonify({"teams": team_list})
+
+
+@app.route("/api/teams/save", methods=["POST"])
+@login_required
+def api_save_team():
+    data = request.get_json() or {}
+    emp_name = data.get("name", "").strip()
+    team_group = data.get("group", "").strip()
+    if not emp_name or not team_group:
+        return jsonify({"error": "Employee Name and Group are required"}), 400
+    if team_group not in ["Team A", "Team B"]:
+        return jsonify({"error": "Group must be either Team A or Team B"}), 400
+
+    if save_db_team(emp_name, team_group):
+        return jsonify({"status": "success"})
+    return jsonify({"error": "Failed to save team to database"}), 500
+
+
+@app.route("/api/teams/delete", methods=["POST"])
+@login_required
+def api_delete_team():
+    data = request.get_json() or {}
+    emp_name = data.get("name", "").strip()
+    if not emp_name:
+        return jsonify({"error": "Employee Name is required"}), 400
+    if delete_db_team(emp_name):
+        return jsonify({"status": "success"})
+    return jsonify({"error": "Failed to delete team member"}), 500
 
 
 @app.route("/api/download", methods=["GET"])

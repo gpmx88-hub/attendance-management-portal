@@ -853,6 +853,11 @@
                         onclick="openHolidayModal(); closeSideDrawer();">
                     <span>🗓️</span> Manage Annual Holidays
                 </button>
+                <button type="button"
+                        class="side-drawer-btn"
+                        onclick="openTeamsModal(); closeSideDrawer();">
+                    <span>👥</span> Manage Team Groups (A / B)
+                </button>
                 <a href="/logout"
                    class="side-drawer-btn btn-signout"
                    onclick="return handleSignOutClick(event)">
@@ -1222,6 +1227,83 @@
                 </div>
             </div>
         </div>
+        <!-- Team Groups Modal -->
+        <div id="teamsModal"
+             class="modal-backdrop"
+             onclick="handleTeamsBackdropClick(event)">
+            <div class="modal-window"
+                 style="max-width: 650px;
+                        height: auto;
+                        max-height: 85vh">
+                <div class="modal-header">
+                    <h3>👥 Manage Employee Teams (Group A / B)</h3>
+                    <button type="button" class="modal-close-btn" onclick="closeTeamsModal()">×</button>
+                </div>
+                <div style="padding: 20px; overflow-y: auto;">
+                    <div style="background: #F8FAFC;
+                                border: 1px solid var(--border);
+                                padding: 14px;
+                                border-radius: 8px;
+                                margin-bottom: 16px">
+                        <label style="display: block;
+                                      font-size: 12px;
+                                      font-weight: 700;
+                                      color: var(--navy);
+                                      margin-bottom: 8px">ASSIGN EMPLOYEE TO GROUP</label>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <input type="text"
+                                   id="dbTeamEmpNameInput"
+                                   list="detectedEmpDatalist"
+                                   placeholder="Employee Name..."
+                                   style="flex: 2;
+                                          min-width: 180px;
+                                          padding: 7px 10px;
+                                          border: 1px solid var(--border);
+                                          border-radius: 6px"
+                                   oninput="validateTeamForm()"
+                                   onkeydown="handleTeamInputKeydown(event)">
+                            <datalist id="detectedEmpDatalist"></datalist>
+                            
+                            <select id="dbTeamGroupSelect"
+                                    style="flex: 1;
+                                           min-width: 120px;
+                                           padding: 7px 10px;
+                                           border: 1px solid var(--border);
+                                           border-radius: 6px;
+                                           font-weight: 600;">
+                                <option value="Team A">🅰️ Team A</option>
+                                <option value="Team B">🅱️ Team B</option>
+                            </select>
+
+                            <button type="button"
+                                    id="btnAddDbTeam"
+                                    class="btn-download"
+                                    style="opacity: 0.5; cursor: not-allowed"
+                                    disabled
+                                    onclick="executeAddDbTeam()">+ Assign</button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-size: 12px; font-weight: 700; color: var(--t2);">ASSIGNED EMPLOYEES</label>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" class="filter-tab-btn active" id="tabTeamAll" onclick="filterTeamList('ALL')">All</button>
+                            <button type="button" class="filter-tab-btn" id="tabTeamA" onclick="filterTeamList('Team A')">Team A</button>
+                            <button type="button" class="filter-tab-btn" id="tabTeamB" onclick="filterTeamList('Team B')">Team B</button>
+                        </div>
+                    </div>
+
+                    <div id="dbTeamsList"
+                         style="display: flex;
+                                flex-direction: column;
+                                gap: 8px;
+                                max-height: 340px;
+                                overflow-y: auto">
+                        <span style="font-size: 12px; color: var(--t3); font-style: italic">Loading teams...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
         <script>
     let globalData = [];
     let employeeNames = [];
@@ -1235,6 +1317,10 @@
     // State tracking for Quick Save (Ctrl+S)
     let currentActiveSlotId = null;
     let currentActiveSlotTitle = null;
+
+    // State tracking for Teams (Group A / B)
+    let allDbTeams = [];
+    let currentTeamFilter = 'ALL';
 
     const OFF_DAY_TYPES = [
         "Holiday", 
@@ -1375,6 +1461,7 @@
             closeRestoreModal();
             closeTutorialModal();
             closeHolidayModal();
+            closeTeamsModal();
             closeSideDrawer();
             hideToast();
             return;
@@ -1441,7 +1528,7 @@
         const msgEl = document.getElementById('appToastMessage');
         msgEl.innerText = message;
         toast.style.borderLeftColor = isError ? '#C22B21' : '#077A54';
-        toast.querySelector('.toast-icon').innerText = isError ? '⚠️️' : '✅';
+        toast.querySelector('.toast-icon').innerText = isError ? '⚠️' : '✅';
         toast.classList.add('show');
 
         if (toastTimer) clearTimeout(toastTimer);
@@ -2394,7 +2481,7 @@
                         ▶ Load
                     </button>
                     <button type="button" class="btn-action" style="background: #ef4444; color: #fff; border:none; border-radius:6px; font-size: 12px; padding: 6px 10px; cursor:pointer;" onclick="executeDeleteSlot('${slot.id}')" title="Delete slot">
-                        🗑️️
+                        🗑️
                     </button>
                 </div>
             `;
@@ -2798,6 +2885,189 @@
             }
         } catch (e) {
             showToast("Server error removing holiday.");
+        }
+    }
+
+    // --- Employee Team Groups Logic ---
+    function openTeamsModal() {
+        document.getElementById('teamsModal').classList.add('active');
+        document.getElementById('dbTeamEmpNameInput').value = '';
+        
+        const datalist = document.getElementById('detectedEmpDatalist');
+        datalist.innerHTML = '';
+        if (employeeNames && employeeNames.length) {
+            employeeNames.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                datalist.appendChild(opt);
+            });
+        }
+
+        validateTeamForm();
+        fetchAndRenderDbTeams();
+        setTimeout(() => document.getElementById('dbTeamEmpNameInput').focus(), 50);
+    }
+
+    function closeTeamsModal() {
+        document.getElementById('teamsModal').classList.remove('active');
+    }
+
+    function handleTeamsBackdropClick(e) {
+        if (e.target.id === 'teamsModal') closeTeamsModal();
+    }
+
+    function validateTeamForm() {
+        const nameVal = document.getElementById('dbTeamEmpNameInput').value.trim();
+        const btn = document.getElementById('btnAddDbTeam');
+        if (nameVal) {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        } else {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        }
+    }
+
+    function handleTeamInputKeydown(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            executeAddDbTeam();
+        }
+    }
+
+    function filterTeamList(group) {
+        currentTeamFilter = group;
+        ['tabTeamAll', 'tabTeamA', 'tabTeamB'].forEach(id => {
+            document.getElementById(id)?.classList.remove('active');
+        });
+        if (group === 'ALL') document.getElementById('tabTeamAll')?.classList.add('active');
+        if (group === 'Team A') document.getElementById('tabTeamA')?.classList.add('active');
+        if (group === 'Team B') document.getElementById('tabTeamB')?.classList.add('active');
+        renderTeamsDOM();
+    }
+
+    async function fetchAndRenderDbTeams() {
+        const listContainer = document.getElementById('dbTeamsList');
+        try {
+            const res = await fetch('/api/teams');
+            const data = await res.json();
+            allDbTeams = data.teams || [];
+            renderTeamsDOM();
+        } catch (e) {
+            listContainer.innerHTML = '<span style="color: var(--danger); font-size: 12px;">Failed to load employee teams.</span>';
+        }
+    }
+
+    function renderTeamsDOM() {
+        const listContainer = document.getElementById('dbTeamsList');
+        listContainer.innerHTML = '';
+
+        const filtered = allDbTeams.filter(t => currentTeamFilter === 'ALL' || t.group === currentTeamFilter);
+
+        if (filtered.length === 0) {
+            listContainer.innerHTML = '<span style="font-size: 12px; color: var(--t3); font-style: italic;">No employees assigned to this group yet.</span>';
+            return;
+        }
+
+        filtered.forEach(t => {
+            const isTeamA = (t.group === 'Team A');
+            const badgeColor = isTeamA ? '#0284c7' : '#7c3aed';
+            const badgeBg = isTeamA ? '#e0f2fe' : '#f3e8ff';
+            const badgeBorder = isTeamA ? '#bae6fd' : '#ddd6fe';
+
+            const row = document.createElement('div');
+            row.style = "display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px;";
+            row.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 2px 8px; border-radius: 12px; font-weight: 700; font-size: 11px;">
+                        ${isTeamA ? '🅰️ Team A' : '🅱️ Team B'}
+                    </span>
+                    <strong style="color: var(--navy); font-size: 13px;">${t.name}</strong>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button type="button" class="btn-action" style="background: #f1f5f9; color: var(--navy); border: 1px solid var(--border); border-radius: 4px; font-size: 11px; padding: 4px 8px; cursor:pointer;" 
+                            onclick="switchDbTeamGroup('${t.name}', '${isTeamA ? 'Team B' : 'Team A'}')">
+                        Switch to ${isTeamA ? 'Team B' : 'Team A'}
+                    </button>
+                    <button type="button" class="btn-action" style="background: #ef4444; color: #fff; border:none; border-radius:4px; font-size: 11px; padding: 4px 8px; cursor:pointer;" 
+                            onclick="executeDeleteDbTeam('${t.name}')">🗑️</button>
+                </div>
+            `;
+            listContainer.appendChild(row);
+        });
+    }
+
+    async function executeAddDbTeam() {
+        const nameInput = document.getElementById('dbTeamEmpNameInput').value.trim();
+        const groupSelect = document.getElementById('dbTeamGroupSelect').value;
+
+        if (!nameInput) {
+            showToast("Please enter an employee name.");
+            return;
+        }
+
+        const addBtn = document.getElementById('btnAddDbTeam');
+        addBtn.disabled = true;
+        addBtn.innerText = "Saving...";
+
+        try {
+            const res = await fetch('/api/teams/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: nameInput, group: groupSelect })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById('dbTeamEmpNameInput').value = '';
+                validateTeamForm();
+                showToast(`${nameInput} assigned to ${groupSelect}!`, false);
+                fetchAndRenderDbTeams();
+            } else {
+                showToast(data.error || "Failed to save team group.");
+            }
+        } catch (e) {
+            showToast("Server error saving team group.");
+        } finally {
+            addBtn.innerText = "+ Assign";
+            validateTeamForm();
+        }
+    }
+
+    async function switchDbTeamGroup(name, newGroup) {
+        try {
+            const res = await fetch('/api/teams/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, group: newGroup })
+            });
+            if (res.ok) {
+                showToast(`Moved ${name} to ${newGroup}`, false);
+                fetchAndRenderDbTeams();
+            }
+        } catch (e) {
+            showToast("Error switching team.");
+        }
+    }
+
+    async function executeDeleteDbTeam(name) {
+        if (!confirm(`Are you sure you want to remove ${name} from team groups?`)) return;
+
+        try {
+            const res = await fetch('/api/teams/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name })
+            });
+            if (res.ok) {
+                showToast(`Removed ${name} from teams.`, false);
+                fetchAndRenderDbTeams();
+            } else {
+                showToast("Failed to remove employee from teams.");
+            }
+        } catch (e) {
+            showToast("Server error removing employee.");
         }
     }
         </script>
