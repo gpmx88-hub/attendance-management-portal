@@ -120,9 +120,9 @@
         .btn-menu-trigger:hover { background: rgba(255, 255, 255, 0.18); }
 
         .portal-main {
-            max-width: 1440px;
+            max-width: 1720px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px 20px;
         }
 
         #uploadScreen {
@@ -189,12 +189,12 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
-            height: 58px;
+            height: 54px;
             padding: 0 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
         .cb-left, .cb-center, .cb-right {
@@ -225,15 +225,15 @@
         }
         .emp-nav-btn:hover { background: var(--bg); color: var(--navy); }
         .emp-search {
-            padding: 7px 12px;
+            padding: 6px 12px;
             border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 12.5px;
-            width: 180px;
+            width: 170px;
             outline: none;
         }
         .emp-select {
-            padding: 7px 12px;
+            padding: 6px 12px;
             border: 1px solid var(--border);
             border-radius: 6px;
             font-size: 12.5px;
@@ -246,7 +246,7 @@
             background: var(--bg);
             border: 1px solid var(--border);
             color: var(--navy);
-            padding: 7px 14px;
+            padding: 6px 14px;
             border-radius: 7px;
             font-weight: 600;
             font-size: 12.5px;
@@ -261,7 +261,7 @@
             background: var(--success);
             border: none;
             color: #FFFFFF;
-            padding: 8px 16px;
+            padding: 7px 16px;
             border-radius: 7px;
             font-weight: 600;
             font-size: 12.5px;
@@ -291,9 +291,7 @@
             animation: spin 0.65s linear infinite;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .btn-action {
             display: inline-flex;
@@ -313,34 +311,183 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 10px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             overflow: hidden;
         }
         .stat-cell {
             flex: 1;
-            padding: 16px 20px;
+            padding: 10px 18px;
             display: flex;
             flex-direction: column-reverse;
             border-right: 1px solid var(--border-lite);
         }
         .stat-cell:last-child { border-right: none; }
         .stat-num {
-            font-size: 32px;
+            font-size: 26px;
             font-weight: 700;
             letter-spacing: -0.04em;
             color: var(--navy-mid);
             line-height: 1.1;
-            margin-top: 4px;
+            margin-top: 2px;
         }
         .stat-num.alert { color: var(--danger); }
         .stat-label {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.04em;
             color: var(--t2);
         }
 
+        /* ========================================================
+           SPLIT SCREEN: LEFT TABLE & RIGHT SPECIAL DAYS SIDEBAR
+           ======================================================== */
+        .workspace-split-container {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        /* Left Side: Table & Punch Workshop */
+        .split-left-main {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Right Side: Special Days & Leave Panel */
+        .split-right-sidebar {
+            width: 330px;
+            flex-shrink: 0;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            position: sticky;
+            top: 68px;
+            max-height: calc(100vh - 84px);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-panel-header {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-lite);
+            margin-bottom: 14px;
+        }
+
+        /* Row-by-Row Form in Sidebar */
+        .sidebar-form-stacked {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .sidebar-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .sidebar-form-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--t2);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .sidebar-form-group input,
+        .sidebar-form-group select {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12.5px;
+            font-family: inherit;
+            background: #FFFFFF;
+            outline: none;
+        }
+        .sidebar-form-group input:focus,
+        .sidebar-form-group select:focus {
+            border-color: var(--teal);
+        }
+
+        .btn-apply-special {
+            width: 100%;
+            padding: 9px;
+            background: var(--navy);
+            color: #FFFFFF;
+            border: none;
+            border-radius: 7px;
+            font-weight: 600;
+            font-size: 12.5px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-apply-special:hover { background: var(--navy-mid); }
+
+        .tags-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .filter-tab-btn {
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--t2);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .filter-tab-btn:hover { background: #F1F5F9; color: var(--navy); }
+        .filter-tab-btn.active {
+            background: var(--navy);
+            color: #FFFFFF;
+            border-color: var(--navy);
+        }
+
+        .holiday-tags-container {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .holiday-tag {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid #B8E8D4;
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .holiday-tag.tag-leave { background: #EEF2FF; color: #4338CA; border-color: #C7D2FE; }
+        .holiday-tag.tag-mc { background: #FFE4E6; color: #BE123C; border-color: #FECDD3; }
+        .holiday-tag.tag-teama { background: #E0F2FE; color: #0369A1; border-color: #BAE6FD; }
+        .holiday-tag.tag-teamb { background: #F3E8FF; color: #6D28D9; border-color: #DDD6FE; }
+        .holiday-tag .remove-btn { cursor: pointer; color: #EF4444; font-weight: bold; font-size: 14px; margin-left: 6px; }
+
+        /* Punch Workshop */
         .workshop-bar {
             display: flex;
             align-items: center;
@@ -348,9 +495,8 @@
             background: var(--surface);
             border: 1.5px solid var(--border);
             border-radius: 10px;
-            padding: 10px 16px;
+            padding: 8px 14px;
             flex-wrap: wrap;
-            margin-bottom: 16px;
         }
         .wb-label {
             font-size: 11px;
@@ -377,7 +523,7 @@
             flex-wrap: wrap;
             gap: 6px;
             flex: 1;
-            min-height: 38px;
+            min-height: 36px;
             min-width: 120px;
             padding: 4px 10px;
             background: var(--bg);
@@ -397,7 +543,7 @@
             font-size: 11.5px;
             font-weight: 600;
             cursor: pointer;
-            padding: 6px 14px;
+            padding: 6px 12px;
             user-select: none;
             white-space: nowrap;
             transition: all .15s;
@@ -405,17 +551,18 @@
         .wb-trash:hover { background: #FEE2E2; border-color: var(--danger); }
         .wb-trash.drag-hover { background: var(--danger) !important; color: #fff !important; }
 
+        /* Left Side Table Wrap */
         .table-wrap {
             background: var(--surface);
             border: 1.5px solid var(--border);
             border-radius: 10px;
             overflow: hidden;
-            margin-bottom: 16px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             width: 100%;
         }
         .table-viewport {
-            max-height: 560px;
+            max-height: calc(100vh - 240px);
+            min-height: 520px;
             overflow: auto;
             width: 100%;
         }
@@ -432,28 +579,26 @@
             background-color: var(--navy);
             color: #FFFFFF;
             font-weight: 600;
-            padding: 10px 8px;
+            padding: 9px 8px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             z-index: 10;
         }
         tbody td {
             border-bottom: 1px solid var(--border-lite);
             border-right: 1px solid var(--border-lite);
-            padding: 6px 8px;
+            padding: 5px 6px;
             color: var(--t1);
         }
         tbody td:last-child { border-right: none; }
         tbody tr:hover { background-color: #EEF4FB; }
 
         td.droppable-cell {
-            padding: 4px;
-            min-width: 90px;
+            padding: 3px;
+            min-width: 82px;
             cursor: pointer;
             transition: background 0.15s;
         }
-        td.droppable-cell:hover:not(.cell-locked) {
-            background-color: #E2EDF8;
-        }
+        td.droppable-cell:hover:not(.cell-locked) { background-color: #E2EDF8; }
         td.droppable-cell.drag-over:not(.cell-locked) {
             background-color: #DBEAFE !important;
             outline: 2px dashed var(--teal) !important;
@@ -467,13 +612,13 @@
         .time-pill {
             display: block;
             margin: 0 auto;
-            padding: 4px 6px;
-            border-radius: 6px;
+            padding: 3px 5px;
+            border-radius: 5px;
             background: #FFFFFF;
             border: 1px solid var(--border);
             cursor: grab;
             font-weight: 600;
-            font-size: 11.5px;
+            font-size: 11px;
             text-align: center;
             user-select: none;
             transition: all 0.15s ease;
@@ -483,7 +628,7 @@
             background: var(--teal-pale);
             border: 1px solid #BCE5EE;
             color: #0B6878;
-            padding: 4px 10px;
+            padding: 4px 8px;
         }
         .time-pill.selected-swap {
             border-color: #EA580C !important;
@@ -494,7 +639,7 @@
 
         .empty-slot-select {
             width: 100%;
-            padding: 4px 2px;
+            padding: 3px 2px;
             font-size: 11px;
             font-weight: 500;
             color: var(--t3);
@@ -517,7 +662,7 @@
             font-size: 12px !important;
             letter-spacing: 0.05em;
             text-align: center !important;
-            padding: 8px 12px !important;
+            padding: 7px 12px !important;
             background: #FFF5F5 !important;
         }
 
@@ -547,105 +692,7 @@
             padding: 0 !important;
         }
 
-        .panel-details {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            margin-bottom: 14px;
-            overflow: hidden;
-            width: 100%;
-        }
-        .panel-details summary {
-            padding: 14px 20px;
-            font-weight: 600;
-            font-size: 13.5px;
-            color: var(--navy);
-            cursor: pointer;
-            list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #FAFBFD;
-            border-bottom: 1px solid transparent;
-            user-select: none;
-        }
-        .panel-details[open] summary { border-bottom-color: var(--border-lite); }
-        .panel-details summary::-webkit-details-marker { display: none; }
-        .panel-details summary::after {
-            content: '›';
-            font-size: 18px;
-            color: var(--t3);
-            transition: transform 0.2s;
-        }
-        .panel-details[open] summary::after { transform: rotate(90deg); }
-        .panel-body { padding: 18px 20px; }
-
-        .inline-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        .inline-form input, .inline-form select {
-            padding: 7px 10px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 12.5px;
-            font-family: inherit;
-        }
-
-        .tags-filter-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .filter-tab-btn {
-            background: #FFFFFF;
-            border: 1px solid var(--border);
-            padding: 4px 12px;
-            border-radius: 16px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--t2);
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .filter-tab-btn:hover { background: #F1F5F9; color: var(--navy); }
-        .filter-tab-btn.active {
-            background: var(--navy);
-            color: #FFFFFF;
-            border-color: var(--navy);
-        }
-
-        .holiday-tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            min-height: 38px;
-            align-items: center;
-        }
-        .holiday-tag {
-            background: var(--success-bg);
-            color: var(--success);
-            border: 1px solid #B8E8D4;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .holiday-tag.tag-leave { background: #EEF2FF; color: #4338CA; border-color: #C7D2FE; }
-        .holiday-tag.tag-mc { background: #FFE4E6; color: #BE123C; border-color: #FECDD3; }
-        .holiday-tag.tag-teama { background: #E0F2FE; color: #0369A1; border-color: #BAE6FD; }
-        .holiday-tag.tag-teamb { background: #F3E8FF; color: #6D28D9; border-color: #DDD6FE; }
-        .holiday-tag .remove-btn { cursor: pointer; color: #EF4444; font-weight: bold; font-size: 14px; }
-
-        /* Side Drawer */
+        /* Side Drawer & Modals */
         .side-drawer-backdrop {
             display: none;
             position: fixed;
@@ -707,7 +754,6 @@
             margin-top: auto;
         }
 
-        /* Modals & Toasts */
         .modal-backdrop {
             display: none;
             position: fixed;
@@ -782,7 +828,6 @@
             margin-left: auto;
         }
 
-        /* Quick-Save Bottom Toast */
         #quickSaveToast {
             position: fixed;
             bottom: 24px;
@@ -804,14 +849,15 @@
             transform: translateY(10px);
             z-index: 99999;
         }
-        #quickSaveToast.show {
-            opacity: 1;
-            transform: translateY(0);
+        #quickSaveToast.show { opacity: 1; transform: translateY(0); }
+
+        @media (max-width: 1180px) {
+            .workspace-split-container { flex-direction: column; }
+            .split-right-sidebar { width: 100%; position: static; max-height: none; }
         }
         </style>
     </head>
     <body>
-        <!-- Global Toasts -->
         <div id="appToast" class="app-toast">
             <span class="toast-icon">⚠️</span>
             <span id="appToastMessage">Notification message</span>
@@ -819,7 +865,6 @@
         </div>
         <div id="quickSaveToast"></div>
 
-        <!-- Slide-Out Sidebar Drawer -->
         <div id="sideDrawerBackdrop"
              class="side-drawer-backdrop"
              onclick="closeSideDrawer()"></div>
@@ -829,39 +874,27 @@
                 <button type="button" class="modal-close-btn" onclick="closeSideDrawer()">×</button>
             </div>
             <div class="side-drawer-body">
-                <button type="button"
-                        class="side-drawer-btn"
-                        onclick="openTutorialModal(); closeSideDrawer();">
+                <button type="button" class="side-drawer-btn" onclick="openTutorialModal(); closeSideDrawer();">
                     <span>📖</span> User Guide & Tutorial
                 </button>
-                <button type="button"
-                        class="side-drawer-btn"
-                        onclick="openSaveModal(); closeSideDrawer();">
+                <button type="button" class="side-drawer-btn" onclick="openSaveModal(); closeSideDrawer();">
                     <span>💾</span> Save Progress Slot
                 </button>
-                <button type="button"
-                        class="side-drawer-btn"
-                        onclick="openRestoreModal(); closeSideDrawer();">
+                <button type="button" class="side-drawer-btn" onclick="openRestoreModal(); closeSideDrawer();">
                     <span>📂</span> Load Saved Progress
                 </button>
-                <button type="button"
-                        class="side-drawer-btn"
-                        onclick="openHolidayModal(); closeSideDrawer();">
+                <button type="button" class="side-drawer-btn" onclick="openHolidayModal(); closeSideDrawer();">
                     <span>🗓️</span> Manage Annual Holidays
                 </button>
-                <button type="button"
-                        class="side-drawer-btn"
-                        onclick="openTeamsModal(); closeSideDrawer();">
+                <button type="button" class="side-drawer-btn" onclick="openTeamsModal(); closeSideDrawer();">
                     <span>👥</span> Manage Team Groups (A / B)
                 </button>
-                <a href="/logout"
-                   class="side-drawer-btn btn-signout"
-                   onclick="return handleSignOutClick(event)">
+                <a href="/logout" class="side-drawer-btn btn-signout" onclick="return handleSignOutClick(event)">
                     <span>🚪</span> Sign Out
                 </a>
             </div>
         </div>
-        <!-- Top Sticky Header -->
+
         <header class="portal-header">
             <div class="header-left">
                 <div class="header-logo-sq">A</div>
@@ -877,12 +910,11 @@
                 <span>Lunch Limit: <strong>70m</strong></span>
             </div>
             <div class="header-right">
-                <span id="saveDirtyDot"
-                      class="dirty-indicator hidden"
-                      title="Unsaved modifications"></span>
+                <span id="saveDirtyDot" class="dirty-indicator hidden" title="Unsaved modifications"></span>
                 <button type="button" class="btn-menu-trigger" onclick="openSideDrawer()">☰ Menu</button>
             </div>
         </header>
+
         <main class="portal-main">
             <!-- State A: Upload Screen -->
             <div id="uploadScreen">
@@ -890,60 +922,40 @@
                     <h2 class="upload-card-title">Analyse Employee Attendance</h2>
                     <p class="upload-card-subtitle">Upload the monthly biometric export (.xlsx) from the time card machine</p>
                     <label for="fileInput" class="upload-dropzone">
-                        <svg class="dropzone-icon"
-                             fill="none"
-                             stroke="currentColor"
-                             stroke-width="1.75"
-                             viewBox="0 0 24 24">
+                        <svg class="dropzone-icon" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                         </svg>
                         <div class="dropzone-text">Click to upload Time Card (.xlsx)</div>
                         <div class="dropzone-hint">Compatible with raw biometric multi-punch files</div>
                     </label>
-                    <input type="file"
-                           id="fileInput"
-                           accept=".xlsx, .xls"
-                           style="display: none"
-                           onchange="handleNewFileUpload()">
-                    <!-- Hidden inputs keep JavaScript functional without taking up UI space -->
+                    <input type="file" id="fileInput" accept=".xlsx, .xls" style="display: none" onchange="handleNewFileUpload()">
                     <div style="display: none;">
                         <input type="date" id="startDateInput" onchange="onDateRangeChange()">
                         <input type="date" id="endDateInput" onchange="onDateRangeChange()">
                     </div>
                 </div>
             </div>
+
             <!-- State B: Dashboard View -->
             <div id="resultsCard" class="hidden">
-                <!-- 1. Control Bar -->
+                <!-- Top Control Bar -->
                 <div class="control-bar">
                     <div class="cb-left">
                         <div class="cb-period" id="cbPeriodText">Period: Loading...</div>
                     </div>
                     <div class="cb-center">
-                        <button type="button"
-                                class="emp-nav-btn"
-                                onclick="navEmployee(-1)"
-                                title="Previous Employee">‹</button>
-                        <input type="text"
-                               id="searchInput"
-                               class="emp-search"
-                               placeholder="Search prefix (e.g. 'tan')..."
-                               oninput="onSearchType()">
+                        <button type="button" class="emp-nav-btn" onclick="navEmployee(-1)" title="Previous Employee">‹</button>
+                        <input type="text" id="searchInput" class="emp-search" placeholder="Search prefix (e.g. 'tan')..." oninput="onSearchType()">
                         <select id="empDropdown" class="emp-select" onchange="renderEmployeeTable()"></select>
-                        <button type="button"
-                                class="emp-nav-btn"
-                                onclick="navEmployee(1)"
-                                title="Next Employee">›</button>
+                        <button type="button" class="emp-nav-btn" onclick="navEmployee(1)" title="Next Employee">›</button>
                     </div>
                     <div class="cb-right">
                         <label for="fileInput" class="btn-secondary" style="cursor: pointer;">📁 Change file</label>
-                        <button type="button"
-                                id="btnDownloadExcel"
-                                class="btn-download"
-                                onclick="downloadExcel()">📥 Download Clean Excel</button>
+                        <button type="button" id="btnDownloadExcel" class="btn-download" onclick="downloadExcel()">📥 Download Clean Excel</button>
                     </div>
                 </div>
-                <!-- 2. Stats Strip (3-Cell Layout) -->
+
+                <!-- Stats Strip -->
                 <div class="stats-row">
                     <div class="stat-cell">
                         <span class="stat-num" id="statEmployees">0</span>
@@ -958,326 +970,227 @@
                         <span class="stat-label">Punch Irregularities</span>
                     </div>
                 </div>
-                <!-- 3. Punch Workshop Bar (Full Width, directly above Table) -->
-                <div class="workshop-bar">
-                    <span class="wb-label">Punch Workshop</span>
-                    <div class="wb-sep"></div>
-                    <div class="wb-create">
-                        <input type="time"
-                               id="newTimePicker"
-                               lang="en-GB"
-                               step="60"
-                               value="09:00"
-                               style="padding: 5px 8px;
-                                      border: 1px solid var(--border);
-                                      border-radius: 6px;
-                                      font-size: 12px">
-                        <button type="button"
-                                class="btn-secondary"
-                                onclick="createNewTimeBlock()">+ Create Block</button>
-                    </div>
-                    <div class="wb-sep"></div>
-                    <div id="createdBlocksTray" class="wb-tray">
-                        <span style="font-size: 11.5px;
-                                     color: var(--t3);
-                                     font-style: italic"
-                              id="trayPlaceholder">Created blocks appear here. Drag them directly into table cells.</span>
-                    </div>
-                    <div id="trashZone"
-                         class="wb-trash"
-                         ondragover="handleTrashDragOver(event)"
-                         ondragleave="handleTrashDragLeave(event)"
-                         ondrop="handleTrashDrop(event)"
-                         onclick="handleTrashClick()"
-                         ondblclick="handleTrashDoubleClick()"
-                         title="Drag block here or click to delete selected. Double-click to clear all tray blocks.">
-                        <span>🗑️</span>
-                        <span>Dustbin</span>
-                    </div>
-                </div>
-                <!-- 4. Attendance Table (Full Width) -->
-                <div class="table-wrap">
-                    <div class="table-viewport">
-                        <table id="attendanceTable">
-                            <thead>
-                                <tr>
-                                    <th style="min-width: 120px;">Date</th>
-                                    <th style="background-color: var(--col-editable);">Clock In ⇄</th>
-                                    <th style="background-color: var(--col-editable);">Break Out ⇄</th>
-                                    <th style="background-color: var(--col-editable);">Break In ⇄</th>
-                                    <th style="background-color: var(--col-editable);">Clock Out ⇄</th>
-                                    <th>Lunch Duration</th>
-                                    <th style="background-color: var(--col-late-work);">Late (Work)</th>
-                                    <th>Late (Lunch)</th>
-                                    <th style="background-color: var(--col-early);">Early Leave</th>
-                                    <th style="background-color: var(--col-total-late);">Total Deduct</th>
-                                    <th>Work Hours</th>
-                                    <th style="min-width: 130px;">Status / Alert</th>
-                                    <th style="background-color: var(--col-multi);">Multiple (Earlier)</th>
-                                    <th style="background-color: var(--col-multi);">Multiple (Later)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <!-- 5. Special Days & Leave (Full Width, Below Table) -->
-                <details class="panel-details" id="specialDaysPanel">
-                    <summary>🗓️ Special Days, Team Off-Days & Leave</summary>
-                    <div class="panel-body">
-                        <div class="inline-form">
-                            <input type="date" id="specialDatePicker" lang="en-GB">
-                            <select id="specialTypeSelect" onchange="onSpecialTypeChange()">
-                                <option value="Team A off day">🅰️ Team A off day</option>
-                                <option value="Team B off day">🅱️ Team B off day</option>
-                                <option value="Annual Leave">Annual Leave</option>
-                                <option value="Annual Leave (0.5 Day)">Annual Leave (0.5 Day)</option>
-                                <option value="Replacement Leave">Replacement Leave</option>
-                                <option value="Replacement Leave (0.5 Day)">Replacement Leave (0.5 Day)</option>
-                                <option value="MC">MC</option>
-                                <option value="MC (0.5 Day)">MC (0.5 Day)</option>
-                                <option value="Unpaid Leave">Unpaid Leave</option>
-                                <option value="Unpaid Leave (0.5 Day)">Unpaid Leave (0.5 Day)</option>
-                            </select>
-                            <select id="specialTargetSelect">
-                                <option value="team_match">👥 All Members of this Team (Auto)</option>
-                                <option value="current">👤 Current Employee</option>
-                                <option value="all">🏢 Company-Wide (All)</option>
-                            </select>
-                            <input type="text"
-                                   id="customRemarkInput"
-                                   placeholder="Remark / Name (Optional)"
-                                   style="width: 200px">
-                            <button type="button"
-                                    class="btn-secondary"
-                                    onclick="confirmSpecialDay()">+ Apply Off-Day / Leave</button>
+
+                <!-- SIDE-BY-SIDE WORKSPACE CONTAINER -->
+                <div class="workspace-split-container">
+                    
+                    <!-- LEFT SIDE: Punch Workshop + Attendance Table (Main Area) -->
+                    <div class="split-left-main">
+                        <!-- Punch Workshop Bar -->
+                        <div class="workshop-bar">
+                            <span class="wb-label">Punch Workshop</span>
+                            <div class="wb-sep"></div>
+                            <div class="wb-create">
+                                <input type="time" id="newTimePicker" lang="en-GB" step="60" value="09:00"
+                                       style="padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px">
+                                <button type="button" class="btn-secondary" onclick="createNewTimeBlock()">+ Create Block</button>
+                            </div>
+                            <div class="wb-sep"></div>
+                            <div id="createdBlocksTray" class="wb-tray">
+                                <span style="font-size: 11.5px; color: var(--t3); font-style: italic" id="trayPlaceholder">
+                                    Created blocks appear here. Drag them directly into table cells.
+                                </span>
+                            </div>
+                            <div id="trashZone" class="wb-trash"
+                                 ondragover="handleTrashDragOver(event)"
+                                 ondragleave="handleTrashDragLeave(event)"
+                                 ondrop="handleTrashDrop(event)"
+                                 onclick="handleTrashClick()"
+                                 ondblclick="handleTrashDoubleClick()"
+                                 title="Drag block here or click to delete selected. Double-click to clear all tray blocks.">
+                                <span>🗑️</span>
+                                <span>Dustbin</span>
+                            </div>
                         </div>
+
+                        <!-- Full Width Table -->
+                        <div class="table-wrap">
+                            <div class="table-viewport">
+                                <table id="attendanceTable">
+                                    <thead>
+                                        <tr>
+                                            <th style="min-width: 115px;">Date</th>
+                                            <th style="background-color: var(--col-editable);">Clock In ⇄</th>
+                                            <th style="background-color: var(--col-editable);">Break Out ⇄</th>
+                                            <th style="background-color: var(--col-editable);">Break In ⇄</th>
+                                            <th style="background-color: var(--col-editable);">Clock Out ⇄</th>
+                                            <th>Lunch Duration</th>
+                                            <th style="background-color: var(--col-late-work);">Late (Work)</th>
+                                            <th>Late (Lunch)</th>
+                                            <th style="background-color: var(--col-early);">Early Leave</th>
+                                            <th style="background-color: var(--col-total-late);">Total Deduct</th>
+                                            <th>Work Hours</th>
+                                            <th style="min-width: 120px;">Status / Alert</th>
+                                            <th style="background-color: var(--col-multi);">Multiple (Earlier)</th>
+                                            <th style="background-color: var(--col-multi);">Multiple (Later)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT SIDE: Special Days & Leave Panel (Row-by-Row Stacked) -->
+                    <aside class="split-right-sidebar">
+                        <div class="sidebar-panel-header">
+                            <span>🗓️ Special Days & Leave</span>
+                        </div>
+
+                        <div class="sidebar-form-stacked">
+                            <div class="sidebar-form-group">
+                                <label for="specialDatePicker">Date</label>
+                                <input type="date" id="specialDatePicker" lang="en-GB">
+                            </div>
+
+                            <div class="sidebar-form-group">
+                                <label for="specialTypeSelect">Type / Tag</label>
+                                <select id="specialTypeSelect" onchange="onSpecialTypeChange()">
+                                    <option value="Team A off day">🅰️ Team A off day</option>
+                                    <option value="Team B off day">🅱️ Team B off day</option>
+                                    <option value="Annual Leave">Annual Leave</option>
+                                    <option value="Annual Leave (0.5 Day)">Annual Leave (0.5 Day)</option>
+                                    <option value="Replacement Leave">Replacement Leave</option>
+                                    <option value="Replacement Leave (0.5 Day)">Replacement Leave (0.5 Day)</option>
+                                    <option value="MC">MC</option>
+                                    <option value="MC (0.5 Day)">MC (0.5 Day)</option>
+                                    <option value="Unpaid Leave">Unpaid Leave</option>
+                                    <option value="Unpaid Leave (0.5 Day)">Unpaid Leave (0.5 Day)</option>
+                                </select>
+                            </div>
+
+                            <div class="sidebar-form-group">
+                                <label for="specialTargetSelect">Target Scope</label>
+                                <select id="specialTargetSelect">
+                                    <option value="team_match">👥 All Members of this Team (Auto)</option>
+                                    <option value="current">👤 Current Employee</option>
+                                    <option value="all">🏢 Company-Wide (All)</option>
+                                </select>
+                            </div>
+
+                            <div class="sidebar-form-group">
+                                <label for="customRemarkInput">Remark / Name</label>
+                                <input type="text" id="customRemarkInput" placeholder="Optional remark...">
+                            </div>
+
+                            <button type="button" class="btn-apply-special" onclick="confirmSpecialDay()">
+                                + Apply Off-Day / Leave
+                            </button>
+                        </div>
+
+                        <div style="font-weight: 700; font-size: 11px; color: var(--t2); text-transform: uppercase; margin-bottom: 6px;">
+                            Active Special Days
+                        </div>
+
                         <div id="tagsFilterBar" class="tags-filter-bar hidden"></div>
                         <div id="holidayTags" class="holiday-tags-container">
-                            <span style="font-size: 11.5px;
-                                         color: var(--t3);
-                                         font-style: italic"
-                                  id="noHolidaysText">No custom leave days added.</span>
+                            <span style="font-size: 11.5px; color: var(--t3); font-style: italic" id="noHolidaysText">
+                                No custom leave days added.
+                            </span>
                         </div>
-                    </div>
-                </details>
+                    </aside>
+
+                </div>
             </div>
         </main>
+
         <!-- Modals -->
-        <div id="tutorialModal"
-             class="modal-backdrop"
-             onclick="handleBackdropClick(event)">
+        <div id="tutorialModal" class="modal-backdrop" onclick="handleBackdropClick(event)">
             <div class="modal-window">
                 <div class="modal-header">
                     <h3>📖 Attendance Portal Instructions & Tutorial</h3>
                     <div style="display: flex; align-items: center; gap: 14px;">
-                        <a href="{{ url_for('static', filename='attendance_tutorial.pdf') }}"
-                           target="_blank"
-                           style="color: #cbd5e1;
-                                  font-size: 13px;
-                                  text-decoration: underline">Open in New Tab ↗</a>
+                        <a href="{{ url_for('static', filename='attendance_tutorial.pdf') }}" target="_blank"
+                           style="color: #cbd5e1; font-size: 13px; text-decoration: underline">Open in New Tab ↗</a>
                         <button type="button" class="modal-close-btn" onclick="closeTutorialModal()">×</button>
                     </div>
                 </div>
                 <div class="modal-body">
-                    <iframe src="{{ url_for('static', filename='attendance_tutorial.pdf') }}#toolbar=1"
-                            width="100%"
-                            height="100%"></iframe>
+                    <iframe src="{{ url_for('static', filename='attendance_tutorial.pdf') }}#toolbar=1" width="100%" height="100%"></iframe>
                 </div>
             </div>
         </div>
-        <div id="saveSlotModal"
-             class="modal-backdrop"
-             onclick="handleSlotBackdropClick(event)">
-            <div class="modal-window"
-                 style="max-width: 620px;
-                        height: auto;
-                        max-height: 80vh">
+
+        <div id="saveSlotModal" class="modal-backdrop" onclick="handleSlotBackdropClick(event)">
+            <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh">
                 <div class="modal-header">
                     <h3>💾 Save Progress Slot</h3>
                     <button type="button" class="modal-close-btn" onclick="closeSaveModal()">×</button>
                 </div>
                 <div style="padding: 20px; overflow-y: auto;">
-                    <div style="background: #F8FAFC;
-                                border: 1px solid var(--border);
-                                padding: 14px;
-                                border-radius: 8px;
-                                margin-bottom: 16px">
-                        <label style="display: block;
-                                      font-size: 12px;
-                                      font-weight: 700;
-                                      color: var(--navy);
-                                      margin-bottom: 6px">SAVE AS NEW SLOT</label>
+                    <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-bottom: 16px">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 6px">SAVE AS NEW SLOT</label>
                         <div style="display: flex; gap: 8px;">
-                            <input type="text"
-                                   id="newSlotTitleInput"
-                                   placeholder="e.g. June 2026 - Final Review"
-                                   style="flex: 1;
-                                          padding: 7px 10px;
-                                          border: 1px solid var(--border);
-                                          border-radius: 6px"
+                            <input type="text" id="newSlotTitleInput" placeholder="e.g. June 2026 - Final Review"
+                                   style="flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px"
                                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); executeSaveNewSlot(); }">
                             <button type="button" class="btn-download" onclick="executeSaveNewSlot()">Save New</button>
                         </div>
                     </div>
-                    <label style="display: block;
-                                  font-size: 12px;
-                                  font-weight: 700;
-                                  color: var(--t2);
-                                  margin-bottom: 8px">OR OVERWRITE AN EXISTING SAVE</label>
-                    <div id="saveSlotsList"
-                         style="display: flex;
-                                flex-direction: column;
-                                gap: 8px;
-                                max-height: 280px;
-                                overflow-y: auto"></div>
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--t2); margin-bottom: 8px">OR OVERWRITE AN EXISTING SAVE</label>
+                    <div id="saveSlotsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto"></div>
                 </div>
             </div>
         </div>
-        <div id="restoreSlotModal"
-             class="modal-backdrop"
-             onclick="handleSlotBackdropClick(event)">
-            <div class="modal-window"
-                 style="max-width: 620px;
-                        height: auto;
-                        max-height: 80vh">
+
+        <div id="restoreSlotModal" class="modal-backdrop" onclick="handleSlotBackdropClick(event)">
+            <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh">
                 <div class="modal-header">
                     <h3>📂 Load Saved Progress</h3>
                     <button type="button" class="modal-close-btn" onclick="closeRestoreModal()">×</button>
                 </div>
                 <div style="padding: 20px; overflow-y: auto;">
-                    <div id="restoreSlotsList"
-                         style="display: flex;
-                                flex-direction: column;
-                                gap: 8px;
-                                max-height: 380px;
-                                overflow-y: auto"></div>
+                    <div id="restoreSlotsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto"></div>
                 </div>
             </div>
         </div>
-        <div id="holidayModal"
-             class="modal-backdrop"
-             onclick="handleHolidayBackdropClick(event)">
-            <div class="modal-window"
-                 style="max-width: 600px;
-                        height: auto;
-                        max-height: 85vh">
+
+        <div id="holidayModal" class="modal-backdrop" onclick="handleHolidayBackdropClick(event)">
+            <div class="modal-window" style="max-width: 600px; height: auto; max-height: 85vh">
                 <div class="modal-header">
                     <h3>🗓️ Manage Annual Holidays (Database)</h3>
                     <button type="button" class="modal-close-btn" onclick="closeHolidayModal()">×</button>
                 </div>
                 <div style="padding: 20px; overflow-y: auto;">
-                    <div style="background: #F8FAFC;
-                                border: 1px solid var(--border);
-                                padding: 14px;
-                                border-radius: 8px;
-                                margin-bottom: 16px">
-                        <label style="display: block;
-                                      font-size: 12px;
-                                      font-weight: 700;
-                                      color: var(--navy);
-                                      margin-bottom: 8px">ADD ANNUAL HOLIDAY</label>
+                    <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-bottom: 16px">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 8px">ADD ANNUAL HOLIDAY</label>
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <input type="date"
-                                   id="dbHolidayDateInput"
-                                   lang="en-GB"
-                                   style="flex: 1;
-                                          min-width: 140px;
-                                          padding: 7px 10px;
-                                          border: 1px solid var(--border);
-                                          border-radius: 6px"
-                                   oninput="validateHolidayForm()"
-                                   onkeydown="handleHolidayInputKeydown(event)">
-                            <input type="text"
-                                   id="dbHolidayNameInput"
-                                   placeholder="e.g. Johor Sultan Birthday"
-                                   style="flex: 2;
-                                          min-width: 180px;
-                                          padding: 7px 10px;
-                                          border: 1px solid var(--border);
-                                          border-radius: 6px"
-                                   oninput="validateHolidayForm()"
-                                   onkeydown="handleHolidayInputKeydown(event)">
-                            <button type="button"
-                                    id="btnAddDbHoliday"
-                                    class="btn-download"
-                                    style="opacity: 0.5;
-                                           cursor: not-allowed"
-                                    disabled
-                                    onclick="executeAddDbHoliday()">+ Add</button>
+                            <input type="date" id="dbHolidayDateInput" lang="en-GB"
+                                   style="flex: 1; min-width: 140px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px"
+                                   oninput="validateHolidayForm()" onkeydown="handleHolidayInputKeydown(event)">
+                            <input type="text" id="dbHolidayNameInput" placeholder="e.g. Johor Sultan Birthday"
+                                   style="flex: 2; min-width: 180px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px"
+                                   oninput="validateHolidayForm()" onkeydown="handleHolidayInputKeydown(event)">
+                            <button type="button" id="btnAddDbHoliday" class="btn-download" style="opacity: 0.5; cursor: not-allowed" disabled onclick="executeAddDbHoliday()">+ Add</button>
                         </div>
                     </div>
-                    <label style="display: block;
-                                  font-size: 12px;
-                                  font-weight: 700;
-                                  color: var(--t2);
-                                  margin-bottom: 8px">CONFIGURED DATABASE HOLIDAYS</label>
-                    <div id="dbHolidaysList"
-                         style="display: flex;
-                                flex-direction: column;
-                                gap: 8px;
-                                max-height: 320px;
-                                overflow-y: auto">
+                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--t2); margin-bottom: 8px">CONFIGURED DATABASE HOLIDAYS</label>
+                    <div id="dbHolidaysList" style="display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto">
                         <span style="font-size: 12px; color: var(--t3); font-style: italic">Loading holidays...</span>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Team Groups Modal -->
-        <div id="teamsModal"
-             class="modal-backdrop"
-             onclick="handleTeamsBackdropClick(event)">
-            <div class="modal-window"
-                 style="max-width: 650px;
-                        height: auto;
-                        max-height: 85vh">
+
+        <div id="teamsModal" class="modal-backdrop" onclick="handleTeamsBackdropClick(event)">
+            <div class="modal-window" style="max-width: 650px; height: auto; max-height: 85vh">
                 <div class="modal-header">
                     <h3>👥 Manage Employee Teams (Group A / B)</h3>
                     <button type="button" class="modal-close-btn" onclick="closeTeamsModal()">×</button>
                 </div>
                 <div style="padding: 20px; overflow-y: auto;">
-                    <div style="background: #F8FAFC;
-                                border: 1px solid var(--border);
-                                padding: 14px;
-                                border-radius: 8px;
-                                margin-bottom: 16px">
-                        <label style="display: block;
-                                      font-size: 12px;
-                                      font-weight: 700;
-                                      color: var(--navy);
-                                      margin-bottom: 8px">ASSIGN EMPLOYEE TO GROUP</label>
+                    <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-bottom: 16px">
+                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 8px">ASSIGN EMPLOYEE TO GROUP</label>
                         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <input type="text"
-                                   id="dbTeamEmpNameInput"
-                                   list="detectedEmpDatalist"
-                                   placeholder="Employee Name..."
-                                   style="flex: 2;
-                                          min-width: 180px;
-                                          padding: 7px 10px;
-                                          border: 1px solid var(--border);
-                                          border-radius: 6px"
-                                   oninput="validateTeamForm()"
-                                   onkeydown="handleTeamInputKeydown(event)">
+                            <input type="text" id="dbTeamEmpNameInput" list="detectedEmpDatalist" placeholder="Employee Name..."
+                                   style="flex: 2; min-width: 180px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px"
+                                   oninput="validateTeamForm()" onkeydown="handleTeamInputKeydown(event)">
                             <datalist id="detectedEmpDatalist"></datalist>
-                            
-                            <select id="dbTeamGroupSelect"
-                                    style="flex: 1;
-                                           min-width: 120px;
-                                           padding: 7px 10px;
-                                           border: 1px solid var(--border);
-                                           border-radius: 6px;
-                                           font-weight: 600;">
+                            <select id="dbTeamGroupSelect" style="flex: 1; min-width: 120px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-weight: 600;">
                                 <option value="Team A">🅰️ Team A</option>
                                 <option value="Team B">🅱️ Team B</option>
                             </select>
-
-                            <button type="button"
-                                    id="btnAddDbTeam"
-                                    class="btn-download"
-                                    style="opacity: 0.5; cursor: not-allowed"
-                                    disabled
-                                    onclick="executeAddDbTeam()">+ Assign</button>
+                            <button type="button" id="btnAddDbTeam" class="btn-download" style="opacity: 0.5; cursor: not-allowed" disabled onclick="executeAddDbTeam()">+ Assign</button>
                         </div>
                     </div>
 
@@ -1290,17 +1203,13 @@
                         </div>
                     </div>
 
-                    <div id="dbTeamsList"
-                         style="display: flex;
-                                flex-direction: column;
-                                gap: 8px;
-                                max-height: 340px;
-                                overflow-y: auto">
+                    <div id="dbTeamsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto">
                         <span style="font-size: 12px; color: var(--t3); font-style: italic">Loading teams...</span>
                     </div>
                 </div>
             </div>
         </div>
+
         <script>
     let globalData = [];
     let employeeNames = [];
@@ -1311,11 +1220,9 @@
     let hasUnsavedChanges = false;
     let activeTagCategory = 'ALL';
 
-    // State tracking for Quick Save (Ctrl+S)
     let currentActiveSlotId = null;
     let currentActiveSlotTitle = null;
 
-    // State tracking for Teams (Group A / B)
     let allDbTeams = [];
     let currentTeamFilter = 'ALL';
 
@@ -1447,14 +1354,12 @@
     });
 
     window.addEventListener('keydown', function (e) {
-        // 1. Quick Save (Ctrl+S or Cmd+S)
         if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
             e.preventDefault();
             quickSaveCurrentProgress();
             return;
         }
 
-        // 2. Close modals or drawers on Escape
         if (e.key === 'Escape' || e.key === 'Esc') {
             closeSaveModal();
             closeRestoreModal();
@@ -1466,7 +1371,6 @@
             return;
         }
 
-        // 3. Keyboard Arrow Left/Right to change employees
         if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
             const anyModalActive = document.querySelector('.modal-backdrop.active, .side-drawer.active');
             if (anyModalActive) return;
@@ -1633,9 +1537,12 @@
             const targetLabel = (entry.target === 'ALL') ? 'All' : entry.target.split(' ')[0];
             const labelContent = entry.remark ? `${entry.type}: ${entry.remark}` : entry.type;
 
-            const tag = document.createElement('span');
+            const tag = document.createElement('div');
             tag.className = tagClass;
-            tag.innerHTML = `${icon} <strong>${entry.date}</strong> [${labelContent}] (${targetLabel}) <span class="remove-btn" onclick="removeSpecialDay(${originalIndex})">&times;</span>`;
+            tag.innerHTML = `
+                <span>${icon} <strong>${entry.date}</strong> [${labelContent}] (${targetLabel})</span>
+                <span class="remove-btn" onclick="removeSpecialDay(${originalIndex})">&times;</span>
+            `;
             container.appendChild(tag);
         });
     }
@@ -1669,7 +1576,7 @@
                     r["Multiple Punch (Later)"]
                 ].some(p => p && p !== "--");
 
-                // Checkpoint: If team off-day or full off-day is applied, but employee clocked in
+                // Checkpoint: Punched in on an off day -> (Worked)
                 if (hasPunches && (match.type.includes("off day") || match.type.includes("Leave") || match.type.includes("Holiday")) && !match.type.includes("(0.5 Day)")) {
                     r["Status / Alert"] = `${label} (Worked)`;
                     r._is_offday = 0;
@@ -2077,7 +1984,6 @@
         record["Work Hours"] = workMins > 0 ? formatMinutesToTime(workMins) : "--";
         record._work_mins = workMins;
 
-        // Off-Day & Saturday Handling (Protected)
         let issues = [];
         if (isOffday) {
             return;
@@ -2958,7 +2864,6 @@
         }
     }
 
-    // --- Employee Team Groups Logic ---
     function openTeamsModal() {
         document.getElementById('teamsModal').classList.add('active');
         document.getElementById('dbTeamEmpNameInput').value = '';
