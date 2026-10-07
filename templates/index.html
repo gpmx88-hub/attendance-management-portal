@@ -822,7 +822,6 @@
             <button type="button" class="toast-close" onclick="hideToast()">×</button>
         </div>
         <div id="quickSaveToast"></div>
-
         <!-- Slide-Out Sidebar Drawer -->
         <div id="sideDrawerBackdrop"
              class="side-drawer-backdrop"
@@ -1027,35 +1026,141 @@
                     </div>
                 </div>
                 <!-- 5. Special Days & Leave (Full Width, Below Table) -->
+                <!-- 5. Special Days & Leave + Off-Day Swap Manager -->
                 <details class="panel-details" id="specialDaysPanel">
-                    <summary>🗓️ Special Days & Leave</summary>
+                    <summary>🗓️ Special Days, Team Off-Days & Shift Swaps</summary>
                     <div class="panel-body">
-                        <div class="inline-form">
-                            <input type="date" id="specialDatePicker" lang="en-GB">
-                            <select id="specialTypeSelect">
-                                <option value="Annual Leave">Annual Leave</option>
-                                <option value="Annual Leave (0.5 Day)">Annual Leave (0.5 Day)</option>
-                                <option value="Replacement Leave">Replacement Leave</option>
-                                <option value="Replacement Leave (0.5 Day)">Replacement Leave (0.5 Day)</option>
-                                <option value="MC">MC</option>
-                                <option value="MC (0.5 Day)">MC (0.5 Day)</option>
-                                <option value="Unpaid Leave">Unpaid Leave</option>
-                                <option value="Unpaid Leave (0.5 Day)">Unpaid Leave (0.5 Day)</option>
-                                <option value="Team A off day">Team A off day</option>
-                                <option value="Team B off day">Team B off day</option>
-                            </select>
-                            <input type="text"
-                                   id="customRemarkInput"
-                                   placeholder="Remark / Name"
-                                   style="width: 200px">
-                            <select id="specialTargetSelect">
-                                <option value="current">Current Employee</option>
-                                <option value="all">Company-Wide (All)</option>
-                            </select>
+                        <!-- Tab Switcher -->
+                        <div style="display: flex;
+                                    gap: 8px;
+                                    margin-bottom: 16px;
+                                    border-bottom: 1px solid var(--border);
+                                    padding-bottom: 10px">
                             <button type="button"
-                                    class="btn-secondary"
-                                    onclick="confirmSpecialDay()">+ Add Special Day</button>
+                                    class="filter-tab-btn active"
+                                    id="tabModeStandard"
+                                    onclick="switchSpecialMode('standard')">📅 Add Leave / Team Off-Day</button>
+                            <button type="button"
+                                    class="filter-tab-btn"
+                                    id="tabModeSwap"
+                                    onclick="switchSpecialMode('swap')">⇄ Swap Off-Days Between Employees</button>
                         </div>
+                        <!-- Mode A: Standard Leave & Team Off-Day Picker -->
+                        <div id="standardSpecialSection">
+                            <div class="inline-form">
+                                <input type="date" id="specialDatePicker" lang="en-GB">
+                                <select id="specialTypeSelect" onchange="onSpecialTypeChange()">
+                                    <option value="Team A off day">🅰️ Team A off day</option>
+                                    <option value="Team B off day">🅱️ Team B off day</option>
+                                    <option value="Annual Leave">Annual Leave</option>
+                                    <option value="Annual Leave (0.5 Day)">Annual Leave (0.5 Day)</option>
+                                    <option value="Replacement Leave">Replacement Leave</option>
+                                    <option value="Replacement Leave (0.5 Day)">Replacement Leave (0.5 Day)</option>
+                                    <option value="MC">MC</option>
+                                    <option value="MC (0.5 Day)">MC (0.5 Day)</option>
+                                    <option value="Unpaid Leave">Unpaid Leave</option>
+                                    <option value="Unpaid Leave (0.5 Day)">Unpaid Leave (0.5 Day)</option>
+                                </select>
+                                <select id="specialTargetSelect">
+                                    <option value="team_match">👥 All Members of this Team (Auto)</option>
+                                    <option value="current">👤 Current Selected Employee</option>
+                                    <option value="all">🏢 Company-Wide (Everyone)</option>
+                                </select>
+                                <input type="text"
+                                       id="customRemarkInput"
+                                       placeholder="Remark / Reason (Optional)"
+                                       style="width: 180px">
+                                <button type="button"
+                                        class="btn-secondary"
+                                        onclick="confirmSpecialDay()">+ Apply Off-Day / Leave</button>
+                            </div>
+                        </div>
+                        <!-- Mode B: Direct Employee Off-Day Swap -->
+                        <div id="swapSpecialSection"
+                             class="hidden"
+                             style="background: #F8FAFC;
+                                    border: 1px solid var(--border);
+                                    border-radius: 8px;
+                                    padding: 16px;
+                                    margin-bottom: 16px">
+                            <div style="font-weight: 700;
+                                        color: var(--navy);
+                                        font-size: 13px;
+                                        margin-bottom: 12px">⇄ Swap Duty / Off-Day Between Two Employees</div>
+                            <div style="display: flex;
+                                        gap: 16px;
+                                        flex-wrap: wrap;
+                                        align-items: center">
+                                <!-- Employee 1 -->
+                                <div style="flex: 1;
+                                            min-width: 240px;
+                                            background: #fff;
+                                            padding: 12px;
+                                            border-radius: 6px;
+                                            border: 1px solid var(--border)">
+                                    <div style="font-weight: 600;
+                                                font-size: 11.5px;
+                                                color: var(--t2);
+                                                margin-bottom: 6px">FIRST EMPLOYEE</div>
+                                    <select id="swapEmp1Select"
+                                            style="width: 100%;
+                                                   padding: 6px 8px;
+                                                   border: 1px solid var(--border);
+                                                   border-radius: 5px;
+                                                   margin-bottom: 8px"></select>
+                                    <label style="font-size: 11px;
+                                                  color: var(--t3);
+                                                  display: block;
+                                                  margin-bottom: 2px">Original Off-Date:</label>
+                                    <input type="date"
+                                           id="swapDate1"
+                                           lang="en-GB"
+                                           style="width: 100%;
+                                                  padding: 6px 8px;
+                                                  border: 1px solid var(--border);
+                                                  border-radius: 5px">
+                                </div>
+                                <div style="font-size: 20px; font-weight: bold; color: var(--teal);">⇄</div>
+                                <!-- Employee 2 -->
+                                <div style="flex: 1;
+                                            min-width: 240px;
+                                            background: #fff;
+                                            padding: 12px;
+                                            border-radius: 6px;
+                                            border: 1px solid var(--border)">
+                                    <div style="font-weight: 600;
+                                                font-size: 11.5px;
+                                                color: var(--t2);
+                                                margin-bottom: 6px">SECOND EMPLOYEE</div>
+                                    <select id="swapEmp2Select"
+                                            style="width: 100%;
+                                                   padding: 6px 8px;
+                                                   border: 1px solid var(--border);
+                                                   border-radius: 5px;
+                                                   margin-bottom: 8px"></select>
+                                    <label style="font-size: 11px;
+                                                  color: var(--t3);
+                                                  display: block;
+                                                  margin-bottom: 2px">Original Off-Date:</label>
+                                    <input type="date"
+                                           id="swapDate2"
+                                           lang="en-GB"
+                                           style="width: 100%;
+                                                  padding: 6px 8px;
+                                                  border: 1px solid var(--border);
+                                                  border-radius: 5px">
+                                </div>
+                            </div>
+                            <div style="display: flex;
+                                        justify-content: flex-end;
+                                        margin-top: 12px;
+                                        gap: 10px">
+                                <button type="button"
+                                        class="btn-download"
+                                        onclick="executeEmployeeOffDaySwap()">✓ Confirm & Execute Swap</button>
+                            </div>
+                        </div>
+                        <!-- Filter Tabs & Tag List -->
                         <div id="tagsFilterBar" class="tags-filter-bar hidden"></div>
                         <div id="holidayTags" class="holiday-tags-container">
                             <span style="font-size: 11.5px;
@@ -1263,36 +1368,45 @@
                                    oninput="validateTeamForm()"
                                    onkeydown="handleTeamInputKeydown(event)">
                             <datalist id="detectedEmpDatalist"></datalist>
-                            
                             <select id="dbTeamGroupSelect"
                                     style="flex: 1;
                                            min-width: 120px;
                                            padding: 7px 10px;
                                            border: 1px solid var(--border);
                                            border-radius: 6px;
-                                           font-weight: 600;">
+                                           font-weight: 600">
                                 <option value="Team A">🅰️ Team A</option>
                                 <option value="Team B">🅱️ Team B</option>
                             </select>
-
                             <button type="button"
                                     id="btnAddDbTeam"
                                     class="btn-download"
-                                    style="opacity: 0.5; cursor: not-allowed"
+                                    style="opacity: 0.5;
+                                           cursor: not-allowed"
                                     disabled
                                     onclick="executeAddDbTeam()">+ Assign</button>
                         </div>
                     </div>
-
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <div style="display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-bottom: 8px">
                         <label style="font-size: 12px; font-weight: 700; color: var(--t2);">ASSIGNED EMPLOYEES</label>
                         <div style="display: flex; gap: 6px;">
-                            <button type="button" class="filter-tab-btn active" id="tabTeamAll" onclick="filterTeamList('ALL')">All</button>
-                            <button type="button" class="filter-tab-btn" id="tabTeamA" onclick="filterTeamList('Team A')">Team A</button>
-                            <button type="button" class="filter-tab-btn" id="tabTeamB" onclick="filterTeamList('Team B')">Team B</button>
+                            <button type="button"
+                                    class="filter-tab-btn active"
+                                    id="tabTeamAll"
+                                    onclick="filterTeamList('ALL')">All</button>
+                            <button type="button"
+                                    class="filter-tab-btn"
+                                    id="tabTeamA"
+                                    onclick="filterTeamList('Team A')">Team A</button>
+                            <button type="button"
+                                    class="filter-tab-btn"
+                                    id="tabTeamB"
+                                    onclick="filterTeamList('Team B')">Team B</button>
                         </div>
                     </div>
-
                     <div id="dbTeamsList"
                          style="display: flex;
                                 flex-direction: column;
@@ -1357,7 +1471,6 @@
 
         let newIdx = sel.selectedIndex + dir;
 
-        // Wrap around seamlessly
         if (newIdx < 0) {
             newIdx = sel.options.length - 1;
         } else if (newIdx >= sel.options.length) {
@@ -1366,7 +1479,6 @@
 
         sel.selectedIndex = newIdx;
 
-        // Reset search field so browsing is never blocked by a previous filter
         const searchInput = document.getElementById('searchInput');
         if (searchInput && searchInput.value.trim() !== '') {
             searchInput.value = '';
@@ -1451,7 +1563,6 @@
         }
     });
 
-    // Keyboard Shortcuts (Ctrl+S for Quick Save, Esc for Modals, Left/Right for Nav)
     window.addEventListener('keydown', function (e) {
         // 1. Quick Save (Ctrl+S or Cmd+S)
         if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
@@ -1501,12 +1612,10 @@
             return;
         }
 
-        // Case A: Editing a previously loaded slot -> Save directly in background
         if (currentActiveSlotId) {
             await sendSavePayload(currentActiveSlotId, currentActiveSlotTitle);
             showQuickToast(`✓ Saved directly to "${currentActiveSlotTitle}"`);
         } else {
-            // Case B: Brand new file -> Prompt Save Progress Slot modal
             openSaveModal();
         }
     }
@@ -1636,7 +1745,7 @@
             else if (entry.type.includes("MC")) { tagClass += " tag-mc"; icon = "🏥"; }
             else if (entry.type.includes("Unpaid Leave")) { tagClass += " tag-mc"; icon = "⏳"; }
             else if (entry.type === "Team A off day") { tagClass += " tag-teama"; icon = "🅰️"; }
-            else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️️"; }
+            else if (entry.type === "Team B off day") { tagClass += " tag-teamb"; icon = "🅱️"; }
 
             const targetLabel = (entry.target === 'ALL') ? 'All' : entry.target.split(' ')[0];
             const labelContent = entry.remark ? `${entry.type}: ${entry.remark}` : entry.type;
@@ -1717,7 +1826,7 @@
         renderEmployeeTable();
     }
 
-    function confirmSpecialDay() {
+    async function confirmSpecialDay() {
         const picker = document.getElementById('specialDatePicker');
         const chosenDate = picker.value;
         const chosenType = document.getElementById('specialTypeSelect').value;
@@ -1736,6 +1845,50 @@
             return;
         }
 
+        // 1. Bulk Team Assignment
+        if (targetScope === 'team_match') {
+            const targetTeam = chosenType.includes('Team A') ? 'Team A' : 'Team B';
+            
+            if (!allDbTeams || allDbTeams.length === 0) {
+                try {
+                    const res = await fetch('/api/teams');
+                    const data = await res.json();
+                    allDbTeams = data.teams || [];
+                } catch (e) {
+                    console.error("Failed to fetch teams", e);
+                }
+            }
+
+            const teamMembers = allDbTeams
+                .filter(t => t.group === targetTeam)
+                .map(t => t.name);
+
+            if (teamMembers.length === 0) {
+                showToast(`No employees are assigned to ${targetTeam} yet. Manage teams in the Menu first.`);
+                return;
+            }
+
+            let appliedCount = 0;
+            teamMembers.forEach(memName => {
+                specialEntries = specialEntries.filter(e => !(e.date === chosenDate && normalizeName(e.target) === normalizeName(memName)));
+                specialEntries.push({
+                    date: chosenDate,
+                    type: chosenType,
+                    target: memName,
+                    remark: customRemark
+                });
+                appliedCount++;
+            });
+
+            document.getElementById('customRemarkInput').value = '';
+            renderSpecialTags();
+            markChangesDirty();
+            applySpecialEntriesLocally();
+            showToast(`Applied ${chosenType} to ${appliedCount} employees in ${targetTeam}!`, false);
+            return;
+        }
+
+        // 2. Single Employee or Company-Wide
         const targetName = (targetScope === 'current') ? activePerson : 'ALL';
         if (targetScope === 'current' && (!targetName || targetName === 'No matching employees')) {
             showToast('Please select an employee first.');
@@ -2013,9 +2166,10 @@
         record["Work Hours"] = workMins > 0 ? formatMinutesToTime(workMins) : "--";
         record._work_mins = workMins;
 
+        // Off-Day & Saturday Handling
         let issues = [];
         if (isOffday) {
-            // Keep the special off-day status intact (Team A/B off day, Holiday, Leave, MC, etc.)
+            // Keep special off-day label (Team A/B off day, Leave, Holiday)
             return;
         } else if (isSat) {
             if (record["Clock In"] === "--") issues.push("Missing Clock In");
@@ -2048,7 +2202,6 @@
         let timeVal = picker.value.trim();
         if (!timeVal) return;
         
-        // Ensure strictly HH:MM format (strip seconds if present)
         timeVal = timeVal.substring(0, 5);
 
         const tray = document.getElementById('createdBlocksTray');
@@ -2128,7 +2281,6 @@
                     </td>`;
         }
 
-        // Strip seconds so time block strictly displays as HH:MM
         const cleanTime = stripSeconds(timeVal);
 
         return `<td class="droppable-cell" data-row="${rowIdx}" data-col="${colKey}" ondragover="handleCellDragOver(event)" ondragleave="handleCellDragLeave(event)" ondrop="handleCellDrop(event)" onclick="handleCellClick(this)">
@@ -3079,6 +3231,117 @@
         } catch (e) {
             showToast("Server error removing employee.");
         }
+    }
+
+    // --- Mode Switching & Shift Swap Logic ---
+    function switchSpecialMode(mode) {
+        const stdSec = document.getElementById('standardSpecialSection');
+        const swapSec = document.getElementById('swapSpecialSection');
+        const tabStd = document.getElementById('tabModeStandard');
+        const tabSwap = document.getElementById('tabModeSwap');
+
+        if (mode === 'swap') {
+            stdSec.classList.add('hidden');
+            swapSec.classList.remove('hidden');
+            tabStd.classList.remove('active');
+            tabSwap.classList.add('active');
+            populateSwapDropdowns();
+        } else {
+            stdSec.classList.remove('hidden');
+            swapSec.classList.add('hidden');
+            tabStd.classList.add('active');
+            tabSwap.classList.remove('active');
+        }
+    }
+
+    function onSpecialTypeChange() {
+        const type = document.getElementById('specialTypeSelect').value;
+        const targetSel = document.getElementById('specialTargetSelect');
+        
+        if (type === 'Team A off day' || type === 'Team B off day') {
+            targetSel.value = 'team_match';
+        } else if (targetSel.value === 'team_match') {
+            targetSel.value = 'current';
+        }
+    }
+
+    function populateSwapDropdowns() {
+        const s1 = document.getElementById('swapEmp1Select');
+        const s2 = document.getElementById('swapEmp2Select');
+        if (!s1 || !s2) return;
+
+        s1.innerHTML = '';
+        s2.innerHTML = '';
+
+        employeeNames.forEach((name) => {
+            const o1 = document.createElement('option');
+            o1.value = name;
+            o1.text = name;
+            s1.appendChild(o1);
+
+            const o2 = document.createElement('option');
+            o2.value = name;
+            o2.text = name;
+            s2.appendChild(o2);
+        });
+
+        if (s2.options.length > 1) {
+            s2.selectedIndex = 1;
+        }
+    }
+
+    function executeEmployeeOffDaySwap() {
+        const emp1 = document.getElementById('swapEmp1Select').value;
+        const emp2 = document.getElementById('swapEmp2Select').value;
+        const date1 = document.getElementById('swapDate1').value;
+        const date2 = document.getElementById('swapDate2').value;
+
+        if (!emp1 || !emp2 || !date1 || !date2) {
+            showToast("Please select both employees and both dates.");
+            return;
+        }
+
+        if (emp1 === emp2) {
+            showToast("Please choose two different employees to swap off-days.");
+            return;
+        }
+
+        if (date1 === date2) {
+            showToast("Please choose two different dates to swap.");
+            return;
+        }
+
+        const nEmp1 = normalizeName(emp1);
+        const nEmp2 = normalizeName(emp2);
+
+        specialEntries = specialEntries.filter(e => {
+            const isEmp1Conflict = normalizeName(e.target) === nEmp1 && (e.date === date1 || e.date === date2);
+            const isEmp2Conflict = normalizeName(e.target) === nEmp2 && (e.date === date1 || e.date === date2);
+            return !isEmp1Conflict && !isEmp2Conflict;
+        });
+
+        const team1 = allDbTeams.find(t => normalizeName(t.name) === nEmp1)?.group || "Team A";
+        const team2 = allDbTeams.find(t => normalizeName(t.name) === nEmp2)?.group || "Team B";
+
+        specialEntries.push({
+            date: date2,
+            type: `${team1} off day`,
+            target: emp1,
+            remark: `Swapped with ${emp2}`
+        });
+
+        specialEntries.push({
+            date: date1,
+            type: `${team2} off day`,
+            target: emp2,
+            remark: `Swapped with ${emp1}`
+        });
+
+        renderSpecialTags();
+        markChangesDirty();
+        applySpecialEntriesLocally();
+
+        showToast(`Successfully swapped off-days: ${emp1} (off on ${date2}) ⇄ ${emp2} (off on ${date1})`, false);
     }
         </script>
     </body>
