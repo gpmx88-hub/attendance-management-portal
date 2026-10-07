@@ -30,9 +30,13 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
-    elif DATABASE_URL.startswith("postgresql://") and not DATABASE_URL.startswith("postgresql+psycopg2://"):
-        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
-        
+    elif DATABASE_URL.startswith("postgresql://") and not DATABASE_URL.startswith(
+        "postgresql+psycopg2://"
+    ):
+        DATABASE_URL = DATABASE_URL.replace(
+            "postgresql://", "postgresql+psycopg2://", 1
+        )
+
     if "sslmode=" not in DATABASE_URL:
         sep = "&" if "?" in DATABASE_URL else "?"
         DATABASE_URL = f"{DATABASE_URL}{sep}sslmode=require"
@@ -57,8 +61,7 @@ def ensure_db_tables():
         return
     try:
         with engine.begin() as conn:
-            conn.execute(
-                text("""
+            conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS save_slots (
                     slot_id VARCHAR(100) PRIMARY KEY,
                     username VARCHAR(50) NOT NULL,
@@ -81,8 +84,7 @@ def ensure_db_tables():
                     team_group VARCHAR(20) NOT NULL,
                     created_at VARCHAR(50) NOT NULL
                 );
-            """)
-            )
+            """))
             _db_initialized = True
             print("Database tables verified.")
     except Exception as e:
@@ -90,9 +92,7 @@ def ensure_db_tables():
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get(
-    "FLASK_SECRET_KEY", "prod-session-key-attendance-2026"
-)
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "prod-session-key-attendance-2026")
 
 
 @app.before_request
@@ -285,7 +285,11 @@ def load_db_teams():
         return {}
     try:
         with engine.connect() as conn:
-            result = conn.execute(text("SELECT emp_name, team_group FROM employee_teams ORDER BY emp_name ASC"))
+            result = conn.execute(
+                text(
+                    "SELECT emp_name, team_group FROM employee_teams ORDER BY emp_name ASC"
+                )
+            )
             return {row[0]: row[1] for row in result.fetchall()}
     except Exception as e:
         print("Error loading employee teams:", e)
@@ -296,15 +300,20 @@ def save_db_team(name, team):
     if not engine:
         return False
     try:
-        myt_now = datetime.now(ZoneInfo("Asia/Kuala_Lumpur")).strftime("%Y-%m-%d %H:%M:%S")
+        myt_now = datetime.now(ZoneInfo("Asia/Kuala_Lumpur")).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
         with engine.begin() as conn:
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 INSERT INTO employee_teams (emp_name, team_group, created_at)
                 VALUES (:name, :team, :created_at)
                 ON CONFLICT (emp_name) DO UPDATE
                 SET team_group = EXCLUDED.team_group,
                     created_at = EXCLUDED.created_at;
-            """), {"name": name.strip(), "team": team.strip(), "created_at": myt_now})
+            """),
+                {"name": name.strip(), "team": team.strip(), "created_at": myt_now},
+            )
         return True
     except Exception as e:
         print("Error saving employee team:", e)
@@ -316,7 +325,10 @@ def delete_db_team(name):
         return False
     try:
         with engine.begin() as conn:
-            conn.execute(text("DELETE FROM employee_teams WHERE emp_name = :name"), {"name": name.strip()})
+            conn.execute(
+                text("DELETE FROM employee_teams WHERE emp_name = :name"),
+                {"name": name.strip()},
+            )
         return True
     except Exception as e:
         print("Error deleting employee team:", e)
@@ -498,9 +510,7 @@ def categorize_punches(raw_punch_list, is_saturday):
         if len(punch_list) > 2:
             issues.append(f"Multiple Punches ({len(punch_list)})")
         status = (
-            "Saturday (Half Day)"
-            if not issues
-            else f"Saturday ({', '.join(issues)})"
+            "Saturday (Half Day)" if not issues else f"Saturday ({', '.join(issues)})"
         )
     else:
         if c_in == "--":
@@ -625,34 +635,36 @@ def process_time_card(
             day_name = w_date.strftime("%a")
 
             if is_sunday:
-                records.append({
-                    "Employee ID": emp_id,
-                    "Name": name,
-                    "Department": dept,
-                    "Date": f"{date_str} ({day_name})",
-                    "Clock In": "--",
-                    "Break Out (Lunch)": "--",
-                    "Break In (Back)": "--",
-                    "Clock Out": "--",
-                    "Lunch Duration": "--",
-                    "Late to Work": "--",
-                    "Late Time (Lunch)": "--",
-                    "Early Leave": "--",
-                    "Total Deduct": "--",
-                    "Work Hours": "--",
-                    "Status / Alert": "Sunday",
-                    "Multiple Punch (Earlier)": "--",
-                    "Multiple Punch (Later)": "--",
-                    "_work_mins": 0,
-                    "_lunch_mins": 0,
-                    "_late_work_mins": 0,
-                    "_late_lunch_mins": 0,
-                    "_early_leave_mins": 0,
-                    "_total_deduct_mins": 0,
-                    "_is_absent": 0,
-                    "_is_sunday": 1,
-                    "_is_offday": 1,
-                })
+                records.append(
+                    {
+                        "Employee ID": emp_id,
+                        "Name": name,
+                        "Department": dept,
+                        "Date": f"{date_str} ({day_name})",
+                        "Clock In": "--",
+                        "Break Out (Lunch)": "--",
+                        "Break In (Back)": "--",
+                        "Clock Out": "--",
+                        "Lunch Duration": "--",
+                        "Late to Work": "--",
+                        "Late Time (Lunch)": "--",
+                        "Early Leave": "--",
+                        "Total Deduct": "--",
+                        "Work Hours": "--",
+                        "Status / Alert": "Sunday",
+                        "Multiple Punch (Earlier)": "--",
+                        "Multiple Punch (Later)": "--",
+                        "_work_mins": 0,
+                        "_lunch_mins": 0,
+                        "_late_work_mins": 0,
+                        "_late_lunch_mins": 0,
+                        "_early_leave_mins": 0,
+                        "_total_deduct_mins": 0,
+                        "_is_absent": 0,
+                        "_is_sunday": 1,
+                        "_is_offday": 1,
+                    }
+                )
                 continue
 
             special_info = special_lookup.get(
@@ -685,54 +697,50 @@ def process_time_card(
                 else:
                     if is_half_day:
                         status_text = (
-                            f"{special_type} (Missing Clock In, Missing Clock"
-                            " Out)"
+                            f"{special_type} (Missing Clock In, Missing Clock" " Out)"
                         )
                     elif is_saturday:
-                        status_text = (
-                            "Saturday (Missing Clock In, Missing Clock Out)"
-                        )
+                        status_text = "Saturday (Missing Clock In, Missing Clock Out)"
                     else:
                         status_text = (
-                            "Missing Clock In, No Lunch Punched, Missing Clock"
-                            " Out"
+                            "Missing Clock In, No Lunch Punched, Missing Clock" " Out"
                         )
                     is_off = 0
 
-                records.append({
-                    "Employee ID": emp_id,
-                    "Name": name,
-                    "Department": dept,
-                    "Date": f"{date_str} ({day_name})",
-                    "Clock In": "--",
-                    "Break Out (Lunch)": "--",
-                    "Break In (Back)": "--",
-                    "Clock Out": "--",
-                    "Lunch Duration": "--",
-                    "Late to Work": "--",
-                    "Late Time (Lunch)": "--",
-                    "Early Leave": "--",
-                    "Total Deduct": "--",
-                    "Work Hours": "0:00" if not is_off else "--",
-                    "Status / Alert": status_text,
-                    "Multiple Punch (Earlier)": "--",
-                    "Multiple Punch (Later)": "--",
-                    "_work_mins": 0,
-                    "_lunch_mins": 0,
-                    "_late_work_mins": 0,
-                    "_late_lunch_mins": 0,
-                    "_early_leave_mins": 0,
-                    "_total_deduct_mins": 0,
-                    "_is_absent": 0,
-                    "_is_sunday": 0,
-                    "_is_offday": is_off,
-                })
+                records.append(
+                    {
+                        "Employee ID": emp_id,
+                        "Name": name,
+                        "Department": dept,
+                        "Date": f"{date_str} ({day_name})",
+                        "Clock In": "--",
+                        "Break Out (Lunch)": "--",
+                        "Break In (Back)": "--",
+                        "Clock Out": "--",
+                        "Lunch Duration": "--",
+                        "Late to Work": "--",
+                        "Late Time (Lunch)": "--",
+                        "Early Leave": "--",
+                        "Total Deduct": "--",
+                        "Work Hours": "0:00" if not is_off else "--",
+                        "Status / Alert": status_text,
+                        "Multiple Punch (Earlier)": "--",
+                        "Multiple Punch (Later)": "--",
+                        "_work_mins": 0,
+                        "_lunch_mins": 0,
+                        "_late_work_mins": 0,
+                        "_late_lunch_mins": 0,
+                        "_early_leave_mins": 0,
+                        "_total_deduct_mins": 0,
+                        "_is_absent": 0,
+                        "_is_sunday": 0,
+                        "_is_offday": is_off,
+                    }
+                )
                 continue
 
             # --- Checkpoint B: Has Punches (Worked) ---
-            punch_list = [
-                t.strip() for t in raw_times_str.split(",") if t.strip()
-            ]
+            punch_list = [t.strip() for t in raw_times_str.split(",") if t.strip()]
 
             if is_half_day and not is_saturday:
                 clean_punches, extra_dups = deduplicate_close_punches(
@@ -769,9 +777,7 @@ def process_time_card(
                 if c_out == "--":
                     issues.append("Missing Clock Out")
                 status = (
-                    f"{special_type} ({', '.join(issues)})"
-                    if issues
-                    else special_type
+                    f"{special_type} ({', '.join(issues)})" if issues else special_type
                 )
             else:
                 c_in, b_out, b_in, c_out, status, multi_earlier, multi_later = (
@@ -800,16 +806,9 @@ def process_time_card(
                         minute=WORK_START_TIME.minute,
                     )
                     if dt_cin > start_dt:
-                        late_work_mins = round(
-                            (dt_cin - start_dt).total_seconds() / 60
-                        )
+                        late_work_mins = round((dt_cin - start_dt).total_seconds() / 60)
 
-            if (
-                not is_saturday
-                and not is_half_day
-                and b_out != "--"
-                and b_in != "--"
-            ):
+            if not is_saturday and not is_half_day and b_out != "--" and b_in != "--":
                 dt_bout = parse_time_str(b_out)
                 dt_bin = parse_time_str(b_in)
                 if dt_bout and dt_bin and dt_bin > dt_bout:
@@ -821,9 +820,7 @@ def process_time_card(
             if c_out != "--":
                 dt_cout = parse_time_str(c_out)
                 if dt_cout:
-                    target_end = (
-                        SATURDAY_END_TIME if is_saturday else WEEKDAY_END_TIME
-                    )
+                    target_end = SATURDAY_END_TIME if is_saturday else WEEKDAY_END_TIME
                     end_dt = dt_cout.replace(
                         hour=target_end.hour,
                         minute=target_end.minute,
@@ -843,9 +840,7 @@ def process_time_card(
                                     if total_hours.is_integer()
                                     else f"{total_hours}"
                                 )
-                                hr_label = (
-                                    "hour" if total_hours == 1.0 else "hours"
-                                )
+                                hr_label = "hour" if total_hours == 1.0 else "hours"
                                 early_remark = f"Early up {hr_str} {hr_label}"
 
             if early_remark:
@@ -856,9 +851,7 @@ def process_time_card(
                 else:
                     status = f"{status}, {early_remark}"
 
-            total_deduct_mins = (
-                late_work_mins + late_lunch_mins + early_leave_mins
-            )
+            total_deduct_mins = late_work_mins + late_lunch_mins + early_leave_mins
 
             if c_in != "--" and c_out != "--":
                 dt_cin = parse_time_str(c_in)
@@ -867,54 +860,60 @@ def process_time_card(
                     gross_mins = round((dt_cout - dt_cin).total_seconds() / 60)
                     work_mins = max(0, gross_mins - lunch_mins)
 
-            records.append({
-                "Employee ID": emp_id,
-                "Name": name,
-                "Department": dept,
-                "Date": f"{date_str} ({day_name})",
-                "Clock In": c_in,
-                "Break Out (Lunch)": b_out,
-                "Break In (Back)": b_in,
-                "Clock Out": c_out,
-                "Lunch Duration": (
-                    format_mins_to_time(lunch_mins) if lunch_mins > 0 else "--"
-                ),
-                "Late to Work": (
-                    format_mins_to_time(late_work_mins)
-                    if late_work_mins > 0
-                    else "--"
-                ),
-                "Late Time (Lunch)": (
-                    format_mins_to_time(late_lunch_mins)
-                    if late_lunch_mins > 0
-                    else "--"
-                ),
-                "Early Leave": (
-                    format_mins_to_time(early_leave_mins)
-                    if early_leave_mins > 0
-                    else "--"
-                ),
-                "Total Deduct": (
-                    format_mins_to_time(total_deduct_mins)
-                    if total_deduct_mins > 0
-                    else "--"
-                ),
-                "Work Hours": (
-                    format_mins_to_time(work_mins) if work_mins > 0 else "--"
-                ),
-                "Status / Alert": status,
-                "Multiple Punch (Earlier)": multi_earlier,
-                "Multiple Punch (Later)": multi_later,
-                "_work_mins": work_mins,
-                "_lunch_mins": lunch_mins,
-                "_late_work_mins": late_work_mins,
-                "_late_lunch_mins": late_lunch_mins,
-                "_early_leave_mins": early_leave_mins,
-                "_total_deduct_mins": total_deduct_mins,
-                "_is_absent": 0,
-                "_is_sunday": 0,
-                "_is_offday": 1 if (special_type and not is_half_day and not raw_times_str) else 0,
-            })
+            records.append(
+                {
+                    "Employee ID": emp_id,
+                    "Name": name,
+                    "Department": dept,
+                    "Date": f"{date_str} ({day_name})",
+                    "Clock In": c_in,
+                    "Break Out (Lunch)": b_out,
+                    "Break In (Back)": b_in,
+                    "Clock Out": c_out,
+                    "Lunch Duration": (
+                        format_mins_to_time(lunch_mins) if lunch_mins > 0 else "--"
+                    ),
+                    "Late to Work": (
+                        format_mins_to_time(late_work_mins)
+                        if late_work_mins > 0
+                        else "--"
+                    ),
+                    "Late Time (Lunch)": (
+                        format_mins_to_time(late_lunch_mins)
+                        if late_lunch_mins > 0
+                        else "--"
+                    ),
+                    "Early Leave": (
+                        format_mins_to_time(early_leave_mins)
+                        if early_leave_mins > 0
+                        else "--"
+                    ),
+                    "Total Deduct": (
+                        format_mins_to_time(total_deduct_mins)
+                        if total_deduct_mins > 0
+                        else "--"
+                    ),
+                    "Work Hours": (
+                        format_mins_to_time(work_mins) if work_mins > 0 else "--"
+                    ),
+                    "Status / Alert": status,
+                    "Multiple Punch (Earlier)": multi_earlier,
+                    "Multiple Punch (Later)": multi_later,
+                    "_work_mins": work_mins,
+                    "_lunch_mins": lunch_mins,
+                    "_late_work_mins": late_work_mins,
+                    "_late_lunch_mins": late_lunch_mins,
+                    "_early_leave_mins": early_leave_mins,
+                    "_total_deduct_mins": total_deduct_mins,
+                    "_is_absent": 0,
+                    "_is_sunday": 0,
+                    "_is_offday": (
+                        1
+                        if (special_type and not is_half_day and not raw_times_str)
+                        else 0
+                    ),
+                }
+            )
 
     return (
         pd.DataFrame(records),
@@ -927,6 +926,7 @@ def build_excel_workbook(df):
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
 
+    # --- Fills & Colors ---
     header_fill = PatternFill(
         start_color="0F2D59", end_color="0F2D59", fill_type="solid"
     )
@@ -936,7 +936,7 @@ def build_excel_workbook(df):
     offday_fill = PatternFill(
         start_color="FFF5F5", end_color="FFF5F5", fill_type="solid"
     )
-    late_fill = PatternFill(
+    late_yellow_fill = PatternFill(
         start_color="FEF08A", end_color="FEF08A", fill_type="solid"
     )
     alert_fill = PatternFill(
@@ -945,26 +945,50 @@ def build_excel_workbook(df):
     multi_fill = PatternFill(
         start_color="F1F5F9", end_color="F1F5F9", fill_type="solid"
     )
-
-    font_header = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
-    font_bold = Font(name="Calibri", size=11, bold=True)
-    font_regular = Font(name="Calibri", size=11)
-    font_merged_banner = Font(
-        name="Calibri", size=11, bold=True, color="DC2626"
+    halfday_fill = PatternFill(
+        start_color="FEF3C7", end_color="FEF3C7", fill_type="solid"
     )
 
+    # --- Typography: All Font Sizes set to 22 ---
+    FONT_SIZE = 22
+    font_header = Font(name="Calibri", size=FONT_SIZE, bold=True, color="FFFFFF")
+    font_bold = Font(name="Calibri", size=FONT_SIZE, bold=True, color="000000")
+    font_regular = Font(name="Calibri", size=FONT_SIZE, color="000000")
+    font_red_bold = Font(name="Calibri", size=FONT_SIZE, bold=True, color="C00000")
+    font_banner = Font(name="Calibri", size=FONT_SIZE, bold=True, color="DC2626")
+    font_halfday = Font(name="Calibri", size=FONT_SIZE, bold=True, color="92400E")
+
+    # --- Borders ---
+    # Bold / medium borders for regular tabular data cells
+    bold_side = Side(style="medium", color="475569")
+    bold_cell_border = Border(
+        left=bold_side, right=bold_side, top=bold_side, bottom=bold_side
+    )
+
+    # Lighter / thin borders reserved for merged off-day banners
+    thin_side = Side(style="thin", color="CBD5E1")
     thin_border = Border(
-        left=Side(style="thin", color="CBD5E1"),
-        right=Side(style="thin", color="CBD5E1"),
-        top=Side(style="thin", color="CBD5E1"),
-        bottom=Side(style="thin", color="CBD5E1"),
+        left=thin_side, right=thin_side, top=thin_side, bottom=thin_side
     )
-    align_center = Alignment(horizontal="center", vertical="center")
-    align_left = Alignment(horizontal="left", vertical="center")
 
-    # 1. Summary Sheet
+    align_center = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    align_left = Alignment(horizontal="left", vertical="center", wrap_text=True)
+
+    def apply_a4_landscape_setup(ws):
+        """Configures worksheet print setup to cleanly fit within A4 landscape boundaries."""
+        ws.page_setup.paperSize = ws.PAPERSIZE_A4
+        ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+        ws.sheet_properties.pageSetUpPr.fitToPage = True
+        ws.page_setup.fitToWidth = 1
+        ws.page_setup.fitToHeight = 0
+        ws.sheet_view.zoomScale = 75
+
+    # ========================================================
+    # 1. Overview Summary Sheet
+    # ========================================================
     ws_summary = wb.create_sheet(title="Overview Summary")
     ws_summary.views.sheetView[0].showGridLines = True
+    apply_a4_landscape_setup(ws_summary)
 
     summary_headers = [
         "Employee ID",
@@ -980,12 +1004,14 @@ def build_excel_workbook(df):
         "Punch Irregularities Count",
     ]
     ws_summary.append(summary_headers)
+    ws_summary.row_dimensions[1].height = 42
 
     for col_idx in range(1, len(summary_headers) + 1):
-        cell = ws_summary.cell(row=1, column=col_idx)
-        cell.fill = header_fill
-        cell.font = font_header
-        cell.alignment = align_center
+        c = ws_summary.cell(row=1, column=col_idx)
+        c.fill = header_fill
+        c.font = font_header
+        c.alignment = align_center
+        c.border = bold_cell_border
 
     non_work_categories = [
         "Holiday",
@@ -1006,8 +1032,7 @@ def build_excel_workbook(df):
         dept = emp_group["Department"].iloc[0]
         days_present = len(
             emp_group[
-                (emp_group["Clock In"] != "--")
-                | (emp_group["Clock Out"] != "--")
+                (emp_group["Clock In"] != "--") | (emp_group["Clock Out"] != "--")
             ]
         )
         total_work_m = emp_group["_work_mins"].sum()
@@ -1020,9 +1045,7 @@ def build_excel_workbook(df):
         anomalies = len(
             emp_group[
                 ~emp_group["Status / Alert"].str.startswith("Normal")
-                & ~emp_group["Status / Alert"].str.startswith(
-                    "Saturday (Half Day)"
-                )
+                & ~emp_group["Status / Alert"].str.startswith("Saturday (Half Day)")
                 & (emp_group["Status / Alert"] != "Sunday")
                 & (
                     ~emp_group["Status / Alert"].str.contains(
@@ -1033,31 +1056,42 @@ def build_excel_workbook(df):
             ]
         )
 
-        overview_data.append([
-            emp_id,
-            emp_name,
-            dept,
-            days_present,
-            format_mins_to_time(total_work_m),
-            format_mins_to_time(total_lunch_m),
-            format_mins_to_time(total_late_w_m),
-            format_mins_to_time(total_late_l_m),
-            format_mins_to_time(total_early_m),
-            format_mins_to_time(grand_total_deduct_m),
-            anomalies,
-        ])
+        overview_data.append(
+            [
+                emp_id,
+                emp_name,
+                dept,
+                days_present,
+                format_mins_to_time(total_work_m),
+                format_mins_to_time(total_lunch_m),
+                format_mins_to_time(total_late_w_m),
+                format_mins_to_time(total_late_l_m),
+                format_mins_to_time(total_early_m),
+                format_mins_to_time(grand_total_deduct_m),
+                anomalies,
+            ]
+        )
 
     for row_idx, row_vals in enumerate(overview_data, start=2):
+        ws_summary.row_dimensions[row_idx].height = 38
+        tot_deduct_val = row_vals[9]  # grand_total_deduct_m formatted
+
         for col_idx, val in enumerate(row_vals, start=1):
             cell = ws_summary.cell(row=row_idx, column=col_idx, value=val)
             cell.font = font_regular
-            cell.border = thin_border
-            cell.alignment = (
-                align_center if col_idx not in [2, 3] else align_left
-            )
+            cell.border = bold_cell_border
+            cell.alignment = align_center if col_idx not in [2, 3] else align_left
 
-            if col_idx in [7, 8, 9, 10] and str(val) != "0:00":
-                cell.fill = late_fill
+            # Rule 4: Total Deduct highlighted in yellow ONLY if > 0:30 (30 mins)
+            if col_idx == 10:
+                if overview_data[row_idx - 2][9] != "0:00":
+                    # Check minutes
+                    parts = str(val).split(":")
+                    mins = int(parts[0]) * 60 + int(parts[1]) if len(parts) == 2 else 0
+                    if mins > 30:
+                        cell.fill = late_yellow_fill
+                        cell.font = font_bold
+            elif col_idx in [7, 8, 9] and str(val) != "0:00":
                 cell.font = font_bold
             elif col_idx == 11 and val > 0:
                 cell.fill = alert_fill
@@ -1066,11 +1100,15 @@ def build_excel_workbook(df):
     for col in ws_summary.columns:
         max_len = max(len(str(cell.value or "")) for cell in col)
         col_letter = get_column_letter(col[0].column)
-        ws_summary.column_dimensions[col_letter].width = max(max_len + 4, 14)
+        ws_summary.column_dimensions[col_letter].width = max(max_len * 2.1, 24)
 
-    # 2. Individual Sheets
+    # ========================================================
+    # 2. Individual Employee Sheets
+    # ========================================================
+    # Rule 1: Separate Date (Col A) and Day (Col B)
     employee_cols = [
         "Date",
+        "Day",
         "Clock In",
         "Break Out (Lunch)",
         "Break In (Back)",
@@ -1100,23 +1138,33 @@ def build_excel_workbook(df):
 
         ws_emp = wb.create_sheet(title=sheet_title)
         ws_emp.views.sheetView[0].showGridLines = True
+        apply_a4_landscape_setup(ws_emp)
+
+        # Meta Header Rows
+        ws_emp.row_dimensions[1].height = 36
+        ws_emp.row_dimensions[2].height = 16
+        ws_emp.row_dimensions[3].height = 42
 
         ws_emp["A1"] = f"Employee ID: {emp_id}"
         ws_emp["A1"].font = font_bold
-        ws_emp["C1"] = f"Name: {emp_name}"
-        ws_emp["C1"].font = font_bold
-        ws_emp["G1"] = f"Department: {emp_group['Department'].iloc[0]}"
-        ws_emp["G1"].font = font_bold
+        ws_emp["D1"] = f"Name: {emp_name}"
+        ws_emp["D1"].font = font_bold
+        ws_emp["H1"] = f"Department: {emp_group['Department'].iloc[0]}"
+        ws_emp["H1"].font = font_bold
 
+        # Table Column Headers
         for col_idx, h_name in enumerate(employee_cols, 1):
             cell = ws_emp.cell(row=3, column=col_idx, value=h_name)
             cell.fill = header_fill
             cell.font = font_header
             cell.alignment = align_center
+            cell.border = bold_cell_border
 
         start_row = 4
         for r_offset, (_, row_data) in enumerate(emp_group.iterrows()):
             curr_row = start_row + r_offset
+            ws_emp.row_dimensions[curr_row].height = 36
+
             status_val = str(row_data["Status / Alert"])
             is_half_day = "(0.5 Day)" in status_val
             is_sunday = status_val == "Sunday"
@@ -1135,37 +1183,52 @@ def build_excel_workbook(df):
                         "Team B off day",
                     ]
                 )
-                and (
-                    row_data["Clock In"] == "--"
-                    and row_data["Clock Out"] == "--"
-                )
+                and (row_data["Clock In"] == "--" and row_data["Clock Out"] == "--")
             )
 
+            # Extract separate Date and Day
+            raw_date_field = str(row_data["Date"])  # Format: "2026-09-01 (Tue)"
+            date_part = (
+                raw_date_field.split()[0] if " " in raw_date_field else raw_date_field
+            )
+            day_part = (
+                raw_date_field[raw_date_field.find("(") + 1 : raw_date_field.find(")")]
+                if "(" in raw_date_field and ")" in raw_date_field
+                else ""
+            )
+
+            # --- Rule 3: Merged Off-Days (Sunday, Team Off-Day, Leave) ---
+            # Date and Day remain separate (Cols 1 & 2), Col 3 to 15 merged with thin border
             if is_sunday or is_offday:
                 banner_text = "Sunday" if is_sunday else status_val.upper()
-                date_cell = ws_emp.cell(
-                    row=curr_row, column=1, value=row_data["Date"]
-                )
-                date_cell.font = font_bold
-                date_cell.border = thin_border
-                date_cell.alignment = align_center
 
-                for c_idx in range(2, len(employee_cols) + 1):
+                # Col 1: Date
+                c_date = ws_emp.cell(row=curr_row, column=1, value=date_part)
+                c_date.font = font_bold
+                c_date.border = thin_border
+                c_date.alignment = align_center
+
+                # Col 2: Day
+                c_day = ws_emp.cell(row=curr_row, column=2, value=day_part)
+                c_day.font = font_bold
+                c_day.border = thin_border
+                c_day.alignment = align_center
+
+                # Cols 3 to 15: Merged Banner (exempt from bold grid border)
+                for c_idx in range(3, len(employee_cols) + 1):
                     c = ws_emp.cell(row=curr_row, column=c_idx)
                     c.border = thin_border
                     c.fill = offday_fill
 
                 ws_emp.merge_cells(
                     start_row=curr_row,
-                    start_column=2,
+                    start_column=3,
                     end_row=curr_row,
                     end_column=len(employee_cols),
                 )
-                merged_cell = ws_emp.cell(
-                    row=curr_row, column=2, value=banner_text
-                )
+                merged_cell = ws_emp.cell(row=curr_row, column=3, value=banner_text)
                 merged_cell.alignment = align_center
-                merged_cell.font = font_merged_banner
+                merged_cell.font = font_banner
                 continue
 
             total_deduct_val = row_data.get("Total Deduct") or row_data.get(
@@ -1173,7 +1236,8 @@ def build_excel_workbook(df):
             )
 
             row_vals = [
-                row_data["Date"],
+                date_part,
+                day_part,
                 row_data["Clock In"],
                 row_data["Break Out (Lunch)"],
                 row_data["Break In (Back)"],
@@ -1192,92 +1256,107 @@ def build_excel_workbook(df):
             for col_idx, val in enumerate(row_vals, 1):
                 cell = ws_emp.cell(row=curr_row, column=col_idx, value=val)
                 cell.font = font_regular
-                cell.border = thin_border
-                cell.alignment = align_center if col_idx != 12 else align_left
+                # Rule 3: Regular data cells use bold border
+                cell.border = bold_cell_border
+                cell.alignment = align_center if col_idx != 13 else align_left
 
-                if col_idx == 6 and row_data["_lunch_mins"] > 70:
-                    cell.font = Font(
-                        name="Calibri", size=11, bold=True, color="B91C1C"
-                    )
+                # Rule 2: Clock In > 09:00 (e.g. 09:01, 09:15) colored red
+                if col_idx == 3 and val != "--":
+                    t_in = parse_time_str(val)
+                    if t_in and (t_in.time() > time(9, 0)):
+                        cell.font = font_red_bold
 
-                if col_idx in [7, 8, 9, 10] and val != "--":
-                    cell.fill = late_fill
-                    cell.font = font_bold
-                if col_idx == 12 and (
+                # Lunch Duration > 70 mins colored red
+                if col_idx == 7 and row_data["_lunch_mins"] > 70:
+                    cell.font = font_red_bold
+
+                # Rule 4: Total Deduct highlighted in yellow ONLY when > 0:30 (30 mins)
+                if col_idx == 11 and val != "--":
+                    tot_mins = row_data.get("_total_deduct_mins", 0)
+                    if tot_mins > 30:
+                        cell.fill = late_yellow_fill
+                        cell.font = font_bold
+
+                # Status / Alert highlighting
+                if col_idx == 13 and (
                     "Missing" in val or "No Lunch" in val or "Early" in val
                 ):
                     cell.fill = alert_fill
                     cell.font = font_bold
-                if col_idx in [13, 14] and val != "--":
+
+                if col_idx in [14, 15] and val != "--":
                     cell.fill = multi_fill
 
+            # Half-Day Leave: Merge Lunch Break Out and Break In columns (Cols 4 & 5)
             if is_half_day:
                 ws_emp.merge_cells(
-                    start_row=curr_row,
-                    start_column=3,
-                    end_row=curr_row,
-                    end_column=4,
+                    start_row=curr_row, start_column=4, end_row=curr_row, end_column=5
                 )
                 half_day_label = status_val.split(" (Missing")[0].strip()
                 hd_cell = ws_emp.cell(
-                    row=curr_row, column=3, value=f"🌤 {half_day_label}"
+                    row=curr_row, column=4, value=f"🌤 {half_day_label}"
                 )
                 hd_cell.alignment = align_center
-                hd_cell.font = Font(
-                    name="Calibri", size=10, bold=True, color="92400E"
-                )
-                hd_cell.fill = PatternFill(
-                    start_color="FEF3C7", end_color="FEF3C7", fill_type="solid"
-                )
-                ws_emp.cell(row=curr_row, column=4).border = thin_border
+                hd_cell.font = font_halfday
+                hd_cell.fill = halfday_fill
+                ws_emp.cell(row=curr_row, column=5).border = bold_cell_border
 
+        # Total Row
         tot_row = start_row + len(emp_group)
+        ws_emp.row_dimensions[tot_row].height = 40
+
         tot_lunch = format_mins_to_time(emp_group["_lunch_mins"].sum())
         tot_late_w = format_mins_to_time(emp_group["_late_work_mins"].sum())
         tot_late_l = format_mins_to_time(emp_group["_late_lunch_mins"].sum())
         tot_early = format_mins_to_time(emp_group["_early_leave_mins"].sum())
-        tot_deduct_all = format_mins_to_time(
-            (
-                emp_group["_late_work_mins"]
-                + emp_group["_late_lunch_mins"]
-                + emp_group["_early_leave_mins"]
-            ).sum()
-        )
+        sum_deduct_mins = (
+            emp_group["_late_work_mins"]
+            + emp_group["_late_lunch_mins"]
+            + emp_group["_early_leave_mins"]
+        ).sum()
+        tot_deduct_all = format_mins_to_time(sum_deduct_mins)
         tot_work = format_mins_to_time(emp_group["_work_mins"].sum())
 
-        ws_emp.cell(row=tot_row, column=1, value="MONTHLY TOTAL").font = (
-            font_bold
+        ws_emp.merge_cells(
+            start_row=tot_row, start_column=1, end_row=tot_row, end_column=2
         )
-        ws_emp.cell(row=tot_row, column=1).alignment = align_center
-        ws_emp.cell(row=tot_row, column=6, value=tot_lunch).alignment = (
+        ws_emp.cell(row=tot_row, column=1, value="TOTAL").alignment = align_center
+        ws_emp.cell(row=tot_row, column=7, value=tot_lunch).alignment = align_center
+        ws_emp.cell(row=tot_row, column=8, value=tot_late_w).alignment = align_center
+        ws_emp.cell(row=tot_row, column=9, value=tot_late_l).alignment = align_center
+        ws_emp.cell(row=tot_row, column=10, value=tot_early).alignment = align_center
+        ws_emp.cell(row=tot_row, column=11, value=tot_deduct_all).alignment = (
             align_center
         )
-        ws_emp.cell(row=tot_row, column=7, value=tot_late_w).alignment = (
-            align_center
-        )
-        ws_emp.cell(row=tot_row, column=8, value=tot_late_l).alignment = (
-            align_center
-        )
-        ws_emp.cell(row=tot_row, column=9, value=tot_early).alignment = (
-            align_center
-        )
-        ws_emp.cell(row=tot_row, column=10, value=tot_deduct_all).alignment = (
-            align_center
-        )
-        ws_emp.cell(row=tot_row, column=11, value=tot_work).alignment = (
-            align_center
-        )
+        ws_emp.cell(row=tot_row, column=12, value=tot_work).alignment = align_center
 
         for col_idx in range(1, len(employee_cols) + 1):
             c = ws_emp.cell(row=tot_row, column=col_idx)
             c.fill = total_fill
             c.font = font_bold
-            c.border = thin_border
+            c.border = bold_cell_border
 
-        for col in ws_emp.columns:
-            max_len = max(len(str(cell.value or "")) for cell in col)
-            col_letter = get_column_letter(col[0].column)
-            ws_emp.column_dimensions[col_letter].width = max(max_len + 3, 14)
+        # Rule 6: Column widths resized proportionally for font size 22 without truncation
+        col_width_map = {
+            1: 22,  # Date
+            2: 12,  # Day
+            3: 18,  # Clock In
+            4: 19,  # Break Out
+            5: 19,  # Break In
+            6: 18,  # Clock Out
+            7: 18,  # Lunch Duration
+            8: 18,  # Late to Work
+            9: 18,  # Late Lunch
+            10: 18,  # Early Leave
+            11: 18,  # Total Deduct
+            12: 18,  # Work Hours
+            13: 38,  # Status / Alert
+            14: 18,  # Multiple Earlier
+            15: 18,  # Multiple Later
+        }
+        for col_idx, width in col_width_map.items():
+            col_letter = get_column_letter(col_idx)
+            ws_emp.column_dimensions[col_letter].width = width
 
     output = io.BytesIO()
     wb.save(output)
@@ -1340,11 +1419,13 @@ def api_process():
         current_user = session["user"]
         USER_DATAFRAMES[current_user] = df_processed
 
-        return jsonify({
-            "records": df_processed.to_dict(orient="records"),
-            "detected_start": detected_start,
-            "detected_end": detected_end,
-        })
+        return jsonify(
+            {
+                "records": df_processed.to_dict(orient="records"),
+                "detected_start": detected_start,
+                "detected_end": detected_end,
+            }
+        )
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -1390,8 +1471,7 @@ def api_save_slot():
     slot_id = data.get("slotId")
     myt_now = datetime.now(ZoneInfo("Asia/Kuala_Lumpur"))
     title = (
-        data.get("title", "").strip()
-        or f"Save {myt_now.strftime('%d/%m/%Y %H:%M')}"
+        data.get("title", "").strip() or f"Save {myt_now.strftime('%d/%m/%Y %H:%M')}"
     )
     unique_emps = len(set(r.get("Name") for r in data["records"]))
 
@@ -1522,9 +1602,7 @@ def api_download():
         excel_file,
         as_attachment=True,
         download_name=f"Monthly_Attendance_Summary_{current_user}.xlsx",
-        mimetype=(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        ),
+        mimetype=("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
     )
 
 
