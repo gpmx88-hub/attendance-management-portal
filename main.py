@@ -28,7 +28,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 # --- Database Setup (Neon PostgreSQL) ---
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
-    # Explicitly enforce psycopg2 dialect driver
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg2://", 1)
     elif DATABASE_URL.startswith("postgresql://") and not DATABASE_URL.startswith("postgresql+psycopg2://"):
@@ -52,7 +51,7 @@ _db_initialized = False
 
 
 def ensure_db_tables():
-    """Verify and initialize database tables lazily upon requests, not during module load."""
+    """Verify and initialize database tables lazily upon requests."""
     global _db_initialized
     if _db_initialized or not engine:
         return
@@ -144,7 +143,7 @@ HOLIDAY_EN_MAP = {
 
 
 def normalize_name(name):
-    """Normalizes string by stripping edges, collapsing multiple internal spaces, and lowercase."""
+    """Normalizes string by stripping edges, collapsing whitespace, and lowercasing."""
     if not name:
         return ""
     return " ".join(str(name).strip().split()).casefold()
@@ -339,7 +338,6 @@ def get_malaysia_holiday_name(d_obj, db_holidays_map=None):
 
 
 def clean_time_str(t_str):
-    """Truncates :SS from HH:MM:SS without rounding up, yielding clean HH:MM."""
     if not t_str or pd.isna(t_str):
         return ""
     t_str = str(t_str).strip()
@@ -350,7 +348,6 @@ def clean_time_str(t_str):
 
 
 def parse_time_str(t_str):
-    """Parses HH:MM or HH:MM:SS time string strictly at minute-level, ignoring seconds."""
     if not t_str or str(t_str).strip() in ["--", "nan", ""]:
         return None
     s = str(t_str).strip()
@@ -530,9 +527,8 @@ def process_time_card(
         special_entries = []
 
     db_holidays = load_db_holidays()
-    db_teams = load_db_teams()
 
-    # Build case-insensitive normalized lookups
+    # Case-insensitive normalized lookups
     special_lookup = {}
     for entry in special_entries:
         target = entry.get("target", "ALL")
@@ -576,7 +572,6 @@ def process_time_card(
 
         emp_meta[emp_id] = {"name": name, "dept": dept}
 
-        # Clean every punch to HH:MM immediately upon reading file (ignore seconds without rounding)
         raw_times_list = [
             clean_time_str(t) for t in raw_times_str.split(",") if t.strip()
         ]
@@ -629,7 +624,6 @@ def process_time_card(
             is_saturday = w_date.weekday() == 5
             day_name = w_date.strftime("%a")
 
-            # 1. Sunday Protection: Always strictly Sunday
             if is_sunday:
                 records.append({
                     "Employee ID": emp_id,
@@ -657,42 +651,52 @@ def process_time_card(
                     "_total_deduct_mins": 0,
                     "_is_absent": 0,
                     "_is_sunday": 1,
-                    "_is_offday": 1
+                    "_is_offday": 1,
                 })
                 continue
 
-            # Case-insensitive special entry lookup
-            special_info = special_lookup.get((date_str, norm_name)) or special_lookup.get((date_str, "ALL"))
+            special_info = special_lookup.get(
+                (date_str, norm_name)
+            ) or special_lookup.get((date_str, "ALL"))
             special_type = None
 
             if special_info:
                 st_type, st_remark = special_info
                 if st_remark:
-                    special_type = f"{st_type} ({st_remark})" if st_type not in st_remark else st_remark
+                    special_type = (
+                        f"{st_type} ({st_remark})"
+                        if st_type not in st_remark
+                        else st_remark
+                    )
                 else:
                     special_type = st_type
 
-            # Check database-configured custom holidays
             if not special_type and date_str in db_holidays:
                 special_type = f"Public Holiday ({db_holidays[date_str]})"
 
             raw_times_str = raw_punches.get((emp_id, date_str))
             is_half_day = bool(special_type and "(0.5 Day)" in special_type)
 
-            # ========================================================
-            # CHECKPOINT: Days WITHOUT biometric punches (Truly Off)
-            # ========================================================
+            # --- Checkpoint A: No Punches (Truly Off or Unexcused Missing) ---
             if not raw_times_str:
                 if special_type and not is_half_day:
                     status_text = special_type
                     is_off = 1
                 else:
                     if is_half_day:
-                        status_text = f"{special_type} (Missing Clock In, Missing Clock Out)"
+                        status_text = (
+                            f"{special_type} (Missing Clock In, Missing Clock"
+                            " Out)"
+                        )
                     elif is_saturday:
-                        status_text = "Saturday (Missing Clock In, Missing Clock Out)"
+                        status_text = (
+                            "Saturday (Missing Clock In, Missing Clock Out)"
+                        )
                     else:
-                        status_text = "Missing Clock In, No Lunch Punched, Missing Clock Out"
+                        status_text = (
+                            "Missing Clock In, No Lunch Punched, Missing Clock"
+                            " Out"
+                        )
                     is_off = 0
 
                 records.append({
@@ -721,18 +725,23 @@ def process_time_card(
                     "_total_deduct_mins": 0,
                     "_is_absent": 0,
                     "_is_sunday": 0,
-                    "_is_offday": is_off
+                    "_is_offday": is_off,
                 })
                 continue
 
-            # ========================================================
-            # CHECKPOINT: Days WITH biometric punches (Worked)
-            # ========================================================
-            punch_list = [t.strip() for t in raw_times_str.split(",") if t.strip()]
+            # --- Checkpoint B: Has Punches (Worked) ---
+            punch_list = [
+                t.strip() for t in raw_times_str.split(",") if t.strip()
+            ]
 
             if is_half_day and not is_saturday:
-                clean_punches, extra_dups = deduplicate_close_punches(punch_list, threshold_minutes=3)
-                sorted_punches = sorted(clean_punches, key=lambda p: parse_time_str(p) or datetime.min)
+                clean_punches, extra_dups = deduplicate_close_punches(
+                    punch_list, threshold_minutes=3
+                )
+                sorted_punches = sorted(
+                    clean_punches,
+                    key=lambda p: parse_time_str(p) or datetime.min,
+                )
 
                 if len(sorted_punches) >= 2:
                     c_in = sorted_punches[0]
@@ -755,15 +764,25 @@ def process_time_card(
                 multi_later = extra[-1] if len(extra) >= 2 else "--"
 
                 issues = []
-                if c_in == "--": issues.append("Missing Clock In")
-                if c_out == "--": issues.append("Missing Clock Out")
-                status = f"{special_type} ({', '.join(issues)})" if issues else special_type
+                if c_in == "--":
+                    issues.append("Missing Clock In")
+                if c_out == "--":
+                    issues.append("Missing Clock Out")
+                status = (
+                    f"{special_type} ({', '.join(issues)})"
+                    if issues
+                    else special_type
+                )
             else:
-                c_in, b_out, b_in, c_out, status, multi_earlier, multi_later = categorize_punches(punch_list, is_saturday)
-                
-                # CRITICAL LINE: If they have punches on a special off day, mark as (Worked)
+                c_in, b_out, b_in, c_out, status, multi_earlier, multi_later = (
+                    categorize_punches(punch_list, is_saturday)
+                )
                 if special_type:
-                    status = f"{special_type} (Worked)" if status == "Normal" else f"{special_type} ({status})"
+                    status = (
+                        f"{special_type} (Worked)"
+                        if status == "Normal"
+                        else f"{special_type} ({status})"
+                    )
 
             (
                 lunch_mins,
@@ -837,7 +856,6 @@ def process_time_card(
                 else:
                     status = f"{status}, {early_remark}"
 
-            # Total Deduct = Late to Work + Late Lunch + Early Leave
             total_deduct_mins = (
                 late_work_mins + late_lunch_mins + early_leave_mins
             )
@@ -895,7 +913,7 @@ def process_time_card(
                 "_total_deduct_mins": total_deduct_mins,
                 "_is_absent": 0,
                 "_is_sunday": 0,
-                "_is_offday": 1 if (special_type and not is_half_day) else 0,
+                "_is_offday": 1 if (special_type and not is_half_day and not raw_times_str) else 0,
             })
 
     return (
@@ -1050,7 +1068,7 @@ def build_excel_workbook(df):
         col_letter = get_column_letter(col[0].column)
         ws_summary.column_dimensions[col_letter].width = max(max_len + 4, 14)
 
-    # 2. Individual Sheets (Swapped: Early Leave first, then Total Deduct)
+    # 2. Individual Sheets
     employee_cols = [
         "Date",
         "Clock In",
@@ -1177,7 +1195,6 @@ def build_excel_workbook(df):
                 cell.border = thin_border
                 cell.alignment = align_center if col_idx != 12 else align_left
 
-                # Highlight Lunch Duration in plain RED text only (no background fill) if > 1:10 (70m)
                 if col_idx == 6 and row_data["_lunch_mins"] > 70:
                     cell.font = Font(
                         name="Calibri", size=11, bold=True, color="B91C1C"
@@ -1194,7 +1211,6 @@ def build_excel_workbook(df):
                 if col_idx in [13, 14] and val != "--":
                     cell.fill = multi_fill
 
-            # Merge columns 3 & 4 (Break Out and Break In) into the soft amber block for half-day leaves
             if is_half_day:
                 ws_emp.merge_cells(
                     start_row=curr_row,
