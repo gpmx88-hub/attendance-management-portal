@@ -1331,9 +1331,9 @@ def build_excel_workbook(df):
         for col_idx in range(1, len(employee_cols) + 1):
             col_letter = get_column_letter(col_idx)
             if col_idx == 1:
-                ws_emp.column_dimensions[col_letter].width = 20
+                ws_emp.column_dimensions[col_letter].width = 22.9
             elif col_idx == 2:
-                ws_emp.column_dimensions[col_letter].width = 7.3
+                ws_emp.column_dimensions[col_letter].width = 10.52
             elif col_idx == 13:
                 ws_emp.column_dimensions[col_letter].width = 50
             else:
