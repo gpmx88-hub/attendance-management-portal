@@ -949,7 +949,7 @@ def build_excel_workbook(df):
         start_color="FEF3C7", end_color="FEF3C7", fill_type="solid"
     )
 
-    # --- Typography: All Font Sizes set to 22 ---
+    # --- Typography ---
     FONT_SIZE = 22
     font_header = Font(name="Calibri", size=FONT_SIZE, bold=True, color="FFFFFF")
     font_bold = Font(name="Calibri", size=FONT_SIZE, bold=True, color="000000")
@@ -959,13 +959,11 @@ def build_excel_workbook(df):
     font_halfday = Font(name="Calibri", size=FONT_SIZE, bold=True, color="92400E")
 
     # --- Borders ---
-    # Bold / medium borders for regular tabular data cells
     bold_side = Side(style="medium", color="475569")
     bold_cell_border = Border(
         left=bold_side, right=bold_side, top=bold_side, bottom=bold_side
     )
 
-    # Lighter / thin borders reserved for merged off-day banners
     thin_side = Side(style="thin", color="CBD5E1")
     thin_border = Border(
         left=thin_side, right=thin_side, top=thin_side, bottom=thin_side
@@ -974,8 +972,9 @@ def build_excel_workbook(df):
     align_center = Alignment(horizontal="center", vertical="center", wrap_text=True)
     align_left = Alignment(horizontal="left", vertical="center", wrap_text=True)
 
+    ROW_HEIGHT = 35.25
+
     def apply_a4_landscape_setup(ws):
-        """Configures worksheet print setup to cleanly fit within A4 landscape boundaries."""
         ws.page_setup.paperSize = ws.PAPERSIZE_A4
         ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
         ws.sheet_properties.pageSetUpPr.fitToPage = True
@@ -1004,7 +1003,7 @@ def build_excel_workbook(df):
         "Punch Irregularities Count",
     ]
     ws_summary.append(summary_headers)
-    ws_summary.row_dimensions[1].height = 42
+    ws_summary.row_dimensions[1].height = ROW_HEIGHT
 
     for col_idx in range(1, len(summary_headers) + 1):
         c = ws_summary.cell(row=1, column=col_idx)
@@ -1073,8 +1072,7 @@ def build_excel_workbook(df):
         )
 
     for row_idx, row_vals in enumerate(overview_data, start=2):
-        ws_summary.row_dimensions[row_idx].height = 38
-        tot_deduct_val = row_vals[9]  # grand_total_deduct_m formatted
+        ws_summary.row_dimensions[row_idx].height = ROW_HEIGHT
 
         for col_idx, val in enumerate(row_vals, start=1):
             cell = ws_summary.cell(row=row_idx, column=col_idx, value=val)
@@ -1082,10 +1080,9 @@ def build_excel_workbook(df):
             cell.border = bold_cell_border
             cell.alignment = align_center if col_idx not in [2, 3] else align_left
 
-            # Rule 4: Total Deduct highlighted in yellow ONLY if > 0:30 (30 mins)
+            # Total Deduct highlighted in yellow ONLY if > 0:30
             if col_idx == 10:
                 if overview_data[row_idx - 2][9] != "0:00":
-                    # Check minutes
                     parts = str(val).split(":")
                     mins = int(parts[0]) * 60 + int(parts[1]) if len(parts) == 2 else 0
                     if mins > 30:
@@ -1098,14 +1095,12 @@ def build_excel_workbook(df):
                 cell.font = font_bold
 
     for col in ws_summary.columns:
-        max_len = max(len(str(cell.value or "")) for cell in col)
         col_letter = get_column_letter(col[0].column)
-        ws_summary.column_dimensions[col_letter].width = max(max_len * 2.1, 24)
+        ws_summary.column_dimensions[col_letter].width = 24
 
     # ========================================================
     # 2. Individual Employee Sheets
     # ========================================================
-    # Rule 1: Separate Date (Col A) and Day (Col B)
     employee_cols = [
         "Date",
         "Day",
@@ -1141,9 +1136,9 @@ def build_excel_workbook(df):
         apply_a4_landscape_setup(ws_emp)
 
         # Meta Header Rows
-        ws_emp.row_dimensions[1].height = 36
+        ws_emp.row_dimensions[1].height = ROW_HEIGHT
         ws_emp.row_dimensions[2].height = 16
-        ws_emp.row_dimensions[3].height = 42
+        ws_emp.row_dimensions[3].height = ROW_HEIGHT
 
         ws_emp["A1"] = f"Employee ID: {emp_id}"
         ws_emp["A1"].font = font_bold
@@ -1163,7 +1158,7 @@ def build_excel_workbook(df):
         start_row = 4
         for r_offset, (_, row_data) in enumerate(emp_group.iterrows()):
             curr_row = start_row + r_offset
-            ws_emp.row_dimensions[curr_row].height = 36
+            ws_emp.row_dimensions[curr_row].height = ROW_HEIGHT
 
             status_val = str(row_data["Status / Alert"])
             is_half_day = "(0.5 Day)" in status_val
@@ -1187,7 +1182,7 @@ def build_excel_workbook(df):
             )
 
             # Extract separate Date and Day
-            raw_date_field = str(row_data["Date"])  # Format: "2026-09-01 (Tue)"
+            raw_date_field = str(row_data["Date"])
             date_part = (
                 raw_date_field.split()[0] if " " in raw_date_field else raw_date_field
             )
@@ -1197,24 +1192,20 @@ def build_excel_workbook(df):
                 else ""
             )
 
-            # --- Rule 3: Merged Off-Days (Sunday, Team Off-Day, Leave) ---
-            # Date and Day remain separate (Cols 1 & 2), Col 3 to 15 merged with thin border
+            # Merged Off-Days Banner
             if is_sunday or is_offday:
                 banner_text = "Sunday" if is_sunday else status_val.upper()
 
-                # Col 1: Date
                 c_date = ws_emp.cell(row=curr_row, column=1, value=date_part)
                 c_date.font = font_bold
                 c_date.border = thin_border
                 c_date.alignment = align_center
 
-                # Col 2: Day
                 c_day = ws_emp.cell(row=curr_row, column=2, value=day_part)
                 c_day.font = font_bold
                 c_day.border = thin_border
                 c_day.alignment = align_center
 
-                # Cols 3 to 15: Merged Banner (exempt from bold grid border)
                 for c_idx in range(3, len(employee_cols) + 1):
                     c = ws_emp.cell(row=curr_row, column=c_idx)
                     c.border = thin_border
@@ -1256,11 +1247,10 @@ def build_excel_workbook(df):
             for col_idx, val in enumerate(row_vals, 1):
                 cell = ws_emp.cell(row=curr_row, column=col_idx, value=val)
                 cell.font = font_regular
-                # Rule 3: Regular data cells use bold border
                 cell.border = bold_cell_border
                 cell.alignment = align_center if col_idx != 13 else align_left
 
-                # Rule 2: Clock In > 09:00 (e.g. 09:01, 09:15) colored red
+                # Clock In > 09:00 colored red
                 if col_idx == 3 and val != "--":
                     t_in = parse_time_str(val)
                     if t_in and (t_in.time() > time(9, 0)):
@@ -1270,7 +1260,7 @@ def build_excel_workbook(df):
                 if col_idx == 7 and row_data["_lunch_mins"] > 70:
                     cell.font = font_red_bold
 
-                # Rule 4: Total Deduct highlighted in yellow ONLY when > 0:30 (30 mins)
+                # Total Deduct highlighted in yellow ONLY when > 0:30
                 if col_idx == 11 and val != "--":
                     tot_mins = row_data.get("_total_deduct_mins", 0)
                     if tot_mins > 30:
@@ -1287,7 +1277,7 @@ def build_excel_workbook(df):
                 if col_idx in [14, 15] and val != "--":
                     cell.fill = multi_fill
 
-            # Half-Day Leave: Merge Lunch Break Out and Break In columns (Cols 4 & 5)
+            # Half-Day Leave Lunch Merge
             if is_half_day:
                 ws_emp.merge_cells(
                     start_row=curr_row, start_column=4, end_row=curr_row, end_column=5
@@ -1303,7 +1293,7 @@ def build_excel_workbook(df):
 
         # Total Row
         tot_row = start_row + len(emp_group)
-        ws_emp.row_dimensions[tot_row].height = 40
+        ws_emp.row_dimensions[tot_row].height = ROW_HEIGHT
 
         tot_lunch = format_mins_to_time(emp_group["_lunch_mins"].sum())
         tot_late_w = format_mins_to_time(emp_group["_late_work_mins"].sum())
@@ -1336,27 +1326,18 @@ def build_excel_workbook(df):
             c.font = font_bold
             c.border = bold_cell_border
 
-        # Rule 6: Column widths resized proportionally for font size 22 without truncation
-        col_width_map = {
-            1: 22,  # Date
-            2: 12,  # Day
-            3: 18,  # Clock In
-            4: 19,  # Break Out
-            5: 19,  # Break In
-            6: 18,  # Clock Out
-            7: 18,  # Lunch Duration
-            8: 18,  # Late to Work
-            9: 18,  # Late Lunch
-            10: 18,  # Early Leave
-            11: 18,  # Total Deduct
-            12: 18,  # Work Hours
-            13: 38,  # Status / Alert
-            14: 18,  # Multiple Earlier
-            15: 18,  # Multiple Later
-        }
-        for col_idx, width in col_width_map.items():
+        # Custom Width Assignment:
+        # Date: 20 | Day: 7.3 | Status/Alert: 50 | Others: 24
+        for col_idx in range(1, len(employee_cols) + 1):
             col_letter = get_column_letter(col_idx)
-            ws_emp.column_dimensions[col_letter].width = width
+            if col_idx == 1:
+                ws_emp.column_dimensions[col_letter].width = 20
+            elif col_idx == 2:
+                ws_emp.column_dimensions[col_letter].width = 7.3
+            elif col_idx == 13:
+                ws_emp.column_dimensions[col_letter].width = 50
+            else:
+                ws_emp.column_dimensions[col_letter].width = 24
 
     output = io.BytesIO()
     wb.save(output)
