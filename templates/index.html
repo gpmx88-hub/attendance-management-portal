@@ -36,55 +36,58 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
+        
+        /* STRICT SCREEN LOCK: Zero outer page scrolling */
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
             font-family: var(--font-main);
             background-color: var(--bg);
             color: var(--t1);
-            min-height: 100vh;
-            font-size: 13px;
+            font-size: 12.5px;
             -webkit-font-smoothing: antialiased;
         }
 
         .portal-header {
             background: var(--navy);
             color: #FFFFFF;
-            height: 52px;
-            padding: 0 24px;
+            height: 48px;
+            padding: 0 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
+            flex-shrink: 0;
             z-index: 100;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         .header-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
         .header-logo-sq {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             background: var(--teal);
             border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 15px;
+            font-size: 14px;
             color: #FFF;
         }
         .header-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             letter-spacing: -0.01em;
         }
         .header-center-meta {
             display: flex;
             align-items: center;
-            gap: 16px;
-            font-size: 12px;
+            gap: 14px;
+            font-size: 11.5px;
             color: #9EB5CC;
         }
         .header-center-meta strong {
@@ -94,7 +97,7 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
         .dirty-indicator {
             width: 8px;
@@ -107,26 +110,30 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.15);
             color: #FFFFFF;
-            padding: 6px 12px;
-            border-radius: 7px;
-            font-size: 13px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             transition: background 0.15s;
         }
         .btn-menu-trigger:hover { background: rgba(255, 255, 255, 0.18); }
 
+        /* Main Viewport Container strictly bounded by remaining height */
         .portal-main {
-            max-width: 1720px;
-            margin: 0 auto;
-            padding: 16px 20px;
+            height: calc(100vh - 48px);
+            width: 100%;
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         #uploadScreen {
-            min-height: calc(100vh - 130px);
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -137,27 +144,27 @@
             border: 1px solid var(--border);
             border-radius: 14px;
             width: 100%;
-            max-width: 520px;
-            padding: 36px 32px;
+            max-width: 480px;
+            padding: 32px 28px;
             box-shadow: 0 4px 20px rgba(22, 46, 77, 0.05);
             text-align: center;
         }
         .upload-card-title {
-            font-size: 20px;
+            font-size: 19px;
             font-weight: 700;
             color: var(--t1);
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
         .upload-card-subtitle {
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--t2);
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
         .upload-dropzone {
             border: 2px dashed #B8D0E5;
             background: #F8FAFC;
             border-radius: 12px;
-            padding: 38px 20px;
+            padding: 32px 20px;
             cursor: pointer;
             transition: all 0.15s;
             display: block;
@@ -167,55 +174,64 @@
             background: var(--teal-pale);
         }
         .dropzone-icon {
-            width: 44px;
-            height: 44px;
-            margin: 0 auto 10px;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 8px;
             color: var(--teal);
         }
         .dropzone-text {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 600;
             color: var(--navy);
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         .dropzone-hint {
-            font-size: 12px;
+            font-size: 11.5px;
             color: var(--t3);
         }
 
         .hidden { display: none !important; }
 
+        /* Dashboard View Container filling exact remaining screen space */
+        #resultsCard {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow: hidden;
+        }
+
         .control-bar {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 10px;
-            height: 54px;
-            padding: 0 16px;
+            border-radius: 8px;
+            height: 44px;
+            padding: 0 12px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
         .cb-left, .cb-center, .cb-right {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         .cb-period {
             font-weight: 600;
             color: var(--navy);
-            font-size: 13px;
+            font-size: 12px;
             background: var(--bg);
-            padding: 6px 12px;
-            border-radius: 6px;
+            padding: 4px 10px;
+            border-radius: 5px;
         }
         .emp-nav-btn {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border: 1px solid var(--border);
             background: var(--surface);
-            border-radius: 6px;
+            border-radius: 5px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -225,35 +241,35 @@
         }
         .emp-nav-btn:hover { background: var(--bg); color: var(--navy); }
         .emp-search {
-            padding: 6px 12px;
+            padding: 5px 10px;
             border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 12.5px;
-            width: 170px;
+            border-radius: 5px;
+            font-size: 12px;
+            width: 150px;
             outline: none;
         }
         .emp-select {
-            padding: 6px 12px;
+            padding: 5px 10px;
             border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 12.5px;
+            border-radius: 5px;
+            font-size: 12px;
             background: #FFF;
             font-weight: 500;
-            min-width: 200px;
+            min-width: 180px;
             outline: none;
         }
         .btn-secondary {
             background: var(--bg);
             border: 1px solid var(--border);
             color: var(--navy);
-            padding: 6px 14px;
-            border-radius: 7px;
+            padding: 5px 12px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 12.5px;
+            font-size: 12px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             text-decoration: none;
         }
         .btn-secondary:hover { background: #E4ECF5; }
@@ -261,10 +277,10 @@
             background: var(--success);
             border: none;
             color: #FFFFFF;
-            padding: 7px 16px;
-            border-radius: 7px;
+            padding: 6px 14px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 12.5px;
+            font-size: 12px;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
@@ -282,15 +298,14 @@
         }
 
         .btn-spinner {
-            width: 14px;
-            height: 14px;
+            width: 12px;
+            height: 12px;
             border: 2px solid rgba(255, 255, 255, 0.35);
             border-top-color: #ffffff;
             border-radius: 50%;
             display: inline-block;
             animation: spin 0.65s linear infinite;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .btn-action {
@@ -298,7 +313,7 @@
             align-items: center;
             justify-content: center;
             border: none;
-            border-radius: 6px;
+            border-radius: 5px;
             font-weight: 600;
             font-family: inherit;
             cursor: pointer;
@@ -310,127 +325,121 @@
             display: flex;
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 10px;
-            margin-bottom: 12px;
+            border-radius: 8px;
+            flex-shrink: 0;
             overflow: hidden;
         }
         .stat-cell {
             flex: 1;
-            padding: 10px 18px;
+            padding: 6px 14px;
             display: flex;
             flex-direction: column-reverse;
             border-right: 1px solid var(--border-lite);
         }
         .stat-cell:last-child { border-right: none; }
         .stat-num {
-            font-size: 26px;
+            font-size: 20px;
             font-weight: 700;
             letter-spacing: -0.04em;
             color: var(--navy-mid);
             line-height: 1.1;
-            margin-top: 2px;
         }
         .stat-num.alert { color: var(--danger); }
         .stat-label {
-            font-size: 10.5px;
+            font-size: 10px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.04em;
             color: var(--t2);
         }
 
-        /* ========================================================
-           SPLIT SCREEN: LEFT TABLE & RIGHT SPECIAL DAYS SIDEBAR
-           ======================================================== */
+        /* SPLIT WORKSPACE: Left (Table + Workshop) | Right (Special Days) */
         .workspace-split-container {
             display: flex;
-            gap: 16px;
-            align-items: flex-start;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
             width: 100%;
+            overflow: hidden;
         }
 
-        /* Left Side: Table & Punch Workshop */
         .split-left-main {
             flex: 1;
             min-width: 0;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 8px;
+            height: 100%;
+            overflow: hidden;
         }
 
-        /* Right Side: Special Days & Leave Panel */
         .split-right-sidebar {
-            width: 330px;
+            width: 290px;
             flex-shrink: 0;
             background: var(--surface);
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            padding: 16px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-            position: sticky;
-            top: 68px;
-            max-height: calc(100vh - 84px);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            height: 100%;
+            overflow: hidden;
         }
 
         .sidebar-panel-header {
-            font-size: 13.5px;
+            font-size: 12.5px;
             font-weight: 700;
             color: var(--navy);
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding-bottom: 12px;
+            gap: 6px;
+            padding-bottom: 8px;
             border-bottom: 1px solid var(--border-lite);
-            margin-bottom: 14px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
         }
 
-        /* Row-by-Row Form in Sidebar */
         .sidebar-form-stacked {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 16px;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
         }
         .sidebar-form-group {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 3px;
         }
         .sidebar-form-group label {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
             color: var(--t2);
             text-transform: uppercase;
-            letter-spacing: 0.03em;
         }
         .sidebar-form-group input,
         .sidebar-form-group select {
             width: 100%;
-            padding: 7px 10px;
+            padding: 5px 8px;
             border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 12.5px;
+            border-radius: 5px;
+            font-size: 12px;
             font-family: inherit;
             background: #FFFFFF;
             outline: none;
         }
         .sidebar-form-group input:focus,
-        .sidebar-form-group select:focus {
-            border-color: var(--teal);
-        }
+        .sidebar-form-group select:focus { border-color: var(--teal); }
 
         .btn-apply-special {
             width: 100%;
-            padding: 9px;
+            padding: 7px;
             background: var(--navy);
             color: #FFFFFF;
             border: none;
-            border-radius: 7px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 12.5px;
+            font-size: 12px;
             cursor: pointer;
             transition: background 0.15s;
         }
@@ -439,16 +448,17 @@
         .tags-filter-bar {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
+            gap: 4px;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            flex-shrink: 0;
         }
         .filter-tab-btn {
             background: #FFFFFF;
             border: 1px solid var(--border);
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 10.5px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 10px;
             font-weight: 600;
             color: var(--t2);
             cursor: pointer;
@@ -464,18 +474,18 @@
         .holiday-tags-container {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            max-height: 250px;
+            gap: 5px;
+            flex: 1;
             overflow-y: auto;
-            padding-right: 4px;
+            padding-right: 2px;
         }
         .holiday-tag {
             background: var(--success-bg);
             color: var(--success);
             border: 1px solid #B8E8D4;
-            padding: 5px 8px;
-            border-radius: 6px;
-            font-size: 11px;
+            padding: 4px 7px;
+            border-radius: 5px;
+            font-size: 10.5px;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -485,21 +495,21 @@
         .holiday-tag.tag-mc { background: #FFE4E6; color: #BE123C; border-color: #FECDD3; }
         .holiday-tag.tag-teama { background: #E0F2FE; color: #0369A1; border-color: #BAE6FD; }
         .holiday-tag.tag-teamb { background: #F3E8FF; color: #6D28D9; border-color: #DDD6FE; }
-        .holiday-tag .remove-btn { cursor: pointer; color: #EF4444; font-weight: bold; font-size: 14px; margin-left: 6px; }
+        .holiday-tag .remove-btn { cursor: pointer; color: #EF4444; font-weight: bold; font-size: 13px; margin-left: 6px; }
 
         /* Punch Workshop */
         .workshop-bar {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             background: var(--surface);
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            padding: 8px 14px;
-            flex-wrap: wrap;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 6px 10px;
+            flex-shrink: 0;
         }
         .wb-label {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: .08em;
@@ -508,42 +518,42 @@
         }
         .wb-sep {
             width: 1px;
-            height: 20px;
+            height: 18px;
             background: var(--border);
             flex-shrink: 0;
         }
         .wb-create {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             flex-shrink: 0;
         }
         .wb-tray {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 4px;
             flex: 1;
-            min-height: 36px;
-            min-width: 120px;
-            padding: 4px 10px;
+            min-height: 30px;
+            min-width: 100px;
+            padding: 2px 8px;
             background: var(--bg);
-            border: 1.5px dashed var(--border);
-            border-radius: 7px;
+            border: 1px dashed var(--border);
+            border-radius: 5px;
             align-items: center;
         }
         .wb-trash {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
             background: var(--danger-bg);
             color: var(--danger);
-            border: 1.5px dashed #FCA5A5;
-            border-radius: 7px;
-            font-size: 11.5px;
+            border: 1px dashed #FCA5A5;
+            border-radius: 5px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
-            padding: 6px 12px;
+            padding: 4px 10px;
             user-select: none;
             white-space: nowrap;
             transition: all .15s;
@@ -551,25 +561,28 @@
         .wb-trash:hover { background: #FEE2E2; border-color: var(--danger); }
         .wb-trash.drag-hover { background: var(--danger) !important; color: #fff !important; }
 
-        /* Left Side Table Wrap */
+        /* Left Table Viewport */
         .table-wrap {
             background: var(--surface);
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             width: 100%;
         }
         .table-viewport {
-            max-height: calc(100vh - 240px);
-            min-height: 520px;
+            flex: 1;
             overflow: auto;
             width: 100%;
+            height: 100%;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11.5px;
+            font-size: 11px;
             text-align: center;
             white-space: nowrap;
         }
@@ -579,22 +592,22 @@
             background-color: var(--navy);
             color: #FFFFFF;
             font-weight: 600;
-            padding: 9px 8px;
+            padding: 7px 5px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             z-index: 10;
         }
         tbody td {
             border-bottom: 1px solid var(--border-lite);
             border-right: 1px solid var(--border-lite);
-            padding: 5px 6px;
+            padding: 3px 4px;
             color: var(--t1);
         }
         tbody td:last-child { border-right: none; }
         tbody tr:hover { background-color: #EEF4FB; }
 
         td.droppable-cell {
-            padding: 3px;
-            min-width: 82px;
+            padding: 2px;
+            min-width: 68px;
             cursor: pointer;
             transition: background 0.15s;
         }
@@ -612,13 +625,13 @@
         .time-pill {
             display: block;
             margin: 0 auto;
-            padding: 3px 5px;
-            border-radius: 5px;
+            padding: 2px 4px;
+            border-radius: 4px;
             background: #FFFFFF;
             border: 1px solid var(--border);
             cursor: grab;
             font-weight: 600;
-            font-size: 11px;
+            font-size: 10.5px;
             text-align: center;
             user-select: none;
             transition: all 0.15s ease;
@@ -628,7 +641,7 @@
             background: var(--teal-pale);
             border: 1px solid #BCE5EE;
             color: #0B6878;
-            padding: 4px 8px;
+            padding: 2px 6px;
         }
         .time-pill.selected-swap {
             border-color: #EA580C !important;
@@ -639,13 +652,13 @@
 
         .empty-slot-select {
             width: 100%;
-            padding: 3px 2px;
-            font-size: 11px;
+            padding: 2px 1px;
+            font-size: 10.5px;
             font-weight: 500;
             color: var(--t3);
             border: 1px dashed var(--border);
             background-color: #F8FAFC;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
             text-align: center;
             outline: none;
@@ -659,20 +672,20 @@
         tr.row-merged-banner td.merged-banner-cell {
             color: var(--danger) !important;
             font-weight: 700 !important;
-            font-size: 12px !important;
+            font-size: 11.5px !important;
             letter-spacing: 0.05em;
             text-align: center !important;
-            padding: 7px 12px !important;
+            padding: 5px 10px !important;
             background: #FFF5F5 !important;
         }
 
         /* Badges */
         .badge {
             display: inline-block;
-            padding: 2px 7px;
-            border-radius: 20px;
+            padding: 1px 6px;
+            border-radius: 12px;
             font-weight: 600;
-            font-size: 10.5px;
+            font-size: 10px;
         }
         .badge-ok { color: var(--success); font-weight: 600; }
         .badge-holiday { background: var(--success); color: #FFFFFF; }
@@ -692,7 +705,7 @@
             padding: 0 !important;
         }
 
-        /* Side Drawer & Modals */
+        /* Modals & Backdrop */
         .side-drawer-backdrop {
             display: none;
             position: fixed;
@@ -717,7 +730,7 @@
         }
         .side-drawer.active { right: 0; }
         .side-drawer-header {
-            padding: 16px 20px;
+            padding: 14px 18px;
             background: var(--navy);
             color: #FFFFFF;
             display: flex;
@@ -725,7 +738,7 @@
             align-items: center;
         }
         .side-drawer-body {
-            padding: 16px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -735,11 +748,11 @@
             width: 100%;
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 11px 14px;
-            font-size: 13.5px;
+            gap: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
             font-weight: 500;
-            border-radius: 8px;
+            border-radius: 7px;
             border: 1px solid var(--border);
             background: #F8FAFC;
             color: var(--t1);
@@ -763,15 +776,15 @@
             z-index: 1400;
             align-items: center;
             justify-content: center;
-            padding: 24px;
+            padding: 20px;
         }
         .modal-backdrop.active { display: flex; }
         .modal-window {
             background: #FFFFFF;
-            border-radius: 12px;
+            border-radius: 10px;
             width: 100%;
-            max-width: 1000px;
-            height: 85vh;
+            max-width: 900px;
+            height: 82vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -781,16 +794,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px 20px;
+            padding: 14px 18px;
             background: var(--navy);
             color: #FFFFFF;
         }
-        .modal-header h3 { margin: 0; font-size: 15px; font-weight: 600; }
+        .modal-header h3 { margin: 0; font-size: 14px; font-weight: 600; }
         .modal-close-btn {
             background: transparent;
             border: none;
             color: #FFFFFF;
-            font-size: 24px;
+            font-size: 22px;
             cursor: pointer;
         }
         .modal-body { flex: 1; background: #F8FAFC; }
@@ -798,21 +811,21 @@
 
         .app-toast {
             position: fixed;
-            top: 24px;
-            right: 24px;
+            top: 20px;
+            right: 20px;
             background: #FFFFFF;
             color: var(--t1);
             border-left: 4px solid var(--danger);
-            padding: 14px 18px;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border-radius: 6px;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             z-index: 2000;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 500;
-            max-width: 400px;
+            max-width: 380px;
             opacity: 0;
             transform: translateY(-16px);
             transition: all 0.2s ease;
@@ -822,7 +835,7 @@
         .app-toast .toast-close {
             background: transparent;
             border: none;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             color: var(--t3);
             margin-left: auto;
@@ -830,15 +843,15 @@
 
         #quickSaveToast {
             position: fixed;
-            bottom: 24px;
-            right: 24px;
+            bottom: 20px;
+            right: 20px;
             background: #0F172A;
             color: #38BDF8;
             border: 1px solid #1E293B;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
-            padding: 11px 18px;
-            border-radius: 8px;
-            font-size: 13px;
+            padding: 10px 16px;
+            border-radius: 7px;
+            font-size: 12.5px;
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -850,11 +863,6 @@
             z-index: 99999;
         }
         #quickSaveToast.show { opacity: 1; transform: translateY(0); }
-
-        @media (max-width: 1180px) {
-            .workspace-split-container { flex-direction: column; }
-            .split-right-sidebar { width: 100%; position: static; max-height: none; }
-        }
         </style>
     </head>
     <body>
@@ -865,9 +873,7 @@
         </div>
         <div id="quickSaveToast"></div>
 
-        <div id="sideDrawerBackdrop"
-             class="side-drawer-backdrop"
-             onclick="closeSideDrawer()"></div>
+        <div id="sideDrawerBackdrop" class="side-drawer-backdrop" onclick="closeSideDrawer()"></div>
         <div id="sideDrawer" class="side-drawer">
             <div class="side-drawer-header">
                 <h3>⚡ Workspace Menu</h3>
@@ -971,7 +977,7 @@
                     </div>
                 </div>
 
-                <!-- SIDE-BY-SIDE WORKSPACE CONTAINER -->
+                <!-- SIDE-BY-SIDE SPLIT WORKSPACE CONTAINER (FIT 100% IN SCREEN) -->
                 <div class="workspace-split-container">
                     
                     <!-- LEFT SIDE: Punch Workshop + Attendance Table (Main Area) -->
@@ -982,12 +988,12 @@
                             <div class="wb-sep"></div>
                             <div class="wb-create">
                                 <input type="time" id="newTimePicker" lang="en-GB" step="60" value="09:00"
-                                       style="padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px">
+                                       style="padding: 3px 6px; border: 1px solid var(--border); border-radius: 5px; font-size: 11.5px">
                                 <button type="button" class="btn-secondary" onclick="createNewTimeBlock()">+ Create Block</button>
                             </div>
                             <div class="wb-sep"></div>
                             <div id="createdBlocksTray" class="wb-tray">
-                                <span style="font-size: 11.5px; color: var(--t3); font-style: italic" id="trayPlaceholder">
+                                <span style="font-size: 11px; color: var(--t3); font-style: italic" id="trayPlaceholder">
                                     Created blocks appear here. Drag them directly into table cells.
                                 </span>
                             </div>
@@ -1003,13 +1009,13 @@
                             </div>
                         </div>
 
-                        <!-- Full Width Table -->
+                        <!-- Table Viewport with Auto Internal Scrolling -->
                         <div class="table-wrap">
                             <div class="table-viewport">
                                 <table id="attendanceTable">
                                     <thead>
                                         <tr>
-                                            <th style="min-width: 115px;">Date</th>
+                                            <th style="min-width: 95px;">Date</th>
                                             <th style="background-color: var(--col-editable);">Clock In ⇄</th>
                                             <th style="background-color: var(--col-editable);">Break Out ⇄</th>
                                             <th style="background-color: var(--col-editable);">Break In ⇄</th>
@@ -1020,7 +1026,7 @@
                                             <th style="background-color: var(--col-early);">Early Leave</th>
                                             <th style="background-color: var(--col-total-late);">Total Deduct</th>
                                             <th>Work Hours</th>
-                                            <th style="min-width: 120px;">Status / Alert</th>
+                                            <th style="min-width: 110px;">Status / Alert</th>
                                             <th style="background-color: var(--col-multi);">Multiple (Earlier)</th>
                                             <th style="background-color: var(--col-multi);">Multiple (Later)</th>
                                         </tr>
@@ -1078,13 +1084,13 @@
                             </button>
                         </div>
 
-                        <div style="font-weight: 700; font-size: 11px; color: var(--t2); text-transform: uppercase; margin-bottom: 6px;">
+                        <div style="font-weight: 700; font-size: 10.5px; color: var(--t2); text-transform: uppercase; margin-bottom: 5px; flex-shrink: 0;">
                             Active Special Days
                         </div>
 
                         <div id="tagsFilterBar" class="tags-filter-bar hidden"></div>
                         <div id="holidayTags" class="holiday-tags-container">
-                            <span style="font-size: 11.5px; color: var(--t3); font-style: italic" id="noHolidaysText">
+                            <span style="font-size: 11px; color: var(--t3); font-style: italic" id="noHolidaysText">
                                 No custom leave days added.
                             </span>
                         </div>
@@ -1112,81 +1118,81 @@
         </div>
 
         <div id="saveSlotModal" class="modal-backdrop" onclick="handleSlotBackdropClick(event)">
-            <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh">
+            <div class="modal-window" style="max-width: 580px; height: auto; max-height: 80vh">
                 <div class="modal-header">
                     <h3>💾 Save Progress Slot</h3>
                     <button type="button" class="modal-close-btn" onclick="closeSaveModal()">×</button>
                 </div>
-                <div style="padding: 20px; overflow-y: auto;">
-                    <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-bottom: 16px">
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 6px">SAVE AS NEW SLOT</label>
+                <div style="padding: 16px; overflow-y: auto;">
+                    <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 12px; border-radius: 7px; margin-bottom: 14px">
+                        <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--navy); margin-bottom: 5px">SAVE AS NEW SLOT</label>
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="newSlotTitleInput" placeholder="e.g. June 2026 - Final Review"
-                                   style="flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px"
+                                   style="flex: 1; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px"
                                    onkeydown="if(event.key === 'Enter'){ event.preventDefault(); executeSaveNewSlot(); }">
                             <button type="button" class="btn-download" onclick="executeSaveNewSlot()">Save New</button>
                         </div>
                     </div>
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--t2); margin-bottom: 8px">OR OVERWRITE AN EXISTING SAVE</label>
-                    <div id="saveSlotsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto"></div>
+                    <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--t2); margin-bottom: 6px">OR OVERWRITE AN EXISTING SAVE</label>
+                    <div id="saveSlotsList" style="display: flex; flex-direction: column; gap: 6px; max-height: 250px; overflow-y: auto"></div>
                 </div>
             </div>
         </div>
 
         <div id="restoreSlotModal" class="modal-backdrop" onclick="handleSlotBackdropClick(event)">
-            <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh">
+            <div class="modal-window" style="max-width: 580px; height: auto; max-height: 80vh">
                 <div class="modal-header">
                     <h3>📂 Load Saved Progress</h3>
                     <button type="button" class="modal-close-btn" onclick="closeRestoreModal()">×</button>
                 </div>
-                <div style="padding: 20px; overflow-y: auto;">
-                    <div id="restoreSlotsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto"></div>
+                <div style="padding: 16px; overflow-y: auto;">
+                    <div id="restoreSlotsList" style="display: flex; flex-direction: column; gap: 6px; max-height: 340px; overflow-y: auto"></div>
                 </div>
             </div>
         </div>
 
         <div id="holidayModal" class="modal-backdrop" onclick="handleHolidayBackdropClick(event)">
-            <div class="modal-window" style="max-width: 600px; height: auto; max-height: 85vh">
+            <div class="modal-window" style="max-width: 580px; height: auto; max-height: 80vh">
                 <div class="modal-header">
                     <h3>🗓️ Manage Annual Holidays (Database)</h3>
                     <button type="button" class="modal-close-btn" onclick="closeHolidayModal()">×</button>
                 </div>
-                <div style="padding: 20px; overflow-y: auto;">
-                    <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-bottom: 16px">
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 8px">ADD ANNUAL HOLIDAY</label>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <div style="padding: 16px; overflow-y: auto;">
+                    <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 12px; border-radius: 7px; margin-bottom: 14px">
+                        <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--navy); margin-bottom: 6px">ADD ANNUAL HOLIDAY</label>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                             <input type="date" id="dbHolidayDateInput" lang="en-GB"
-                                   style="flex: 1; min-width: 140px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px"
+                                   style="flex: 1; min-width: 130px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 5px"
                                    oninput="validateHolidayForm()" onkeydown="handleHolidayInputKeydown(event)">
                             <input type="text" id="dbHolidayNameInput" placeholder="e.g. Johor Sultan Birthday"
-                                   style="flex: 2; min-width: 180px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px"
+                                   style="flex: 2; min-width: 170px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 5px"
                                    oninput="validateHolidayForm()" onkeydown="handleHolidayInputKeydown(event)">
                             <button type="button" id="btnAddDbHoliday" class="btn-download" style="opacity: 0.5; cursor: not-allowed" disabled onclick="executeAddDbHoliday()">+ Add</button>
                         </div>
                     </div>
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--t2); margin-bottom: 8px">CONFIGURED DATABASE HOLIDAYS</label>
-                    <div id="dbHolidaysList" style="display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto">
-                        <span style="font-size: 12px; color: var(--t3); font-style: italic">Loading holidays...</span>
+                    <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--t2); margin-bottom: 6px">CONFIGURED DATABASE HOLIDAYS</label>
+                    <div id="dbHolidaysList" style="display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto">
+                        <span style="font-size: 11.5px; color: var(--t3); font-style: italic">Loading holidays...</span>
                     </div>
                 </div>
             </div>
         </div>
 
         <div id="teamsModal" class="modal-backdrop" onclick="handleTeamsBackdropClick(event)">
-            <div class="modal-window" style="max-width: 650px; height: auto; max-height: 85vh">
+            <div class="modal-window" style="max-width: 620px; height: auto; max-height: 80vh">
                 <div class="modal-header">
                     <h3>👥 Manage Employee Teams (Group A / B)</h3>
                     <button type="button" class="modal-close-btn" onclick="closeTeamsModal()">×</button>
                 </div>
-                <div style="padding: 20px; overflow-y: auto;">
-                    <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 14px; border-radius: 8px; margin-bottom: 16px">
-                        <label style="display: block; font-size: 12px; font-weight: 700; color: var(--navy); margin-bottom: 8px">ASSIGN EMPLOYEE TO GROUP</label>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <div style="padding: 16px; overflow-y: auto;">
+                    <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 12px; border-radius: 7px; margin-bottom: 14px">
+                        <label style="display: block; font-size: 11.5px; font-weight: 700; color: var(--navy); margin-bottom: 6px">ASSIGN EMPLOYEE TO GROUP</label>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                             <input type="text" id="dbTeamEmpNameInput" list="detectedEmpDatalist" placeholder="Employee Name..."
-                                   style="flex: 2; min-width: 180px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px"
+                                   style="flex: 2; min-width: 170px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 5px"
                                    oninput="validateTeamForm()" onkeydown="handleTeamInputKeydown(event)">
                             <datalist id="detectedEmpDatalist"></datalist>
-                            <select id="dbTeamGroupSelect" style="flex: 1; min-width: 120px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-weight: 600;">
+                            <select id="dbTeamGroupSelect" style="flex: 1; min-width: 110px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 5px; font-weight: 600;">
                                 <option value="Team A">🅰️ Team A</option>
                                 <option value="Team B">🅱️ Team B</option>
                             </select>
@@ -1194,17 +1200,17 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <label style="font-size: 12px; font-weight: 700; color: var(--t2);">ASSIGNED EMPLOYEES</label>
-                        <div style="display: flex; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="font-size: 11.5px; font-weight: 700; color: var(--t2);">ASSIGNED EMPLOYEES</label>
+                        <div style="display: flex; gap: 5px;">
                             <button type="button" class="filter-tab-btn active" id="tabTeamAll" onclick="filterTeamList('ALL')">All</button>
                             <button type="button" class="filter-tab-btn" id="tabTeamA" onclick="filterTeamList('Team A')">Team A</button>
                             <button type="button" class="filter-tab-btn" id="tabTeamB" onclick="filterTeamList('Team B')">Team B</button>
                         </div>
                     </div>
 
-                    <div id="dbTeamsList" style="display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto">
-                        <span style="font-size: 12px; color: var(--t3); font-style: italic">Loading teams...</span>
+                    <div id="dbTeamsList" style="display: flex; flex-direction: column; gap: 6px; max-height: 280px; overflow-y: auto">
+                        <span style="font-size: 11.5px; color: var(--t3); font-style: italic">Loading teams...</span>
                     </div>
                 </div>
             </div>
@@ -1494,7 +1500,7 @@
         if (specialEntries.length === 0) {
             filterBar.classList.add('hidden');
             filterBar.innerHTML = '';
-            container.innerHTML = '<span style="font-size: 11.5px; color: var(--t3); font-style: italic;" id="noHolidaysText">No custom leave days added.</span>';
+            container.innerHTML = '<span style="font-size: 11px; color: var(--t3); font-style: italic;" id="noHolidaysText">No custom leave days added.</span>';
             return;
         }
 
@@ -1576,7 +1582,6 @@
                     r["Multiple Punch (Later)"]
                 ].some(p => p && p !== "--");
 
-                // Checkpoint: Punched in on an off day -> (Worked)
                 if (hasPunches && (match.type.includes("off day") || match.type.includes("Leave") || match.type.includes("Holiday")) && !match.type.includes("(0.5 Day)")) {
                     r["Status / Alert"] = `${label} (Worked)`;
                     r._is_offday = 0;
@@ -1664,7 +1669,6 @@
             return;
         }
 
-        // 1. Bulk Team Assignment
         if (targetScope === 'team_match') {
             const targetTeam = chosenType.includes('Team A') ? 'Team A' : 'Team B';
             
@@ -1707,7 +1711,6 @@
             return;
         }
 
-        // 2. Single Employee or Company-Wide
         const targetName = (targetScope === 'current') ? activePerson : 'ALL';
         if (targetScope === 'current' && (!targetName || targetName === 'No matching employees')) {
             showToast('Please select an employee first.');
@@ -2410,21 +2413,21 @@
         container.innerHTML = '';
 
         if (!slots.length) {
-            container.innerHTML = '<div style="font-size: 12px; color: #94a3b8; font-style: italic; padding: 8px;">No existing saves found. Create your first save slot above!</div>';
+            container.innerHTML = '<div style="font-size: 11.5px; color: #94a3b8; font-style: italic; padding: 6px;">No existing saves found. Create your first save slot above!</div>';
             return;
         }
 
         slots.forEach(slot => {
             const card = document.createElement('div');
-            card.style = "display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px;";
+            card.style = "display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px;";
             card.innerHTML = `
                 <div>
-                    <div style="font-weight: 700; font-size: 13px; color: #0f172a;">${slot.title}</div>
-                    <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                    <div style="font-weight: 700; font-size: 12.5px; color: #0f172a;">${slot.title}</div>
+                    <div style="font-size: 10.5px; color: #64748b; margin-top: 2px;">
                         Range: <strong>${slot.startDate || 'N/A'} - ${slot.endDate || 'N/A'}</strong> | Employees: <strong>${slot.totalEmployees}</strong> | Saved: ${slot.updatedAt}
                     </div>
                 </div>
-                <button type="button" class="btn-action" style="background: #dc2626; color: #fff; border:none; border-radius:6px; font-size: 12px; padding: 5px 12px; cursor:pointer;" onclick="executeOverwriteSlot('${slot.id}', '${slot.title}')">
+                <button type="button" class="btn-action" style="background: #dc2626; color: #fff; border:none; border-radius:5px; font-size: 11px; padding: 4px 10px; cursor:pointer;" onclick="executeOverwriteSlot('${slot.id}', '${slot.title}')">
                     Overwrite
                 </button>
             `;
@@ -2438,26 +2441,26 @@
         container.innerHTML = '';
 
         if (!slots.length) {
-            container.innerHTML = '<div style="font-size: 13px; color: #94a3b8; font-style: italic; padding: 14px; text-align: center;">No saved sessions found for your account.</div>';
+            container.innerHTML = '<div style="font-size: 12px; color: #94a3b8; font-style: italic; padding: 12px; text-align: center;">No saved sessions found for your account.</div>';
             return;
         }
 
         slots.forEach(slot => {
             const card = document.createElement('div');
-            card.style = "display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 16px;";
+            card.style = "display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px;";
             card.innerHTML = `
                 <div>
-                    <div style="font-weight: 700; font-size: 14px; color: #0f2d59;">${slot.title}</div>
-                    <div style="font-size: 12px; color: #64748b; margin-top: 3px;">
+                    <div style="font-weight: 700; font-size: 13px; color: #0f2d59;">${slot.title}</div>
+                    <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
                         Period: <strong>${slot.startDate} → ${slot.endDate}</strong> | Employees: <strong>${slot.totalEmployees}</strong>
                     </div>
-                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Last Modified: ${slot.updatedAt}</div>
+                    <div style="font-size: 10.5px; color: #94a3b8; margin-top: 1px;">Last Modified: ${slot.updatedAt}</div>
                 </div>
-                <div style="display: flex; gap: 8px;">
-                    <button type="button" class="btn-action" style="background: #0284c7; color: #fff; border:none; border-radius:6px; font-size: 12px; padding: 6px 14px; cursor:pointer;" onclick="executeLoadSlot('${slot.id}')">
+                <div style="display: flex; gap: 6px;">
+                    <button type="button" class="btn-action" style="background: #0284c7; color: #fff; border:none; border-radius:5px; font-size: 11px; padding: 5px 12px; cursor:pointer;" onclick="executeLoadSlot('${slot.id}')">
                         ▶ Load
                     </button>
-                    <button type="button" class="btn-action" style="background: #ef4444; color: #fff; border:none; border-radius:6px; font-size: 12px; padding: 6px 10px; cursor:pointer;" onclick="executeDeleteSlot('${slot.id}')" title="Delete slot">
+                    <button type="button" class="btn-action" style="background: #ef4444; color: #fff; border:none; border-radius:5px; font-size: 11px; padding: 5px 8px; cursor:pointer;" onclick="executeDeleteSlot('${slot.id}')" title="Delete slot">
                         🗑️
                     </button>
                 </div>
@@ -2632,8 +2635,8 @@
             if (isHalfDay) {
                 let halfDayLabel = status.split(' (Missing')[0].trim();
                 middleLunchCells = `
-                    <td colspan="2" style="background-color: #fffbeb; text-align: center; vertical-align: middle; padding: 6px 10px;">
-                        <span style="display: inline-flex; align-items: center; justify-content: center; gap: 5px; width: 92%; padding: 4px 10px; background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 6px; font-weight: 600; font-size: 11px; letter-spacing: -0.01em;">
+                    <td colspan="2" style="background-color: #fffbeb; text-align: center; vertical-align: middle; padding: 4px 6px;">
+                        <span style="display: inline-flex; align-items: center; justify-content: center; gap: 4px; width: 92%; padding: 3px 6px; background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 5px; font-weight: 600; font-size: 10px;">
                             🌤️ ${halfDayLabel}
                         </span>
                     </td>
@@ -2763,24 +2766,24 @@
             listContainer.innerHTML = '';
 
             if (holidays.length === 0) {
-                listContainer.innerHTML = '<span style="font-size: 12px; color: var(--t3); font-style: italic;">No custom holidays stored in database yet.</span>';
+                listContainer.innerHTML = '<span style="font-size: 11.5px; color: var(--t3); font-style: italic;">No custom holidays stored in database yet.</span>';
                 return;
             }
 
             holidays.forEach(h => {
                 const row = document.createElement('div');
-                row.style = "display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px;";
+                row.style = "display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px;";
                 row.innerHTML = `
                     <div>
-                        <strong style="color: var(--navy); font-size: 13px;">${h.date}</strong>
-                        <span style="margin-left: 10px; font-size: 13px; color: var(--t1);">${h.name}</span>
+                        <strong style="color: var(--navy); font-size: 12px;">${h.date}</strong>
+                        <span style="margin-left: 8px; font-size: 12px; color: var(--t1);">${h.name}</span>
                     </div>
-                    <button type="button" class="btn-action" style="background: #ef4444; color: #fff; border:none; border-radius:4px; font-size: 11px; padding: 4px 8px; cursor:pointer;" onclick="executeDeleteDbHoliday('${h.date}')">🗑️</button>
+                    <button type="button" class="btn-action" style="background: #ef4444; color: #fff; border:none; border-radius:4px; font-size: 10px; padding: 3px 6px; cursor:pointer;" onclick="executeDeleteDbHoliday('${h.date}')">🗑️</button>
                 `;
                 listContainer.appendChild(row);
             });
         } catch (e) {
-            listContainer.innerHTML = '<span style="color: var(--danger); font-size: 12px;">Failed to load holidays from database.</span>';
+            listContainer.innerHTML = '<span style="color: var(--danger); font-size: 11.5px;">Failed to load holidays from database.</span>';
         }
     }
 
@@ -2931,7 +2934,7 @@
             allDbTeams = data.teams || [];
             renderTeamsDOM();
         } catch (e) {
-            listContainer.innerHTML = '<span style="color: var(--danger); font-size: 12px;">Failed to load employee teams.</span>';
+            listContainer.innerHTML = '<span style="color: var(--danger); font-size: 11.5px;">Failed to load employee teams.</span>';
         }
     }
 
@@ -2942,7 +2945,7 @@
         const filtered = allDbTeams.filter(t => currentTeamFilter === 'ALL' || t.group === currentTeamFilter);
 
         if (filtered.length === 0) {
-            listContainer.innerHTML = '<span style="font-size: 12px; color: var(--t3); font-style: italic;">No employees assigned to this group yet.</span>';
+            listContainer.innerHTML = '<span style="font-size: 11.5px; color: var(--t3); font-style: italic;">No employees assigned to this group yet.</span>';
             return;
         }
 
@@ -2953,20 +2956,20 @@
             const badgeBorder = isTeamA ? '#bae6fd' : '#ddd6fe';
 
             const row = document.createElement('div');
-            row.style = "display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 12px;";
+            row.style = "display: flex; justify-content: space-between; align-items: center; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px 10px;";
             row.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 2px 8px; border-radius: 12px; font-weight: 700; font-size: 11px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; padding: 1px 6px; border-radius: 10px; font-weight: 700; font-size: 10px;">
                         ${isTeamA ? '🅰️ Team A' : '🅱️ Team B'}
                     </span>
-                    <strong style="color: var(--navy); font-size: 13px;">${t.name}</strong>
+                    <strong style="color: var(--navy); font-size: 12px;">${t.name}</strong>
                 </div>
-                <div style="display: flex; gap: 6px;">
-                    <button type="button" class="btn-action" style="background: #f1f5f9; color: var(--navy); border: 1px solid var(--border); border-radius: 4px; font-size: 11px; padding: 4px 8px; cursor:pointer;" 
+                <div style="display: flex; gap: 5px;">
+                    <button type="button" class="btn-action" style="background: #f1f5f9; color: var(--navy); border: 1px solid var(--border); border-radius: 4px; font-size: 10.5px; padding: 3px 6px; cursor:pointer;" 
                             onclick="switchDbTeamGroup('${t.name}', '${isTeamA ? 'Team B' : 'Team A'}')">
                         Switch to ${isTeamA ? 'Team B' : 'Team A'}
                     </button>
-                    <button type="button" class="btn-action" style="background: #ef4444; color: #fff; border:none; border-radius:4px; font-size: 11px; padding: 4px 8px; cursor:pointer;" 
+                    <button type="button" class="btn-action" style="background: #ef4444; color: #fff; border:none; border-radius:4px; font-size: 10.5px; padding: 3px 6px; cursor:pointer;" 
                             onclick="executeDeleteDbTeam('${t.name}')">🗑️</button>
                 </div>
             `;
