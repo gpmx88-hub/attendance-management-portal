@@ -1761,6 +1761,7 @@
         if (!globalData || !globalData.length) return;
 
         globalData.forEach(r => {
+            // 1. Sunday Protection
             if (r.Date.includes("(Sun)") || r._is_sunday === 1) {
                 r["Status / Alert"] = "Sunday";
                 r._is_absent = 0;
@@ -1776,9 +1777,25 @@
 
             if (match) {
                 const label = match.remark ? `${match.type} (${match.remark})` : match.type;
-                r["Status / Alert"] = label;
 
-                if (match.type.includes("(0.5 Day)")) {
+                // Check if this employee actually has punch records on this day
+                const hasPunches = [
+                    r["Clock In"],
+                    r["Break Out (Lunch)"],
+                    r["Break In (Back)"],
+                    r["Clock Out"],
+                    r["Multiple Punch (Earlier)"],
+                    r["Multiple Punch (Later)"]
+                ].some(p => p && p !== "--");
+
+                // CHECKPOINT: If applied as Team Off Day or Full Off Day, but employee punched in to work
+                if (hasPunches && (match.type.includes("off day") || match.type.includes("Leave") || match.type.includes("Holiday")) && !match.type.includes("(0.5 Day)")) {
+                    r["Status / Alert"] = `${label} (Worked)`;
+                    r._is_offday = 0; // Keep active work calculation enabled
+                } else if (match.type.includes("(0.5 Day)")) {
+                    r["Status / Alert"] = label;
+                    r._is_offday = 0;
+
                     const currentPunches = [
                         r["Clock In"],
                         r["Break Out (Lunch)"],
@@ -1813,9 +1830,14 @@
 
                     r["Break Out (Lunch)"] = "--";
                     r["Break In (Back)"] = "--";
+                } else {
+                    // Truly off (no punches)
+                    r["Status / Alert"] = label;
+                    r._is_offday = 1;
                 }
             } else if (isRowOffDay(r["Status / Alert"]) || (r["Status / Alert"] && r["Status / Alert"].includes("(0.5 Day)"))) {
                 r["Status / Alert"] = "Normal";
+                r._is_offday = 0;
             }
 
             recalculateRow(r);

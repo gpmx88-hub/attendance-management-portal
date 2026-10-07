@@ -629,7 +629,7 @@ def process_time_card(
             is_saturday = w_date.weekday() == 5
             day_name = w_date.strftime("%a")
 
-            # Sunday Protection: Always strictly Sunday
+            # 1. Sunday Protection: Always strictly Sunday
             if is_sunday:
                 records.append({
                     "Employee ID": emp_id,
@@ -657,23 +657,18 @@ def process_time_card(
                     "_total_deduct_mins": 0,
                     "_is_absent": 0,
                     "_is_sunday": 1,
-                    "_is_offday": 1,
+                    "_is_offday": 1
                 })
                 continue
 
-            special_info = special_lookup.get(
-                (date_str, norm_name)
-            ) or special_lookup.get((date_str, "ALL"))
+            # Case-insensitive special entry lookup
+            special_info = special_lookup.get((date_str, norm_name)) or special_lookup.get((date_str, "ALL"))
             special_type = None
 
             if special_info:
                 st_type, st_remark = special_info
                 if st_remark:
-                    special_type = (
-                        f"{st_type} ({st_remark})"
-                        if st_type not in st_remark
-                        else st_remark
-                    )
+                    special_type = f"{st_type} ({st_remark})" if st_type not in st_remark else st_remark
                 else:
                     special_type = st_type
 
@@ -684,27 +679,20 @@ def process_time_card(
             raw_times_str = raw_punches.get((emp_id, date_str))
             is_half_day = bool(special_type and "(0.5 Day)" in special_type)
 
-            # Days without biometric punches
+            # ========================================================
+            # CHECKPOINT: Days WITHOUT biometric punches (Truly Off)
+            # ========================================================
             if not raw_times_str:
                 if special_type and not is_half_day:
                     status_text = special_type
                     is_off = 1
                 else:
-                    # Absence concept replaced with punch irregularity
                     if is_half_day:
-                        status_text = (
-                            f"{special_type} (Missing Clock In, Missing Clock"
-                            " Out)"
-                        )
+                        status_text = f"{special_type} (Missing Clock In, Missing Clock Out)"
                     elif is_saturday:
-                        status_text = (
-                            "Saturday (Missing Clock In, Missing Clock Out)"
-                        )
+                        status_text = "Saturday (Missing Clock In, Missing Clock Out)"
                     else:
-                        status_text = (
-                            "Missing Clock In, No Lunch Punched, Missing Clock"
-                            " Out"
-                        )
+                        status_text = "Missing Clock In, No Lunch Punched, Missing Clock Out"
                     is_off = 0
 
                 records.append({
@@ -733,23 +721,18 @@ def process_time_card(
                     "_total_deduct_mins": 0,
                     "_is_absent": 0,
                     "_is_sunday": 0,
-                    "_is_offday": is_off,
+                    "_is_offday": is_off
                 })
                 continue
 
-            punch_list = [
-                t.strip() for t in raw_times_str.split(",") if t.strip()
-            ]
+            # ========================================================
+            # CHECKPOINT: Days WITH biometric punches (Worked)
+            # ========================================================
+            punch_list = [t.strip() for t in raw_times_str.split(",") if t.strip()]
 
-            # Handle 0.5 Day leave: Earlier = Clock In, Later = Clock Out, Lunch = None
             if is_half_day and not is_saturday:
-                clean_punches, extra_dups = deduplicate_close_punches(
-                    punch_list, threshold_minutes=3
-                )
-                sorted_punches = sorted(
-                    clean_punches,
-                    key=lambda p: parse_time_str(p) or datetime.min,
-                )
+                clean_punches, extra_dups = deduplicate_close_punches(punch_list, threshold_minutes=3)
+                sorted_punches = sorted(clean_punches, key=lambda p: parse_time_str(p) or datetime.min)
 
                 if len(sorted_punches) >= 2:
                     c_in = sorted_punches[0]
@@ -772,25 +755,15 @@ def process_time_card(
                 multi_later = extra[-1] if len(extra) >= 2 else "--"
 
                 issues = []
-                if c_in == "--":
-                    issues.append("Missing Clock In")
-                if c_out == "--":
-                    issues.append("Missing Clock Out")
-                status = (
-                    f"{special_type} ({', '.join(issues)})"
-                    if issues
-                    else special_type
-                )
+                if c_in == "--": issues.append("Missing Clock In")
+                if c_out == "--": issues.append("Missing Clock Out")
+                status = f"{special_type} ({', '.join(issues)})" if issues else special_type
             else:
-                c_in, b_out, b_in, c_out, status, multi_earlier, multi_later = (
-                    categorize_punches(punch_list, is_saturday)
-                )
+                c_in, b_out, b_in, c_out, status, multi_earlier, multi_later = categorize_punches(punch_list, is_saturday)
+                
+                # CRITICAL LINE: If they have punches on a special off day, mark as (Worked)
                 if special_type:
-                    status = (
-                        f"{special_type} (Worked)"
-                        if status == "Normal"
-                        else f"{special_type} ({status})"
-                    )
+                    status = f"{special_type} (Worked)" if status == "Normal" else f"{special_type} ({status})"
 
             (
                 lunch_mins,
